@@ -336,12 +336,12 @@ const Feed = () => {
                           {post.author?.name}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-base-content/40">
-                          <span className="capitalize">
+                          <span className="capitalize line-clamp-1 max-w-23">
                             {getUserRoleLabel(post.author)}
                           </span>
                           <UserSignalBadge user={post.author} />
                           <span>·</span>
-                          <span>
+                          <span className="line-clamp-1">
                             {new Date(post.createdAt).toLocaleDateString(
                               "en-US",
                               { month: "short", day: "numeric" },

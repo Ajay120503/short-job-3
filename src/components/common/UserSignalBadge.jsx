@@ -13,7 +13,7 @@ const UserSignalBadge = ({ user, size = "xs", className = "" }) => {
 
   return (
     <span
-      className={`badge font-semibold ${sizeClasses[size] || sizeClasses.xs} ${
+      className={`badge font-semibold line-clamp-1 ${sizeClasses[size] || sizeClasses.xs} ${
         signal.key === "admin" ? specialStyle.label : signal.className
       } ${className}`}
     >

@@ -63,11 +63,11 @@ const LinkedJobCard = ({ job }) => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="badge badge-xs badge-primary badge-soft font-semibold uppercase tracking-wide">
+                <span className="badge badge-xs line-clamp-1 badge-primary badge-soft font-semibold uppercase tracking-wide">
                   Job Opening
                 </span>
                 {deadlinePassed && (
-                  <span className="badge badge-xs badge-error badge-soft">
+                  <span className="badge line-clamp-1 badge-xs badge-error badge-soft">
                     Deadline Passed
                   </span>
                 )}
