@@ -66,7 +66,7 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
         <div className="modal-action flex-col sm:flex-row sm:items-center">
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost btn-md"
             onClick={onCancel}
             disabled={loading}
           >
