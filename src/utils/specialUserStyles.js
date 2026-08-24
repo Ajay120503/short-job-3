@@ -87,6 +87,7 @@ const variants = {
     muted: "text-primary/75",
     ring: "ring-2 ring-primary ring-offset-2 ring-offset-base-100",
     storyRing: "bg-primary",
+    marker: "bg-primary text-primary-content",
     icon: "text-primary",
   },
   coral: {
@@ -98,6 +99,7 @@ const variants = {
     muted: "text-accent/80",
     ring: "ring-2 ring-accent ring-offset-2 ring-offset-base-100",
     storyRing: "bg-accent",
+    marker: "bg-accent text-accent-content",
     icon: "text-accent",
   },
   emerald: {
@@ -109,6 +111,7 @@ const variants = {
     muted: "text-success/80",
     ring: "ring-2 ring-success ring-offset-2 ring-offset-base-100",
     storyRing: "bg-success",
+    marker: "bg-success text-success-content",
     icon: "text-success",
   },
   amber: {
@@ -120,6 +123,7 @@ const variants = {
     muted: "text-warning/85",
     ring: "ring-2 ring-warning ring-offset-2 ring-offset-base-100",
     storyRing: "bg-warning",
+    marker: "bg-warning text-warning-content",
     icon: "text-warning",
   },
   indigo: {
@@ -131,6 +135,7 @@ const variants = {
     muted: "text-[#5360ba]",
     ring: "ring-2 ring-[#5667d8] ring-offset-2 ring-offset-base-100",
     storyRing: "bg-[#5667d8]",
+    marker: "bg-[#5667d8] text-white",
     icon: "text-[#5667d8]",
   },
   sky: {
@@ -141,6 +146,7 @@ const variants = {
     muted: "text-info/80",
     ring: "ring-2 ring-info ring-offset-2 ring-offset-base-100",
     storyRing: "bg-info",
+    marker: "bg-info text-info-content",
     icon: "text-info",
   },
   "deep-teal": {
@@ -152,6 +158,7 @@ const variants = {
     muted: "text-secondary/80",
     ring: "ring-2 ring-secondary ring-offset-2 ring-offset-base-100",
     storyRing: "bg-secondary",
+    marker: "bg-secondary text-secondary-content",
     icon: "text-secondary",
   },
   rose: {
@@ -162,6 +169,7 @@ const variants = {
     muted: "text-error/80",
     ring: "ring-2 ring-error ring-offset-2 ring-offset-base-100",
     storyRing: "bg-error",
+    marker: "bg-error text-error-content",
     icon: "text-error",
   },
   slate: {
@@ -173,6 +181,7 @@ const variants = {
     muted: "text-neutral/80",
     ring: "ring-2 ring-neutral ring-offset-2 ring-offset-base-100",
     storyRing: "bg-neutral",
+    marker: "bg-neutral text-neutral-content",
     icon: "text-neutral",
   },
   violet: {
@@ -184,6 +193,7 @@ const variants = {
     muted: "text-[#6d28d9]",
     ring: "ring-2 ring-[#7c3aed] ring-offset-2 ring-offset-base-100",
     storyRing: "bg-[#7c3aed]",
+    marker: "bg-[#7c3aed] text-white",
     icon: "text-[#7c3aed]",
   },
   pink: {
@@ -195,6 +205,7 @@ const variants = {
     muted: "text-[#be185d]",
     ring: "ring-2 ring-[#ec4899] ring-offset-2 ring-offset-base-100",
     storyRing: "bg-[#ec4899]",
+    marker: "bg-[#ec4899] text-white",
     icon: "text-[#ec4899]",
   },
   premium: {
@@ -206,6 +217,7 @@ const variants = {
     muted: "text-[#a8842c]",
     ring: "ring-2 ring-[#d4af37] ring-offset-2 ring-offset-base-100",
     storyRing: "bg-[#d4af37]",
+    marker: "bg-[#d4af37] text-[#2f2710]",
     icon: "text-[#d4af37]",
   },
 };

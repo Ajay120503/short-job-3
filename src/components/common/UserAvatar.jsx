@@ -51,12 +51,21 @@ const UserAvatar = ({
     : isOpen
       ? "ring-2 ring-success ring-offset-2 ring-offset-base-100"
       : "ring-2 ring-base-100";
+  const badgeSize = Math.max(size * 0.3, 13);
+  const badgeIconSize = Math.max(size * 0.15, 7);
+  const presenceSize = Math.max(size * 0.22, 9);
+  const inset = Math.max(size * 0.01, 0);
+  const titleParts = [
+    isAdmin ? "Platform admin" : "",
+    isOpen ? "Open to opportunities" : "",
+    showPresenceDot ? (isOnline ? "Online" : "Offline") : "",
+  ].filter(Boolean);
 
   return (
     <div
       className={`relative flex-shrink-0 ${className}`}
       style={{ width: size, height: size }}
-      title={isOpen ? `${name} is open to opportunities` : undefined}
+      title={titleParts.length ? `${name} · ${titleParts.join(" · ")}` : name}
     >
       <div
         className={`w-full h-full rounded-full bg-placeholder overflow-hidden shadow-sm ${
@@ -81,10 +90,10 @@ const UserAvatar = ({
             isOnline ? "bg-success" : "bg-base-300"
           }`}
           style={{
-            width: Math.max(size * 0.22, 9),
-            height: Math.max(size * 0.22, 9),
-            right: Math.max(size * 0.02, 1),
-            bottom: Math.max(size * 0.02, 1),
+            width: presenceSize,
+            height: presenceSize,
+            right: inset,
+            bottom: inset,
           }}
           title={isOnline ? "Online" : "Offline"}
           aria-label={isOnline ? "Online" : "Offline"}
@@ -92,44 +101,50 @@ const UserAvatar = ({
       )}
 
       {/* Admin badge */}
-      {/* {isAdmin && (
+      {isAdmin && (
         <span
-          className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center rounded-full bg-neutral text-neutral-content shadow-sm ring-2 ring-base-100"
+          className={`absolute inline-flex items-center justify-center rounded-full shadow-sm ring-2 ring-base-100 ${
+            specialStyle.marker || "bg-primary text-primary-content"
+          }`}
           style={{
-            width: Math.max(size * 0.32, 14),
-            height: Math.max(size * 0.32, 14),
+            width: badgeSize,
+            height: badgeSize,
+            right: -Math.max(size * 0.02, 1),
+            top: -Math.max(size * 0.02, 1),
           }}
           title="Platform admin"
         >
           <Shield
             strokeWidth={2.5}
             style={{
-              width: Math.max(size * 0.16, 7),
-              height: Math.max(size * 0.16, 7),
+              width: badgeIconSize,
+              height: badgeIconSize,
             }}
           />
         </span>
-      )} */}
+      )}
 
       {/* Open to Opportunities badge */}
-      {/* {isOpen && (
+      {isOpen && (
         <span
-          className="absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center rounded-full bg-success text-success-content shadow-sm ring-2 ring-base-100"
+          className="absolute inline-flex items-center justify-center rounded-full bg-success text-success-content shadow-sm ring-2 ring-base-100"
           style={{
-            width: Math.max(size * 0.34, 14),
-            height: Math.max(size * 0.34, 14),
+            width: badgeSize,
+            height: badgeSize,
+            left: -Math.max(size * 0.02, 1),
+            bottom: -Math.max(size * 0.02, 1),
           }}
           title="Open to opportunities"
         >
           <BriefcaseBusiness
             strokeWidth={2.5}
             style={{
-              width: Math.max(size * 0.17, 7),
-              height: Math.max(size * 0.17, 7),
+              width: badgeIconSize,
+              height: badgeIconSize,
             }}
           />
         </span>
-      )} */}
+      )}
     </div>
   );
 };
