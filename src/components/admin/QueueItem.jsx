@@ -87,6 +87,14 @@ const QueueItem = ({ item, type, onUpdate }) => {
     (typeof item.images?.[0] === "string" ? item.images[0] : "");
   const autoFlags = item.moderationMeta?.autoFlags || [];
   const autoScore = item.moderationMeta?.autoScore;
+  const autoDecision = item.moderationMeta?.autoDecision;
+  const autoSeverity = item.moderationMeta?.autoSeverity;
+  const scoreTone =
+    autoSeverity === "critical" || autoDecision === "reject" || autoScore >= 62
+      ? "badge-error badge-soft"
+      : autoSeverity === "medium" || autoDecision === "review" || autoScore >= 34
+        ? "badge-warning badge-soft"
+        : "badge-success badge-soft";
   const TypeIcon =
     type === "job" ? Briefcase : type === "story" ? Image : FileText;
 
@@ -156,19 +164,25 @@ const QueueItem = ({ item, type, onUpdate }) => {
           )}
           {autoScore !== undefined && (
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span
-                className={`badge badge-xs ${
-                  autoScore >= 58
-                    ? "badge-error badge-soft"
-                    : autoScore >= 34
-                      ? "badge-warning badge-soft"
-                      : "badge-success badge-soft"
-                }`}
-              >
+              <span className={`badge badge-xs ${scoreTone}`}>
                 Rule score {autoScore}
               </span>
+              {autoDecision && (
+                <span className={`badge badge-xs capitalize ${scoreTone}`}>
+                  {autoDecision}
+                </span>
+              )}
               {autoFlags.slice(0, 3).map((flag, i) => (
-                <span key={i} className="badge badge-xs badge-warning badge-soft">
+                <span
+                  key={i}
+                  className={`badge badge-xs ${
+                    flag?.severity === "critical"
+                      ? "badge-error badge-soft"
+                      : flag?.severity === "high"
+                        ? "badge-warning badge-soft"
+                        : "badge-neutral badge-soft"
+                  }`}
+                >
                   {formatFlag(flag)}
                 </span>
               ))}

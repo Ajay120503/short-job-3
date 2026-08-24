@@ -338,7 +338,7 @@ const Explore = () => {
                       to={`/profile/${u._id}`}
                       className="flex items-center gap-4 flex-1 min-w-0"
                     >
-                      <UserAvatar user={u} size={56} />
+                      <UserAvatar user={u} size={56} showBadges />
                       <div className="min-w-0 flex-1">
                         <p
                           className={`font-semibold text-sm truncate transition-colors ${
@@ -501,7 +501,7 @@ const Explore = () => {
                             : "bg-base-100 border border-base-300/50 hover:border-primary/20"
                         }`}
                       >
-                        <UserAvatar user={u} size={56} className="mx-auto" />
+                        <UserAvatar user={u} size={56} className="mx-auto" showBadges />
                         <p
                           className={`font-semibold text-sm mt-2.5 line-clamp-2 min-h-[40px] transition-colors ${isSpecialUser ? specialStyle.muted : "group-hover:text-primary"}`}
                         >
@@ -596,7 +596,7 @@ const Explore = () => {
                         to={`/profile/${u._id}`}
                         className="flex items-center gap-4 flex-1 min-w-0"
                       >
-                        <UserAvatar user={u} size={48} />
+                        <UserAvatar user={u} size={48} showBadges />
                         <div className="min-w-0 flex-1">
                           <p
                             className={`font-semibold text-sm truncate transition-colors ${isSpecialUser ? specialStyle.muted : "group-hover:text-primary"}`}

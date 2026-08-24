@@ -135,6 +135,14 @@ const AdminContentDetail = () => {
   const authorBadge = author?.badges?.[0]?.type || "student";
   const autoScore = content.moderationMeta?.autoScore;
   const autoFlags = content.moderationMeta?.autoFlags || [];
+  const autoDecision = content.moderationMeta?.autoDecision;
+  const autoSeverity = content.moderationMeta?.autoSeverity;
+  const scoreTone =
+    autoSeverity === "critical" || autoDecision === "reject" || autoScore >= 62
+      ? "badge-error badge-soft"
+      : autoSeverity === "medium" || autoDecision === "review" || autoScore >= 34
+        ? "badge-warning badge-soft"
+        : "badge-success badge-soft";
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -196,24 +204,29 @@ const AdminContentDetail = () => {
                       "Automatic safety checks were applied to this content."}
                   </p>
                 </div>
-                <span
-                  className={`badge badge-lg ${
-                    autoScore >= 58
-                      ? "badge-error badge-soft"
-                      : autoScore >= 34
-                        ? "badge-warning badge-soft"
-                        : "badge-success badge-soft"
-                  }`}
-                >
-                  Score {autoScore}/100
-                </span>
+                <div className="flex flex-wrap justify-end gap-2">
+                  <span className={`badge badge-lg ${scoreTone}`}>
+                    Score {autoScore}/100
+                  </span>
+                  {autoDecision && (
+                    <span className={`badge badge-lg capitalize ${scoreTone}`}>
+                      {autoDecision}
+                    </span>
+                  )}
+                </div>
               </div>
               {autoFlags.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {autoFlags.map((flag, i) => (
                     <span
                       key={i}
-                      className="badge badge-sm badge-warning badge-soft"
+                      className={`badge badge-sm ${
+                        flag?.severity === "critical"
+                          ? "badge-error badge-soft"
+                          : flag?.severity === "high"
+                            ? "badge-warning badge-soft"
+                            : "badge-neutral badge-soft"
+                      }`}
                       title={
                         typeof flag === "object"
                           ? JSON.stringify(flag)

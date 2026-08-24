@@ -269,12 +269,14 @@ const Profile = () => {
             user={profile}
             size={96}
             className="md:hidden"
+            showBadges
             ringClass={isSpecialProfile ? specialStyle.ring : "ring-2 ring-base-300/50"}
           />
           <UserAvatar
             user={profile}
             size={144}
             className="hidden md:block"
+            showBadges
             ringClass={isSpecialProfile ? specialStyle.ring : "ring-2 ring-base-300/50"}
           />
         </div>
@@ -915,7 +917,7 @@ const Profile = () => {
                       onClick={() => setShowFollowersModal(false)}
                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-colors"
                     >
-                      <UserAvatar user={follower} size={40} />
+                      <UserAvatar user={follower} size={40} showBadges />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">
                           {follower.name}
@@ -1014,7 +1016,7 @@ const Profile = () => {
                       onClick={() => setShowFollowingModal(false)}
                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-colors"
                     >
-                      <UserAvatar user={followed} size={40} />
+                      <UserAvatar user={followed} size={40} showBadges />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">
                           {followed.name}

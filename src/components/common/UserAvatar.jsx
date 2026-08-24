@@ -7,14 +7,15 @@ import {
 } from "../../utils/specialUserStyles";
 
 /**
- * Reusable avatar component that shows a refined opportunity indicator
- * when the user has "Open to Opportunities" enabled.
+ * Reusable avatar component. By default it only shows online/offline
+ * presence; profile-style badges are opt-in for profile and explore views.
  *
  * Props:
  * - user: { name, profilePic: { url }, openToOpportunities }
  * - size: pixel size of the avatar (default 40)
  * - className: additional classes for the wrapper
- * - showIndicator: whether to show the green "open to opportunities" indicator (default true)
+ * - showBadges: whether to show admin/opportunity avatar badges (default false)
+ * - showIndicator: whether to show the open-to-opportunities badge when badges are enabled (default true)
  * - showPresence: whether to show online/offline status dot (default true)
  * - ringClass: custom ring classes to override the default indicator ring
  */
@@ -22,14 +23,15 @@ const UserAvatar = ({
   user,
   size = 40,
   className = "",
+  showBadges = false,
   showIndicator = true,
   showPresence = true,
   ringClass = "",
 }) => {
   const socketContext = useSocket();
-  const isOpen = showIndicator && user?.openToOpportunities;
-  const isAdmin = isPlatformAdmin(user);
-  const isSpecial = canUseSpecialStyle(user);
+  const isOpen = showBadges && showIndicator && user?.openToOpportunities;
+  const isAdmin = showBadges && isPlatformAdmin(user);
+  const isSpecial = showBadges && canUseSpecialStyle(user);
   const specialStyle = getSpecialUserStyle(user);
   const userId = user?._id || user?.id;
   const canViewPresence = socketContext?.canViewPresence !== false;
