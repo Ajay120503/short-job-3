@@ -64,6 +64,14 @@ const BrandMark = ({ size = "md" }) => (
 const BlockedScreen = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const storedBlockedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("blockedAccount") || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const blockedUser = user?.isBlocked ? user : storedBlockedUser;
 
   const handleLogout = async () => {
     await logout();
@@ -137,14 +145,16 @@ const BlockedScreen = () => {
           <div className="px-2 py-2 border-t border-base-300 mt-auto">
             <div className="flex items-center gap-3 p-2 rounded-xl bg-base-200/60">
               <UserAvatar
-                user={user}
+                user={blockedUser}
                 size={36}
                 ringClass="ring-2 ring-base-200"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{user?.name}</p>
+                <p className="text-sm font-semibold truncate">
+                  {blockedUser?.name || "Suspended account"}
+                </p>
                 <p className="text-xs text-base-content/50 truncate capitalize">
-                  {getUserRoleLabel(user)}
+                  {getUserRoleLabel(blockedUser)}
                 </p>
               </div>
               <Lock className="w-4 h-4 text-error" />
@@ -186,30 +196,31 @@ const BlockedScreen = () => {
 
                     <p className="text-sm text-base-content/60 leading-relaxed">
                       Your ShortJob account is currently suspended
-                      {user?.blockedReason ? " for the reason below" : ""}. All
-                      posting, jobs, stories, messages, profile, and browsing
-                      features are locked until an admin restores access.
+                      {blockedUser?.blockedReason ? " for the reason below" : ""}.
+                      All posting, jobs, stories, messages, profile, and
+                      browsing features are locked until an admin restores
+                      access.
                     </p>
 
                     <div className="mt-5 grid gap-3">
-                      {user?.blockedReason && (
+                      {blockedUser?.blockedReason && (
                         <div className="rounded-lg border border-error/20 bg-error/5 p-4">
                           <p className="text-xs font-semibold text-error mb-1">
                             Suspension reason
                           </p>
                           <p className="text-sm text-base-content/75">
-                            {user.blockedReason}
+                            {blockedUser.blockedReason}
                           </p>
                         </div>
                       )}
 
-                      {user?.adminNotes && (
+                      {blockedUser?.adminNotes && (
                         <div className="rounded-lg border border-base-300 bg-base-200/50 p-4">
                           <p className="text-xs font-semibold text-base-content/50 mb-1">
                             Admin note
                           </p>
                           <p className="text-sm text-base-content/70">
-                            {user.adminNotes}
+                            {blockedUser.adminNotes}
                           </p>
                         </div>
                       )}

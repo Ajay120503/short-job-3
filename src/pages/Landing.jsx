@@ -1,310 +1,458 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  Users,
-  Briefcase,
   ArrowRight,
+  BadgeCheck,
+  Bell,
+  Briefcase,
   CheckCircle2,
-  Star,
-  Sparkles,
-  Search,
   MessageCircle,
-  TrendingUp,
+  ShieldCheck,
+  Users,
+  Zap,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
-import FontAwesomeGraduateIcon from "../components/common/FontAwesomeGraduateIcon";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0 },
+};
+
+const stagger = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const featureCards = [
+  {
+    icon: Users,
+    title: "Social Network",
+    desc: "Posts, comments, follows, stories, saved posts, and profile signals in one connected feed.",
+    tone: "text-primary bg-primary/10 border-primary/20",
+  },
+  {
+    icon: Briefcase,
+    title: "Opportunities",
+    desc: "Create jobs, apply quickly, review applicants, ask questions, and track application status.",
+    tone: "text-accent bg-accent/10 border-accent/20",
+  },
+  {
+    icon: MessageCircle,
+    title: "Realtime Chat",
+    desc: "Private conversations with typing indicators, read receipts, media messages, and clean confirmations.",
+    tone: "text-info bg-info/10 border-info/20",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Smart Moderation",
+    desc: "Rule-based fake detection runs beside manual review for posts, jobs, and stories.",
+    tone: "text-success bg-success/10 border-success/20",
+  },
+];
+
+const flowSteps = [
+  "Build a profile",
+  "Post or discover",
+  "Apply and chat",
+  "Grow with signals",
+];
+
+const stats = [
+  { value: "24h", label: "login audit retention" },
+  { value: "3", label: "content queues" },
+  { value: "Live", label: "chat and alerts" },
+];
 
 const Landing = () => {
-  const features = [
-    {
-      icon: Users,
-      title: "Connect & Network",
-      desc: "Build your professional network with job seekers, job creators, and organizations worldwide.",
-      color: "primary",
-      bg: "bg-primary/10",
-      textColor: "text-primary",
-    },
-    {
-      icon: Briefcase,
-      title: "Find Opportunities",
-      desc: "Discover teaching jobs, internships, and research roles posted by verified institutions.",
-      color: "accent",
-      bg: "bg-accent/10",
-      textColor: "text-accent",
-    },
-    {
-      icon: FontAwesomeGraduateIcon,
-      title: "Grow Your Career",
-      desc: "Share achievements, get noticed by recruiters, and advance your career.",
-      color: "secondary",
-      bg: "bg-secondary/10",
-      textColor: "text-secondary",
-    },
-  ];
-
-  const steps = [
-    {
-      step: "01",
-      icon: Search,
-      title: "Create Profile",
-      desc: "Sign up as a job seeker or creator and build your profile in minutes.",
-    },
-    {
-      step: "02",
-      icon: MessageCircle,
-      title: "Connect & Explore",
-      desc: "Follow peers, browse posts, search for opportunities, and grow your network.",
-    },
-    {
-      step: "03",
-      icon: TrendingUp,
-      title: "Apply & Grow",
-      desc: "Apply to jobs, chat with connections, and track your career growth.",
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-base-100 overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-base-100/95 backdrop-blur-md border-b border-base-300/50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+    <div className="min-h-screen bg-base-100 text-base-content overflow-x-hidden">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm">
-              <FontAwesomeIcon
-                icon={faUserGraduate}
-                className="w-5 h-5 text-white"
-              />
-            </div>
-            <span className="text-lg font-bold text-primary font-heading tracking-tight">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-content shadow-sm">
+              <FontAwesomeIcon icon={faUserGraduate} className="h-5 w-5" />
+            </span>
+            <span className="font-heading text-lg font-bold text-primary">
               ShortJob
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link to="/login" className="btn btn-ghost btn-sm font-medium">
+            <Link to="/login" className="btn btn-ghost btn-sm">
               Sign In
             </Link>
-            <Link to="/register" className="btn btn-primary btn-sm shadow-sm">
+            <Link to="/register" className="btn btn-primary btn-sm gap-2">
               Get Started
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-36 pb-24 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-primary/[0.02] -z-10" />
-
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-8">
-            <Star className="w-3.5 h-3.5 fill-current" />
-            Professional Social Network
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-extrabold font-heading text-neutral leading-[1.1] mb-6">
-            Where <span className="text-primary">Careers Begin</span>
-          </h1>
-          <p className="text-lg md:text-xl text-base-content/60 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Connect job seekers with job creaters, find teaching roles, and
-            build your professional network — all in one place.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/register"
-              className="btn btn-primary btn-lg gap-2.5 shadow-sm px-8 text-base"
+      <main>
+        <section className="relative isolate overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-36">
+          <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,#fbfefd_0%,#edf7f6_70%,#fbfefd_100%)]" />
+          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={stagger}
+              className="max-w-2xl"
             >
-              <FontAwesomeIcon icon={faUserGraduate} className="w-5 h-5" /> Join
-              as Job Seeker
-            </Link>
-            <Link
-              to="/register"
-              className="btn btn-outline btn-lg gap-2.5 px-8 text-base"
+              <motion.div
+                variants={fadeUp}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+              >
+                Professional community, jobs, chat, and moderation
+              </motion.div>
+
+              <motion.h1
+                variants={fadeUp}
+                className="font-heading text-4xl font-extrabold leading-tight text-neutral sm:text-5xl lg:text-6xl"
+              >
+                Where careers begin and trusted networks grow.
+              </motion.h1>
+
+              <motion.p
+                variants={fadeUp}
+                className="mt-5 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg"
+              >
+                ShortJob brings posts, stories, opportunities, applications,
+                realtime chat, and admin review into one focused platform.
+              </motion.p>
+
+              <motion.div
+                variants={fadeUp}
+                className="mt-8 flex flex-col gap-3 sm:flex-row"
+              >
+                <Link to="/register" className="btn btn-primary btn-lg gap-2">
+                  Create Account
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <Link to="/login" className="btn btn-outline btn-lg gap-2">
+                  Sign In
+                </Link>
+              </motion.div>
+
+              <motion.div
+                variants={fadeUp}
+                className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/55"
+              >
+                {[
+                  "Free to start",
+                  "Realtime alerts",
+                  "Verified trust tools",
+                ].map((item) => (
+                  <span key={item} className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    {item}
+                  </span>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 28, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.7, ease: "easeOut", delay: 0.08 }}
+              className="relative"
             >
-              <Users className="w-5 h-5" /> Join as Job Creater
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-8 mt-12 text-sm text-base-content/40">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-success" /> Free forever
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-success" /> No ads
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-success" /> Secure &
-              verified
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Bar */}
-      <section className="py-12 px-6 bg-primary">
-        <div className="max-w-5xl mx-auto grid grid-cols-3 gap-8 text-center">
-          {[
-            { value: "10,000+", label: "Job Seekers" },
-            { value: "5,000+", label: "Job creater" },
-            { value: "2,000+", label: "Job Posts" },
-          ].map((stat, i) => (
-            <div key={i} className="space-y-1">
-              <div className="text-3xl md:text-4xl font-extrabold font-heading text-white">
-                {stat.value}
-              </div>
-              <div className="text-white/60 text-sm font-medium">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full mb-4">
-              <Sparkles className="w-3 h-3" />
-              Simple 3-step process
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">
-              How It <span className="text-primary">Works</span>
-            </h2>
-            <p className="text-base-content/50 max-w-xl mx-auto">
-              Get started in three simple steps and unlock your
-              potential.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {steps.map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <div key={i} className="relative group">
-                  <div className="card bg-base-100 border border-base-300/50 p-8 text-center hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 h-full">
-                    <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/20 transition-colors">
-                      <Icon className="w-6 h-6 text-primary" />
+              <div className="rounded-lg border border-base-300 bg-base-100 p-3 shadow-xl shadow-primary/10">
+                <div className="rounded-lg border border-base-300 bg-base-200/55 p-3">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-error" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-warning" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-success" />
                     </div>
-                    <div className="text-xs font-semibold text-primary/50 uppercase tracking-wider mb-2">
-                      Step {s.step}
-                    </div>
-                    <h3 className="text-xl font-bold font-heading mb-3">
-                      {s.title}
-                    </h3>
-                    <p className="text-base-content/50 leading-relaxed text-sm">
-                      {s.desc}
-                    </p>
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                      Live workspace
+                    </span>
                   </div>
-                  {i < 2 && (
-                    <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-primary/20" />
-                  )}
+
+                  <div className="grid gap-3 md:grid-cols-[1fr_0.78fr]">
+                    <div className="space-y-3">
+                      <motion.div
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                        className="rounded-lg border border-primary/20 bg-base-100 p-4"
+                      >
+                        <div className="mb-3 flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-primary/15" />
+                          <div className="min-w-0 flex-1">
+                            <div className="h-3 w-28 rounded bg-neutral/15" />
+                            <div className="mt-2 h-2 w-20 rounded bg-primary/20" />
+                          </div>
+                          <BadgeCheck className="h-5 w-5 text-success" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-3 rounded bg-base-300" />
+                          <div className="h-3 w-4/5 rounded bg-base-300" />
+                        </div>
+                        <div className="mt-4 grid grid-cols-3 gap-2">
+                          <span className="h-16 rounded bg-primary/10" />
+                          <span className="h-16 rounded bg-accent/10" />
+                          <span className="h-16 rounded bg-success/10" />
+                        </div>
+                      </motion.div>
+
+                      <div className="rounded-lg border border-base-300 bg-base-100 p-4">
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-sm font-bold">
+                            Opportunity match
+                          </span>
+                          <span className="badge badge-success badge-soft badge-sm">
+                            86%
+                          </span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-base-300">
+                          <motion.div
+                            initial={{ width: "18%" }}
+                            animate={{ width: "86%" }}
+                            transition={{ duration: 1.2, delay: 0.4 }}
+                            className="h-full rounded-full bg-success"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <motion.div
+                        animate={{ y: [0, 5, 0] }}
+                        transition={{ duration: 4.5, repeat: Infinity }}
+                        className="rounded-lg border border-accent/20 bg-base-100 p-4"
+                      >
+                        <div className="mb-3 flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-accent" />
+                          <span className="text-sm font-bold">Jobs</span>
+                        </div>
+                        {[
+                          "Product Trainer",
+                          "Support Lead",
+                          "Content Creator",
+                        ].map((role) => (
+                          <div
+                            key={role}
+                            className="mb-2 rounded border border-base-300 bg-base-200/60 px-3 py-2 text-xs font-medium"
+                          >
+                            {role}
+                          </div>
+                        ))}
+                      </motion.div>
+
+                      <div className="rounded-lg border border-info/20 bg-base-100 p-4">
+                        <div className="mb-3 flex items-center gap-2">
+                          <Bell className="h-4 w-4 text-info" />
+                          <span className="text-sm font-bold">Moderation</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex items-center justify-between rounded bg-success/10 px-3 py-2 text-success">
+                            <span>Approved</span>
+                            <span>42</span>
+                          </div>
+                          <div className="flex items-center justify-between rounded bg-warning/10 px-3 py-2 text-warning">
+                            <span>Review</span>
+                            <span>8</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              );
-            })}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Features */}
-      <section className="py-24 px-6 bg-base-200/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">
-              Everything You <span className="text-primary">Need</span>
-            </h2>
-            <p className="text-base-content/50 max-w-xl mx-auto">
-              Powerful tools designed for a growing professional community.
-            </p>
-          </div>
+        <section className="border-y border-base-300 bg-primary px-4 py-8 text-primary-content sm:px-6">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={stagger}
+            className="mx-auto grid max-w-5xl gap-6 text-center sm:grid-cols-3"
+          >
+            {stats.map((stat) => (
+              <motion.div key={stat.label} variants={fadeUp}>
+                <div className="font-heading text-3xl font-extrabold">
+                  {stat.value}
+                </div>
+                <div className="mt-1 text-sm font-medium text-primary-content/70">
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </section>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {features.map((feat, i) => {
-              const Icon = feat.icon;
-              return (
-                <div
-                  key={i}
-                  className="card bg-base-100 border border-base-300/50 shadow-sm p-8 text-center hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+        <section className="px-4 py-20 sm:px-6 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.35 }}
+              variants={stagger}
+              className="mx-auto mb-12 max-w-2xl text-center"
+            >
+              <motion.div
+                variants={fadeUp}
+                className="mb-3 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                One connected flow
+              </motion.div>
+              <motion.h2
+                variants={fadeUp}
+                className="font-heading text-3xl font-bold sm:text-4xl"
+              >
+                From profile to opportunity without friction.
+              </motion.h2>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.25 }}
+              variants={stagger}
+              className="grid gap-3 md:grid-cols-4"
+            >
+              {flowSteps.map((step, index) => (
+                <motion.div
+                  key={step}
+                  variants={fadeUp}
+                  className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm"
                 >
-                  <div
-                    className={`w-16 h-16 ${feat.bg} rounded-2xl flex items-center justify-center mx-auto mb-5`}
-                  >
-                    <Icon className={`w-8 h-8 ${feat.textColor}`} />
+                  <div className="mb-4 flex h-9 w-9 items-center justify-center rounded bg-primary/10 text-sm font-bold text-primary">
+                    {index + 1}
                   </div>
-                  <h3 className="text-xl font-bold font-heading mb-3">
-                    {feat.title}
-                  </h3>
-                  <p className="text-base-content/50 leading-relaxed text-sm">
-                    {feat.desc}
-                  </p>
-                </div>
-              );
-            })}
+                  <h3 className="font-heading text-base font-bold">{step}</h3>
+                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-base-300">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${(index + 1) * 25}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.7, delay: index * 0.08 }}
+                      className="h-full rounded-full bg-primary"
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="card bg-primary border-0 p-10 md:p-14 shadow-lg">
-            <h2 className="text-3xl md:text-4xl font-bold font-heading text-white mb-4">
-              Ready to Begin?
+        <section className="bg-base-200/65 px-4 py-20 sm:px-6 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={stagger}
+              className="mb-12 max-w-2xl"
+            >
+              <motion.h2
+                variants={fadeUp}
+                className="font-heading text-3xl font-bold sm:text-4xl"
+              >
+                Built for active communities.
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 text-base-content/60">
+                Every core screen works together, from social discovery to admin
+                trust controls.
+              </motion.p>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={stagger}
+              className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+            >
+              {featureCards.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <motion.div
+                    key={feature.title}
+                    variants={fadeUp}
+                    className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md"
+                  >
+                    <div
+                      className={`mb-4 flex h-11 w-11 items-center justify-center rounded border ${feature.tone}`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-heading text-lg font-bold">
+                      {feature.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-base-content/60">
+                      {feature.desc}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </section>
+
+        <section className="px-4 py-20 sm:px-6 lg:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ duration: 0.55 }}
+            className="mx-auto max-w-4xl rounded-lg border border-primary/20 bg-primary p-8 text-center text-primary-content shadow-xl shadow-primary/15 sm:p-12"
+          >
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-white/12"></div>
+            <h2 className="font-heading text-3xl font-bold sm:text-4xl">
+              Start building your network today.
             </h2>
-            <p className="text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
-              Join thousands of job seekers and job creaters already building
-              their future on ShortJob.
+            <p className="mx-auto mt-3 max-w-xl text-primary-content/75">
+              Create your profile, share your work, discover opportunities, and
+              manage everything from one focused place.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 to="/register"
-                className="btn bg-white text-primary hover:bg-white/90 border-0 btn-lg gap-2.5 px-10 text-base shadow-sm"
+                className="btn border-0 bg-white text-primary hover:bg-white/90"
               >
-                Get Started Free <ArrowRight className="w-5 h-5" />
+                Get Started Free
+                <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/login"
-                className="btn btn-ghost text-white hover:bg-white/10 btn-lg gap-2.5 px-10 text-base"
+                className="btn btn-ghost text-white hover:bg-white/10"
               >
                 Sign In
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
+          </motion.div>
+        </section>
+      </main>
 
-      {/* Footer */}
-      <footer className="border-t border-base-300/50 py-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <FontAwesomeIcon
-                  icon={faUserGraduate}
-                  className="w-4 h-4 text-white"
-                />
-              </div>
-              <span className="font-bold font-heading text-base-content">
-                ShortJob
-              </span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-base-content/40">
-              <Link
-                to="/login"
-                className="hover:text-primary transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/register"
-                className="hover:text-primary transition-colors"
-              >
-                Register
-              </Link>
-            </div>
-            <p className="text-sm text-base-content/30">
-              © 2026 ShortJob. Where Careers Begin.
-            </p>
+      <footer className="border-t border-base-300 px-4 py-8 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-sm text-base-content/45 sm:flex-row">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded bg-primary text-primary-content">
+              <FontAwesomeIcon icon={faUserGraduate} className="h-4 w-4" />
+            </span>
+            <span className="font-heading font-bold text-base-content">
+              ShortJob
+            </span>
           </div>
+          <div className="flex items-center gap-5">
+            <Link to="/login" className="hover:text-primary">
+              Sign In
+            </Link>
+            <Link to="/register" className="hover:text-primary">
+              Register
+            </Link>
+          </div>
+          <p>© 2026 ShortJob. Where Careers Begin.</p>
         </div>
       </footer>
     </div>

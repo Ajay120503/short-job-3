@@ -2,9 +2,31 @@ import { create } from "zustand";
 import API from "../utils/axios";
 import { isAdminUser } from "../utils/badgeUtils";
 
+const BLOCKED_ACCOUNT_KEY = "blockedAccount";
+
+const readBlockedAccount = () => {
+  try {
+    return JSON.parse(localStorage.getItem(BLOCKED_ACCOUNT_KEY) || "null");
+  } catch {
+    return null;
+  }
+};
+
+const writeBlockedAccount = (payload = {}) => {
+  const blockedUser = {
+    ...(payload.user || {}),
+    isBlocked: true,
+    blockedReason: payload.reason || payload.user?.blockedReason || payload.message,
+  };
+  localStorage.setItem(BLOCKED_ACCOUNT_KEY, JSON.stringify(blockedUser));
+  return blockedUser;
+};
+
+const initialBlockedAccount = readBlockedAccount();
+
 const useAuthStore = create((set, get) => ({
-  user: null,
-  isAuthenticated: false,
+  user: initialBlockedAccount,
+  isAuthenticated: Boolean(initialBlockedAccount),
   isLoading: false,
   error: null,
 
@@ -47,6 +69,7 @@ const useAuthStore = create((set, get) => ({
       if (data.accessToken) {
         localStorage.setItem("accessToken", data.accessToken);
       }
+      localStorage.removeItem(BLOCKED_ACCOUNT_KEY);
       set({
         user: data.user,
         isAuthenticated: true,
@@ -84,6 +107,7 @@ const useAuthStore = create((set, get) => ({
       if (data.accessToken) {
         localStorage.setItem("accessToken", data.accessToken);
       }
+      localStorage.removeItem(BLOCKED_ACCOUNT_KEY);
       set({
         user: data.user,
         isAuthenticated: true,
@@ -110,6 +134,7 @@ const useAuthStore = create((set, get) => ({
       if (data.accessToken) {
         localStorage.setItem("accessToken", data.accessToken);
       }
+      localStorage.removeItem(BLOCKED_ACCOUNT_KEY);
       set({
         user: data.user,
         isAuthenticated: true,
@@ -135,6 +160,7 @@ const useAuthStore = create((set, get) => ({
       if (data.accessToken) {
         localStorage.setItem("accessToken", data.accessToken);
       }
+      localStorage.removeItem(BLOCKED_ACCOUNT_KEY);
       set({
         user: data.user,
         isAuthenticated: true,
@@ -157,13 +183,19 @@ const useAuthStore = create((set, get) => ({
       // Ignore logout errors
     }
     localStorage.removeItem("accessToken");
+    localStorage.removeItem(BLOCKED_ACCOUNT_KEY);
     set({ user: null, isAuthenticated: false });
   },
 
   // ── Force logout (triggered by admin block / socket event) ──
-  forceLogout: (reason) => {
+  forceLogout: (reason, userPayload = null) => {
     localStorage.removeItem("accessToken");
-    set({ user: null, isAuthenticated: false, error: reason || null });
+    const blockedUser = writeBlockedAccount({
+      user: userPayload || get().user,
+      reason,
+      message: reason,
+    });
+    set({ user: blockedUser, isAuthenticated: true, error: reason || null });
   },
 
   // ── Fetch current user ──
@@ -173,7 +205,17 @@ const useAuthStore = create((set, get) => ({
       set({ user: data.user, isAuthenticated: true });
       return data.user;
     } catch (error) {
+      if (
+        error.response?.status === 403 &&
+        error.response?.data?.error === "account_suspended"
+      ) {
+        localStorage.removeItem("accessToken");
+        const blockedUser = writeBlockedAccount(error.response.data);
+        set({ user: blockedUser, isAuthenticated: true });
+        return blockedUser;
+      }
       localStorage.removeItem("accessToken");
+      localStorage.removeItem(BLOCKED_ACCOUNT_KEY);
       set({ user: null, isAuthenticated: false });
       throw error;
     }
@@ -226,6 +268,7 @@ const useAuthStore = create((set, get) => ({
     try {
       await API.delete("/auth/me");
       localStorage.removeItem("accessToken");
+      localStorage.removeItem(BLOCKED_ACCOUNT_KEY);
       set({
         user: null,
         isAuthenticated: false,

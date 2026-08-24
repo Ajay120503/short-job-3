@@ -56,9 +56,10 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLoginRecords from "./pages/admin/AdminLoginRecords";
 
 function App() {
-  const { fetchMe, isAuthenticated } = useAuthStore();
+  const { fetchMe, isAuthenticated, user } = useAuthStore();
   const [appInitialized, setAppInitialized] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isBlocked = user?.isBlocked;
 
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
@@ -120,20 +121,50 @@ function App() {
             {/* Public routes (no layout) */}
             <Route
               path="/"
-              element={isAuthenticated ? <Navigate to="/feed" /> : <Landing />}
+              element={
+                isBlocked ? (
+                  <Navigate to="/blocked" />
+                ) : isAuthenticated ? (
+                  <Navigate to="/feed" />
+                ) : (
+                  <Landing />
+                )
+              }
             />
             <Route
               path="/login"
-              element={isAuthenticated ? <Navigate to="/feed" /> : <Login />}
+              element={
+                isBlocked ? (
+                  <Navigate to="/blocked" />
+                ) : isAuthenticated ? (
+                  <Navigate to="/feed" />
+                ) : (
+                  <Login />
+                )
+              }
             />
             <Route
               path="/register"
-              element={isAuthenticated ? <Navigate to="/feed" /> : <Register />}
+              element={
+                isBlocked ? (
+                  <Navigate to="/blocked" />
+                ) : isAuthenticated ? (
+                  <Navigate to="/feed" />
+                ) : (
+                  <Register />
+                )
+              }
             />
             <Route
               path="/otp-verify"
               element={
-                isAuthenticated ? <Navigate to="/feed" /> : <OtpScreen />
+                isBlocked ? (
+                  <Navigate to="/blocked" />
+                ) : isAuthenticated ? (
+                  <Navigate to="/feed" />
+                ) : (
+                  <OtpScreen />
+                )
               }
             />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />

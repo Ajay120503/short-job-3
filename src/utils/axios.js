@@ -10,6 +10,21 @@ const API = axios.create({
   },
 });
 
+const persistBlockedAccount = (payload = {}) => {
+  const blockedUser = {
+    ...(payload.user || {}),
+    isBlocked: true,
+    blockedReason: payload.reason || payload.user?.blockedReason || payload.message,
+  };
+  localStorage.setItem('blockedAccount', JSON.stringify(blockedUser));
+};
+
+const redirectToBlocked = () => {
+  if (window.location.pathname !== '/blocked') {
+    window.location.href = '/blocked';
+  }
+};
+
 // Request interceptor to add auth token
 API.interceptors.request.use(
   (config) => {
@@ -44,6 +59,15 @@ API.interceptors.response.use(
           return API(originalRequest);
         }
       } catch (refreshError) {
+        if (
+          refreshError.response?.status === 403 &&
+          refreshError.response?.data?.error === 'account_suspended'
+        ) {
+          persistBlockedAccount(refreshError.response.data);
+          localStorage.removeItem('accessToken');
+          redirectToBlocked();
+          return Promise.reject(refreshError);
+        }
         localStorage.removeItem('accessToken');
         window.location.href = '/login';
         return Promise.reject(refreshError);
@@ -52,8 +76,9 @@ API.interceptors.response.use(
 
     // Handle account suspension (blocked by admin)
     if (error.response?.status === 403 && error.response?.data?.error === 'account_suspended') {
+      persistBlockedAccount(error.response.data);
       localStorage.removeItem('accessToken');
-      window.location.href = '/blocked';
+      redirectToBlocked();
     }
 
     return Promise.reject(error);

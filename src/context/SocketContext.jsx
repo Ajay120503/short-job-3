@@ -18,10 +18,11 @@ export const SocketProvider = ({ children }) => {
   const socketRef = useRef(null);
   const { user, isAuthenticated, forceLogout } = useAuthStore();
   const canViewPresence = user?.showOnlineStatus !== false;
+  const isBlocked = user?.isBlocked;
 
   // Fetch initial counts + online users on auth change
   useEffect(() => {
-    if (!isAuthenticated || !user?._id) return;
+    if (!isAuthenticated || !user?._id || isBlocked) return;
 
     const fetchInitialData = async () => {
       try {
@@ -68,11 +69,11 @@ export const SocketProvider = ({ children }) => {
       }
     };
     fetchInitialData();
-  }, [canViewPresence, isAuthenticated, user?._id]);
+  }, [canViewPresence, isAuthenticated, isBlocked, user?._id]);
 
   // Socket connection
   useEffect(() => {
-    if (!isAuthenticated || !user?._id) return;
+    if (!isAuthenticated || !user?._id || isBlocked) return;
 
     const socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
@@ -112,7 +113,7 @@ export const SocketProvider = ({ children }) => {
         (payload && (payload.reason || payload.message)) ||
         "Your account has been suspended.";
       toast.error(reason, { duration: 8000 });
-      forceLogout(reason);
+      forceLogout(reason, payload?.user);
       window.location.href = "/blocked";
     });
 
@@ -204,7 +205,7 @@ export const SocketProvider = ({ children }) => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [canViewPresence, isAuthenticated, user?._id, forceLogout]);
+  }, [canViewPresence, isAuthenticated, isBlocked, user?._id, forceLogout]);
 
   const isUserOnline = (userId) => canViewPresence && onlineUsers.has(userId);
 
