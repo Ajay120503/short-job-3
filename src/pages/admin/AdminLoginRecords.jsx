@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, ShieldCheck, MapPin, Clock, Laptop } from "lucide-react";
+import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import { isAdminUser, getUserRoleLabel } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
 import UserAvatar from "../../components/common/UserAvatar";
 import UserSignalBadge from "../../components/common/UserSignalBadge";
 import LoginRecordDetail from "../../components/admin/LoginRecordDetail";
+import toast from "react-hot-toast";
 
 const formatDate = (value) =>
   value
@@ -53,6 +54,17 @@ const AdminLoginRecords = () => {
     };
     load();
   }, [filters, isAuthenticated, navigate, user]);
+
+  const handleDelete = async (recordId) => {
+    try {
+      await API.delete(`/admin/login-records/${recordId}`);
+      setRecords((prev) => prev.filter((record) => record._id !== recordId));
+      setExpanded((prev) => (prev === recordId ? null : prev));
+      toast.success("Login record deleted");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete record");
+    }
+  };
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto pb-20">
@@ -136,7 +148,7 @@ const AdminLoginRecords = () => {
                   onClick={() => setExpanded(isOpen ? null : record._id)}
                   className="w-full rounded-2xl border border-base-300 bg-base-100 p-3 text-left hover:border-primary/30 transition-colors"
                 >
-                  <div className="grid gap-3 md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr] md:items-center">
+                  <div className="grid gap-3 md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr_44px] md:items-center">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-base-200">
                       {record.photo?.url ? (
                         <img
@@ -177,6 +189,25 @@ const AdminLoginRecords = () => {
                       <Laptop className="w-3.5 h-3.5" />
                       {record.device?.browser || "Unknown"}
                     </p>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(record._id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDelete(record._id);
+                        }
+                      }}
+                      className="btn btn-ghost btn-sm btn-square text-error"
+                      title="Delete login record"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </span>
                   </div>
                 </button>
                 {isOpen && <LoginRecordDetail record={record} />}

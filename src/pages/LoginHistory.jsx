@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Camera, Clock, Laptop, MapPin, ShieldCheck } from "lucide-react";
+import { Camera, Clock, Laptop, MapPin, ShieldCheck, Trash2 } from "lucide-react";
 import API from "../utils/axios";
+import toast from "react-hot-toast";
 
 const formatDate = (value) =>
   value
@@ -25,6 +26,16 @@ const LoginHistory = () => {
     };
     load();
   }, []);
+
+  const handleDelete = async (recordId) => {
+    try {
+      await API.delete(`/users/me/login-history/${recordId}`);
+      setRecords((prev) => prev.filter((record) => record._id !== recordId));
+      toast.success("Login record deleted");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete record");
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-4 md:p-6 pb-20">
@@ -86,6 +97,14 @@ const LoginHistory = () => {
                   {record.device?.browser || "Unknown device"}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => handleDelete(record._id)}
+                className="btn btn-ghost btn-sm btn-square text-error shrink-0"
+                title="Delete login record"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
