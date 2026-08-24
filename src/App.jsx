@@ -41,6 +41,7 @@ import Chat from "./pages/Chat";
 import Notifications from "./pages/Notifications";
 import SavedPosts from "./pages/SavedPosts";
 import Settings from "./pages/Settings";
+import LoginHistory from "./pages/LoginHistory";
 import CreateJob from "./pages/CreateJob";
 import EditJob from "./pages/EditJob";
 import PostDetail from "./pages/PostDetail";
@@ -52,6 +53,7 @@ import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import AdminQueue from "./pages/admin/AdminQueue";
 import AdminContentDetail from "./pages/admin/AdminContentDetail";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminLoginRecords from "./pages/admin/AdminLoginRecords";
 
 function App() {
   const { fetchMe, isAuthenticated } = useAuthStore();
@@ -185,6 +187,10 @@ function App() {
                           />
                           <Route path="/saved" element={<SavedPosts />} />
                           <Route path="/settings" element={<Settings />} />
+                          <Route
+                            path="/settings/login-history"
+                            element={<LoginHistory />}
+                          />
                           <Route path="/post/:id" element={<PostDetail />} />
                           <Route path="/post/:id/edit" element={<EditPost />} />
 
@@ -203,6 +209,10 @@ function App() {
                           <Route
                             path="/admin/settings"
                             element={<AdminSettings />}
+                          />
+                          <Route
+                            path="/admin/login-records"
+                            element={<AdminLoginRecords />}
                           />
 
                           <Route path="*" element={<NotFound />} />

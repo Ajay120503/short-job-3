@@ -28,6 +28,7 @@ const AdminSettings = () => {
     autoApprove: false,
     autoBlockThreshold: 3,
     emailNotifications: true,
+    loginAuditEnabled: false,
     moderationEnabled: true,
     autoModerationEnabled: false,
     manualReviewWindowMinutes: 1440,
@@ -94,10 +95,31 @@ const AdminSettings = () => {
     }));
   };
 
+  const handleImmediateChange = async (key, value) => {
+    const nextSettings = { ...settings, [key]: value };
+    setSettings(nextSettings);
+    setSaving(true);
+    try {
+      const { data } = await API.put("/admin/settings", nextSettings);
+      if (data.settings) {
+        setSettings(data.settings);
+      }
+      toast.success("Setting updated");
+    } catch (err) {
+      setSettings(settings);
+      toast.error(err.response?.data?.message || "Failed to save setting");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await API.put("/admin/settings", settings);
+      const { data } = await API.put("/admin/settings", settings);
+      if (data.settings) {
+        setSettings(data.settings);
+      }
       toast.success("Settings saved successfully!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save settings");
@@ -172,6 +194,24 @@ const AdminSettings = () => {
       </div>
 
       <div className="space-y-5">
+        <div className="card bg-base-100 shadow-sm border border-base-300/50">
+          <div className="card-body">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+              Login Security
+            </h2>
+            <SettingToggle
+              icon={ShieldCheck}
+              title="Require Location + Photo Capture at Login"
+              description="When enabled, every user must allow location and camera access to sign in. No exceptions, no skip."
+              checked={settings.loginAuditEnabled}
+              onClick={() =>
+                handleImmediateChange("loginAuditEnabled", !settings.loginAuditEnabled)
+              }
+            />
+          </div>
+        </div>
+
         <div className="card bg-base-100 shadow-sm border border-base-300/50">
           <div className="card-body">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">

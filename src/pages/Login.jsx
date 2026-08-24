@@ -15,18 +15,26 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
+import LoginAuditModal from "../components/auth/LoginAuditModal";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading } = useAuthStore();
+  const [auditToken, setAuditToken] = useState("");
+  const [auditError, setAuditError] = useState("");
+  const { login, completeLoginAudit, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password);
+      const data = await login(email, password);
+      if (data.requiresLoginAudit) {
+        setAuditToken(data.tempToken);
+        setAuditError("");
+        return;
+      }
       toast.success("Welcome back!");
       navigate("/feed");
     } catch {
@@ -34,8 +42,38 @@ const Login = () => {
     }
   };
 
+  const handleAuditCapture = async ({ photo, lat, lng, accuracy }) => {
+    setAuditError("");
+    try {
+      const formData = new FormData();
+      formData.append("photo", photo);
+      formData.append("lat", lat);
+      formData.append("lng", lng);
+      formData.append("accuracy", accuracy);
+      await completeLoginAudit(auditToken, formData);
+      toast.success("Welcome back!");
+      navigate("/feed");
+    } catch (err) {
+      setAuditError(
+        err.response?.data?.message ||
+          "Location and camera access are required to sign in while this security feature is enabled. Please allow both and try again.",
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-base-100 flex">
+      <LoginAuditModal
+        isOpen={Boolean(auditToken)}
+        loading={isLoading}
+        error={auditError}
+        onCapture={handleAuditCapture}
+        onError={(message) => setAuditError(message)}
+        onCancel={() => {
+          setAuditToken("");
+          setAuditError("");
+        }}
+      />
       {/* Left Brand Panel — hidden on mobile */}
       <div className="hidden lg:flex w-1/2 bg-primary relative flex-col items-center justify-center p-12">
         {/* Background subtle pattern */}

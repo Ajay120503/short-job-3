@@ -103,6 +103,10 @@ const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const { data } = await API.post("/auth/login", { email, password });
+      if (data.requiresLoginAudit) {
+        set({ isLoading: false });
+        return data;
+      }
       if (data.accessToken) {
         localStorage.setItem("accessToken", data.accessToken);
       }
@@ -114,6 +118,32 @@ const useAuthStore = create((set, get) => ({
       return data;
     } catch (error) {
       const message = error.response?.data?.message || "Login failed";
+      set({ error: message, isLoading: false });
+      throw error;
+    }
+  },
+
+  completeLoginAudit: async (tempToken, formData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await API.post("/auth/login/complete-audit", formData, {
+        headers: {
+          Authorization: `Bearer ${tempToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (data.accessToken) {
+        localStorage.setItem("accessToken", data.accessToken);
+      }
+      set({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      return data;
+    } catch (error) {
+      const message =
+        error.response?.data?.message || "Security verification failed";
       set({ error: message, isLoading: false });
       throw error;
     }

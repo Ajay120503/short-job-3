@@ -12,6 +12,7 @@ import {
   Bell,
   MessageCircle,
   Shield,
+  ShieldCheck,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
@@ -50,7 +51,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
     },
     { to: "/settings", icon: Settings, label: "Settings" },
     ...(isAdmin
-      ? [{ to: "/admin", icon: Shield, label: "Admin Dashboard" }]
+      ? [
+          { to: "/admin", icon: Shield, label: "Admin Dashboard" },
+          { to: "/admin/login-records", icon: ShieldCheck, label: "Login Records" },
+        ]
       : []),
   ];
 

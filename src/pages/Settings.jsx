@@ -6,8 +6,10 @@ import {
   CircleOff,
   Eye,
   EyeOff,
+  History,
   Palette,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import ConfirmModal from "../components/common/ConfirmModal";
 import UserAvatar from "../components/common/UserAvatar";
@@ -118,6 +120,25 @@ const Settings = () => {
               {getUserRoleLabel(user)}
             </span>
           </div>
+        </div>
+      </div>
+
+      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <History className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Login History</h3>
+              <p className="text-xs text-base-content/50 mt-1 max-w-md">
+                Review your own security verification records when login audit is enabled.
+              </p>
+            </div>
+          </div>
+          <Link to="/settings/login-history" className="btn btn-outline btn-sm">
+            View History
+          </Link>
         </div>
       </div>
 
