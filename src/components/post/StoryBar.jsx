@@ -114,7 +114,11 @@ const StoryBar = ({ onAddStory }) => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <UserAvatar user={group.author} size={60} />
+                    <UserAvatar
+                      user={group.author}
+                      size={60}
+                      showPresence={false}
+                    />
                   )}
                 </div>
                 {(hasPending || hasRejected) && (

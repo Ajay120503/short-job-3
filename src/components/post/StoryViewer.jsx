@@ -102,7 +102,7 @@ const StoryViewer = ({ group, onClose, onViewed }) => {
 
       {/* Author info */}
       <div className="absolute top-8 left-4 flex items-center gap-2 z-10">
-        <UserAvatar user={group.author} size={32} />
+        <UserAvatar user={group.author} size={32} showPresence={false} />
         <div>
           <div className="flex items-center gap-2">
             <p className="text-white text-sm font-medium">
