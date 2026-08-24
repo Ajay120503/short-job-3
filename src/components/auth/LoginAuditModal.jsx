@@ -37,14 +37,15 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
 
         <div className="mt-5 rounded-2xl border border-base-300 bg-base-200/50 p-4 space-y-3">
           <div className="flex items-start gap-3">
-            <LocateFixed className="w-4 h-4 text-primary mt-0.5" />
-            <p className="text-xs text-base-content/60">
+            <LocateFixed className="w-4 h-4 min-w-4 shrink-0 text-primary mt-0.5" />
+            <p className="text-xs text-base-content/60 leading-relaxed">
               Browser location permission is required for this sign-in.
             </p>
           </div>
+
           <div className="flex items-start gap-3">
-            <Camera className="w-4 h-4 text-primary mt-0.5" />
-            <p className="text-xs text-base-content/60">
+            <Camera className="w-4 h-4 min-w-4 shrink-0 text-primary mt-0.5" />
+            <p className="text-xs text-base-content/60 leading-relaxed">
               Camera permission is required for one photo frame only. The camera
               stream stops immediately after capture.
             </p>
