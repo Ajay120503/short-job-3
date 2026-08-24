@@ -21,7 +21,7 @@ import {
 import toast from "react-hot-toast";
 import useAuthStore from "../../store/authStore";
 import API from "../../utils/axios";
-import { getUserRoleLabel, isAdminUser } from "../../utils/badgeUtils";
+import { getUserRoleLabel, isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";
 import QueueItem from "../../components/admin/QueueItem";
 import UserRow from "../../components/admin/UserRow";
 
@@ -209,6 +209,7 @@ const AdminDashboard = () => {
     navigate("/feed");
     return null;
   }
+  const canManagePlatform = isSuperAdminUser(user);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
@@ -239,13 +240,15 @@ const AdminDashboard = () => {
               <RefreshCw className="w-4 h-4" />
               <span className="sm:hidden">Refresh</span>
             </button>
-            <Link
-              to="/admin/settings"
-              className="btn btn-outline btn-primary btn-sm gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Settings
-            </Link>
+            {canManagePlatform && (
+              <Link
+                to="/admin/settings"
+                className="btn btn-outline btn-primary btn-sm gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
+              </Link>
+            )}
           </div>
         </div>
 
@@ -327,7 +330,9 @@ const AdminDashboard = () => {
                   <div className="flex flex-col gap-2">
                     <Link to="/admin/queue" className="btn btn-outline btn-primary btn-sm justify-start">Review content</Link>
                     <Link to="/admin/users" className="btn btn-outline btn-sm justify-start">Manage users</Link>
-                    <Link to="/admin/settings" className="btn btn-ghost btn-sm justify-start">Open settings</Link>
+                    {canManagePlatform && (
+                      <Link to="/admin/settings" className="btn btn-ghost btn-sm justify-start">Open settings</Link>
+                    )}
                   </div>
                 </div>
               </div>

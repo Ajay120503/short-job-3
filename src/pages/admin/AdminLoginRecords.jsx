@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
-import { isAdminUser, getUserRoleLabel } from "../../utils/badgeUtils";
+import {
+  isAdminUser,
+  isSuperAdminUser,
+  getUserRoleLabel,
+} from "../../utils/badgeUtils";
 import API from "../../utils/axios";
 import UserAvatar from "../../components/common/UserAvatar";
 import UserSignalBadge from "../../components/common/UserSignalBadge";
@@ -32,6 +36,7 @@ const AdminLoginRecords = () => {
     to: "",
     userId: queryParams.get("userId") || "",
   });
+  const canDeleteRecords = isSuperAdminUser(user);
 
   useEffect(() => {
     if (!isAuthenticated || !isAdminUser(user)) {
@@ -189,25 +194,27 @@ const AdminLoginRecords = () => {
                       <Laptop className="w-3.5 h-3.5" />
                       {record.device?.browser || "Unknown"}
                     </p>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(record._id);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
+                    {canDeleteRecords && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(record._id);
-                        }
-                      }}
-                      className="btn btn-ghost btn-sm btn-square text-error"
-                      title="Delete login record"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </span>
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDelete(record._id);
+                          }
+                        }}
+                        className="btn btn-ghost btn-sm btn-square text-error"
+                        title="Delete login record"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </span>
+                    )}
                   </div>
                 </button>
                 {isOpen && <LoginRecordDetail record={record} />}

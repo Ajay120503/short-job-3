@@ -142,13 +142,10 @@ export const isInstitutionMember = (user) => {
  * Is this user an admin? (matches backend middleware check)
  */
 export const isAdminUser = (user) => {
-  return (
-    user?.isAdmin ||
-    userHasBadge(user, "top_contributor") ||
-    (user?.category === "school" &&
-      user?.verifiedStatus === "top_contributor")
-  );
+  return Boolean(user?.isAdmin || user?.isSuperAdmin);
 };
+
+export const isSuperAdminUser = (user) => Boolean(user?.isSuperAdmin);
 
 /**
  * Return array of active badge objects.

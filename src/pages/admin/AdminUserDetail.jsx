@@ -16,6 +16,7 @@ import {
 import useAuthStore from "../../store/authStore";
 import {
   isAdminUser,
+  isSuperAdminUser,
   getActiveBadges,
   getUserRoleLabel,
   TRUST_BADGES,
@@ -188,6 +189,10 @@ const AdminUserDetail = () => {
 
   const activeBadges = getActiveBadges(profile);
   const trustStatus = profile.verifiedStatus || "none";
+  const canManageUser =
+    isSuperAdminUser(currentUser) &&
+    currentUser?._id !== profile._id &&
+    !profile.isSuperAdmin;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -232,24 +237,26 @@ const AdminUserDetail = () => {
             </div>
 
             {/* Block / Unblock button */}
-            {profile.isBlocked ? (
-              <button
-                onClick={() => handleBlockAction("unblock")}
-                className="btn btn-success btn-sm gap-2"
-                disabled={actionLoading}
-              >
-                <Unlock className="w-4 h-4" />
-                Unblock User
-              </button>
-            ) : (
-              <button
-                onClick={() => handleBlockAction("block")}
-                className="btn btn-error btn-sm gap-2"
-                disabled={actionLoading}
-              >
-                <Ban className="w-4 h-4" />
-                Block User
-              </button>
+            {canManageUser && (
+              profile.isBlocked ? (
+                <button
+                  onClick={() => handleBlockAction("unblock")}
+                  className="btn btn-success btn-sm gap-2"
+                  disabled={actionLoading}
+                >
+                  <Unlock className="w-4 h-4" />
+                  Unblock User
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleBlockAction("block")}
+                  className="btn btn-error btn-sm gap-2"
+                  disabled={actionLoading}
+                >
+                  <Ban className="w-4 h-4" />
+                  Block User
+                </button>
+              )
             )}
           </div>
 
@@ -326,48 +333,52 @@ const AdminUserDetail = () => {
               {activeBadges.map((b) => (
                 <div key={b._id || b.type} className="flex items-center gap-1">
                   <BadgeChip badgeType={b.type} size="sm" />
-                  <button
-                    onClick={() => handleRevokeBadge(b.type)}
-                    className="btn btn-ghost btn-xs btn-circle text-base-content/40 hover:text-error"
-                    title={`Revoke ${b.type}`}
-                    disabled={actionLoading}
-                  >
-                    <History className="w-3 h-3" />
-                  </button>
+                  {canManageUser && (
+                    <button
+                      onClick={() => handleRevokeBadge(b.type)}
+                      className="btn btn-ghost btn-xs btn-circle text-base-content/40 hover:text-error"
+                      title={`Revoke ${b.type}`}
+                      disabled={actionLoading}
+                    >
+                      <History className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
           {/* Grant Badge */}
-          <div className="mt-6 flex items-end gap-3">
-            <div className="flex-1">
-              <label className="label pb-1">
-                <span className="label-text text-xs font-medium">
-                  Grant Trust Badge
-                </span>
-              </label>
-              <select
-                className="select select-bordered select-sm w-full"
-                value={selectedBadge}
-                onChange={(e) => setSelectedBadge(e.target.value)}
+          {canManageUser && (
+            <div className="mt-6 flex items-end gap-3">
+              <div className="flex-1">
+                <label className="label pb-1">
+                  <span className="label-text text-xs font-medium">
+                    Grant Trust Badge
+                  </span>
+                </label>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={selectedBadge}
+                  onChange={(e) => setSelectedBadge(e.target.value)}
+                >
+                  <option value="">Select a trust badge...</option>
+                  {TRUST_BADGES.map((badge) => (
+                    <option key={badge} value={badge}>
+                      {badgeConfig[badge]?.label || badge}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={handleGrantBadge}
+                disabled={!selectedBadge || actionLoading}
+                className="btn btn-primary btn-sm"
               >
-                <option value="">Select a trust badge...</option>
-                {TRUST_BADGES.map((badge) => (
-                  <option key={badge} value={badge}>
-                    {badgeConfig[badge]?.label || badge}
-                  </option>
-                ))}
-              </select>
+                Grant
+              </button>
             </div>
-            <button
-              onClick={handleGrantBadge}
-              disabled={!selectedBadge || actionLoading}
-              className="btn btn-primary btn-sm"
-            >
-              Grant
-            </button>
-          </div>
+          )}
 
           {/* Admin Notes */}
           <div className="mt-6">
@@ -391,18 +402,20 @@ const AdminUserDetail = () => {
           </div>
 
           {/* Danger Zone */}
-          <div className="mt-6 pt-4 border-t border-base-300/50">
-            <h3 className="font-semibold text-error text-sm mb-3">
-              Danger Zone
-            </h3>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="btn btn-error btn-sm gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete User
-            </button>
-          </div>
+          {canManageUser && (
+            <div className="mt-6 pt-4 border-t border-base-300/50">
+              <h3 className="font-semibold text-error text-sm mb-3">
+                Danger Zone
+              </h3>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="btn btn-error btn-sm gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete User
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

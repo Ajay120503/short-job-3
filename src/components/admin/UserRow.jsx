@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle, Ban, Unlock, Award, User } from "lucide-react";
 import BadgeChip from "../common/BadgeChip";
-import { getActiveBadges, getUserRoleLabel } from "../../utils/badgeUtils";
+import {
+  getActiveBadges,
+  getUserRoleLabel,
+  isSuperAdminUser,
+} from "../../utils/badgeUtils";
+import useAuthStore from "../../store/authStore";
 import API from "../../utils/axios";
 import toast from "react-hot-toast";
 
@@ -13,7 +18,12 @@ import toast from "react-hot-toast";
  * @param {function} onUpdate - Optional callback to refresh parent data after actions
  */
 const UserRow = ({ user, onUpdate }) => {
+  const { user: currentUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const canManageUsers =
+    isSuperAdminUser(currentUser) &&
+    currentUser?._id !== user._id &&
+    !user.isSuperAdmin;
 
   const handleBlock = async (action) => {
     setLoading(true);
@@ -115,33 +125,37 @@ const UserRow = ({ user, onUpdate }) => {
           >
             <User className="w-3 h-3" />
           </Link>
-          {user.isBlocked ? (
+          {canManageUsers && (
+            user.isBlocked ? (
+              <button
+                onClick={() => handleBlock("unblock")}
+                className="btn btn-ghost btn-xs btn-circle btn-success text-success"
+                title="Unblock user"
+                disabled={loading}
+              >
+                <Unlock className="w-3 h-3" />
+              </button>
+            ) : (
+              <button
+                onClick={() => handleBlock("block")}
+                className="btn btn-ghost btn-xs btn-circle btn-error text-error"
+                title="Block user"
+                disabled={loading}
+              >
+                <Ban className="w-3 h-3" />
+              </button>
+            )
+          )}
+          {canManageUsers && (
             <button
-              onClick={() => handleBlock("unblock")}
-              className="btn btn-ghost btn-xs btn-circle btn-success text-success"
-              title="Unblock user"
+              onClick={() => handleGrantBadge("verified_institution")}
+              className="btn btn-ghost btn-xs btn-circle"
+              title="Grant verified badge"
               disabled={loading}
             >
-              <Unlock className="w-3 h-3" />
-            </button>
-          ) : (
-            <button
-              onClick={() => handleBlock("block")}
-              className="btn btn-ghost btn-xs btn-circle btn-error text-error"
-              title="Block user"
-              disabled={loading}
-            >
-              <Ban className="w-3 h-3" />
+              <Award className="w-3 h-3" />
             </button>
           )}
-          <button
-            onClick={() => handleGrantBadge("verified_institution")}
-            className="btn btn-ghost btn-xs btn-circle"
-            title="Grant verified badge"
-            disabled={loading}
-          >
-            <Award className="w-3 h-3" />
-          </button>
         </div>
       </td>
     </tr>

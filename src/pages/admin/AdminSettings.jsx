@@ -17,7 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
-import { isAdminUser } from "../../utils/badgeUtils";
+import { isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
 import toast from "react-hot-toast";
 
@@ -66,6 +66,10 @@ const AdminSettings = () => {
   // Check admin access (after hooks)
   if (!isAuthenticated || !isAdminUser(currentUser)) {
     navigate("/feed");
+    return null;
+  }
+  if (!isSuperAdminUser(currentUser)) {
+    navigate("/admin");
     return null;
   }
 
