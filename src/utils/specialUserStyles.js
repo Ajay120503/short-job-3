@@ -4,7 +4,7 @@ import { userHasBadge } from "./badgeUtils";
 export const SPECIAL_STYLE_VARIANTS = [
   {
     value: "teal",
-    label: "Academic Teal",
+    label: "Signature Teal",
     swatch: "bg-primary",
   },
   {

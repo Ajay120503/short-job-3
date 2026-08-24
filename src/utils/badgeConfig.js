@@ -20,6 +20,7 @@ import {
   Globe,
   Library,
   UserCheck,
+  ShieldCheck,
   // ClipboardText,
   Sparkles,
   Dumbbell,
@@ -47,6 +48,7 @@ export const badgeIconMap = {
   Globe,
   Library,
   UserCheck,
+  ShieldCheck,
   // ClipboardText,
   Sparkles,
   Dumbbell,
@@ -55,33 +57,33 @@ export const badgeIconMap = {
 };
 
 export const badgeConfig = {
-  // ── Academic identity ──
+  // Legacy identity keys kept for existing users; labels are generalized.
   student: {
-    label: "Student",
+    label: "Member",
     bg: "#E0F5F4",
     text: "#0A5C60",
     icon: "GraduationCap",
   },
   teacher: {
-    label: "Teacher",
+    label: "Creator",
     bg: "#FFE4DE",
     text: "#B83F1D",
     icon: "BookOpen",
   },
   professor: {
-    label: "Professor",
+    label: "Expert",
     bg: "#FFE4DE",
     text: "#B83F1D",
     icon: "BookOpen",
   },
   principal: {
-    label: "Principal",
+    label: "Lead",
     bg: "#0D7377",
     text: "#FFFFFF",
     icon: "School",
   },
   hod: {
-    label: "HOD",
+    label: "Team Lead",
     bg: "#0A5C60",
     text: "#FFFFFF",
     icon: "Users",
@@ -93,38 +95,38 @@ export const badgeConfig = {
     icon: "FlaskConical",
   },
   phd_scholar: {
-    label: "PhD Scholar",
+    label: "Specialist",
     bg: "#E0F5F4",
     text: "#0A5C60",
     icon: "Microscope",
   },
   lecturer: {
-    label: "Lecturer",
+    label: "Presenter",
     bg: "#FFE4DE",
     text: "#B83F1D",
     icon: "BookOpen",
   },
-  // ── Institution type ──
+  // ── Organization type ──
   school_member: {
-    label: "School Member",
+    label: "Organization Member",
     bg: "#E0F5F4",
     text: "#0A5C60",
     icon: "Library",
   },
   college_member: {
-    label: "College Member",
+    label: "Network Member",
     bg: "#E0F5F4",
     text: "#0A5C60",
     icon: "School",
   },
   university_member: {
-    label: "University Member",
+    label: "Community Member",
     bg: "#E0F5F4",
     text: "#0A5C60",
     icon: "GraduationCap",
   },
   coaching_member: {
-    label: "Coaching Member",
+    label: "Program Member",
     bg: "#E0F5F4",
     text: "#0A5C60",
     icon: "ClipboardText",
@@ -178,6 +180,12 @@ export const badgeConfig = {
     bg: "#D1FAE5",
     text: "#065F46",
     icon: "Phone",
+  },
+  platform_owner: {
+    label: "Platform Owner",
+    bg: "#26332F",
+    text: "#FFFFFF",
+    icon: "ShieldCheck",
   },
 };
 

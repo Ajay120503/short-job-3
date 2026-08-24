@@ -12,6 +12,8 @@ import {
   Trash2,
   CheckCircle,
   History,
+  ShieldCheck,
+  ShieldOff,
 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import {
@@ -111,6 +113,20 @@ const AdminUserDetail = () => {
     }
   };
 
+  const handleAdminRole = async () => {
+    setActionLoading(true);
+    try {
+      const action = profile.isAdmin ? "remove-admin" : "make-admin";
+      const { data } = await API.put(`/admin/users/${id}/${action}`);
+      toast.success(data.message || (profile.isAdmin ? "Admin access removed" : "User promoted to admin"));
+      await fetchUser();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Admin role update failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDeleteUser = async () => {
     setActionLoading(true);
     try {
@@ -189,6 +205,9 @@ const AdminUserDetail = () => {
 
   const activeBadges = getActiveBadges(profile);
   const trustStatus = profile.verifiedStatus || "none";
+  const trustStatusLabel =
+    badgeConfig[trustStatus]?.label ||
+    trustStatus.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   const canManageUser =
     isSuperAdminUser(currentUser) &&
     currentUser?._id !== profile._id &&
@@ -229,34 +248,54 @@ const AdminUserDetail = () => {
                 )}
               </div>
               <div>
-                <h2 className="text-xl font-bold">{profile.name}</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-xl font-bold">{profile.name}</h2>
+                  {profile.isSuperAdmin ? (
+                    <span className="badge badge-primary badge-sm">Super Admin</span>
+                  ) : profile.isAdmin ? (
+                    <span className="badge badge-info badge-sm">Admin</span>
+                  ) : null}
+                </div>
                 <p className="text-sm text-base-content/50">
                   {getUserRoleLabel(profile)}
                 </p>
               </div>
             </div>
 
-            {/* Block / Unblock button */}
             {canManageUser && (
-              profile.isBlocked ? (
+              <div className="flex flex-wrap justify-end gap-2">
                 <button
-                  onClick={() => handleBlockAction("unblock")}
-                  className="btn btn-success btn-sm gap-2"
+                  onClick={handleAdminRole}
+                  className={`btn btn-sm gap-2 ${profile.isAdmin ? "btn-warning" : "btn-primary"}`}
                   disabled={actionLoading}
                 >
-                  <Unlock className="w-4 h-4" />
-                  Unblock User
+                  {profile.isAdmin ? (
+                    <ShieldOff className="w-4 h-4" />
+                  ) : (
+                    <ShieldCheck className="w-4 h-4" />
+                  )}
+                  {profile.isAdmin ? "Remove Admin" : "Make Admin"}
                 </button>
-              ) : (
-                <button
-                  onClick={() => handleBlockAction("block")}
-                  className="btn btn-error btn-sm gap-2"
-                  disabled={actionLoading}
-                >
-                  <Ban className="w-4 h-4" />
-                  Block User
-                </button>
-              )
+                {profile.isBlocked ? (
+                  <button
+                    onClick={() => handleBlockAction("unblock")}
+                    className="btn btn-success btn-sm gap-2"
+                    disabled={actionLoading}
+                  >
+                    <Unlock className="w-4 h-4" />
+                    Unblock User
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleBlockAction("block")}
+                    className="btn btn-error btn-sm gap-2"
+                    disabled={actionLoading}
+                  >
+                    <Ban className="w-4 h-4" />
+                    Block User
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
@@ -310,7 +349,7 @@ const AdminUserDetail = () => {
                     profile.isVerified ? "badge-success" : "badge-ghost"
                   }`}
                 >
-                  {trustStatus}
+                  {trustStatus === "none" ? "None" : trustStatusLabel}
                 </span>
               </div>
               {profile.isBlocked && (

@@ -12,11 +12,8 @@ import {
   Shield,
   BriefcaseBusiness,
   Flame,
-  GraduationCap,
-  BookOpen,
 } from "lucide-react";
 import API from "../utils/axios";
-import FontAwesomeGraduateIcon from "../components/common/FontAwesomeGraduateIcon";
 import { getUserRoleLabel } from "../utils/badgeUtils";
 import {
   getUserId,
@@ -43,9 +40,6 @@ const exploreFilters = [
     clientOnly: true,
   },
   { value: "admin", label: "Admins", icon: Shield, role: "admin" },
-  { value: "student", label: "Students", icon: FontAwesomeGraduateIcon, role: "student" },
-  { value: "teacher", label: "Teachers", icon: BookOpen, role: "teacher" },
-  { value: "researcher", label: "Researchers", icon: GraduationCap, role: "researcher" },
 ];
 
 const filterUsersByKey = (list, filterKey) => {

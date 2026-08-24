@@ -150,7 +150,7 @@ const OtpScreen = () => {
             ShortJob
           </h1>
           <p className="text-lg text-white/70 mb-10">
-            Where Academic Careers Begin
+            Where Careers Begin
           </p>
 
           <div className="space-y-4 text-left">

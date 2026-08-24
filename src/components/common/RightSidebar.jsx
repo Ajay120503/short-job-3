@@ -367,7 +367,7 @@ const RightSidebar = () => {
           </span>
         </div>
         <p className="text-[10px] text-base-content/30 text-center leading-relaxed">
-          Where Academic Careers Begin · © {new Date().getFullYear()}
+          Where Careers Begin · © {new Date().getFullYear()}
         </p>
       </div>
     </aside>

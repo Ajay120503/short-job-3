@@ -151,9 +151,9 @@ const AdminUsers = () => {
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
           <option value="">All Categories</option>
-          <option value="student">Student</option>
-          <option value="school">School</option>
-          <option value="college">College</option>
+          <option value="student">Members</option>
+          <option value="school">Organizations</option>
+          <option value="college">Networks</option>
         </select>
         <select
           className="select select-bordered select-sm w-32"

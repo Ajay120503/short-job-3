@@ -17,14 +17,14 @@ import API from "../utils/axios";
 import toast from "react-hot-toast";
 
 const ROLE_TYPES = [
-  { value: "teacher", label: "Teaching" },
-  { value: "professor", label: "Faculty" },
+  { value: "teacher", label: "Creator" },
+  { value: "professor", label: "Expert" },
   { value: "assistant", label: "Assistant" },
-  { value: "research", label: "Research" },
+  { value: "research", label: "Research / Analysis" },
   { value: "intern", label: "Internship" },
   { value: "volunteer", label: "Volunteer" },
-  { value: "hod", label: "Department Leadership" },
-  { value: "principal", label: "Institution Leadership" },
+  { value: "hod", label: "Team Leadership" },
+  { value: "principal", label: "Organization Leadership" },
   { value: "other", label: "Other" },
 ];
 
@@ -44,7 +44,7 @@ const EditJob = () => {
     title: "",
     description: "",
     institutionName: "",
-    roleType: "teacher",
+    roleType: "other",
     isPaid: false,
     currency: "INR",
     stipend: "",
@@ -69,7 +69,7 @@ const EditJob = () => {
           title: job.title || "",
           description: job.description || "",
           institutionName: job.institutionName || "",
-          roleType: job.roleType || "teacher",
+          roleType: job.roleType || "other",
           isPaid: job.isPaid || false,
           currency: job.currency || "INR",
           stipend: job.stipend || "",
@@ -232,7 +232,7 @@ const EditJob = () => {
                 type="text"
                 name="title"
                 className="input input-bordered w-full h-12 text-sm"
-                placeholder="e.g., Mathematics Teacher for Grade 10-12"
+                placeholder="e.g., Content Creator for training program"
                 value={form.title}
                 onChange={handleChange}
                 required

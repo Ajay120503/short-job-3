@@ -19,7 +19,7 @@ const Landing = () => {
     {
       icon: Users,
       title: "Connect & Network",
-      desc: "Build your academic network with job seekers, job creaters, and institutions worldwide.",
+      desc: "Build your professional network with job seekers, job creators, and organizations worldwide.",
       color: "primary",
       bg: "bg-primary/10",
       textColor: "text-primary",
@@ -35,7 +35,7 @@ const Landing = () => {
     {
       icon: FontAwesomeGraduateIcon,
       title: "Grow Your Career",
-      desc: "Share achievements, get noticed by recruiters, and advance your academic career.",
+      desc: "Share achievements, get noticed by recruiters, and advance your career.",
       color: "secondary",
       bg: "bg-secondary/10",
       textColor: "text-secondary",
@@ -47,7 +47,7 @@ const Landing = () => {
       step: "01",
       icon: Search,
       title: "Create Profile",
-      desc: "Sign up as a job seekers or job creaters and build your academic profile in minutes.",
+      desc: "Sign up as a job seeker or creator and build your profile in minutes.",
     },
     {
       step: "02",
@@ -97,15 +97,15 @@ const Landing = () => {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-8">
             <Star className="w-3.5 h-3.5 fill-current" />
-            Academic Social Network
+            Professional Social Network
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold font-heading text-neutral leading-[1.1] mb-6">
-            Where Academic <span className="text-primary">Careers Begin</span>
+            Where <span className="text-primary">Careers Begin</span>
           </h1>
           <p className="text-lg md:text-xl text-base-content/60 max-w-2xl mx-auto mb-10 leading-relaxed">
             Connect job seekers with job creaters, find teaching roles, and
-            build your academic network — all in one place.
+            build your professional network — all in one place.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -171,7 +171,7 @@ const Landing = () => {
               How It <span className="text-primary">Works</span>
             </h2>
             <p className="text-base-content/50 max-w-xl mx-auto">
-              Get started in three simple steps and unlock your academic
+              Get started in three simple steps and unlock your
               potential.
             </p>
           </div>
@@ -213,7 +213,7 @@ const Landing = () => {
               Everything You <span className="text-primary">Need</span>
             </h2>
             <p className="text-base-content/50 max-w-xl mx-auto">
-              Powerful tools designed for the academic community.
+              Powerful tools designed for a growing professional community.
             </p>
           </div>
 
@@ -252,7 +252,7 @@ const Landing = () => {
             </h2>
             <p className="text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
               Join thousands of job seekers and job creaters already building
-              their academic future on ShortJob.
+              their future on ShortJob.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
@@ -302,7 +302,7 @@ const Landing = () => {
               </Link>
             </div>
             <p className="text-sm text-base-content/30">
-              © 2026 ShortJob. Where Academic Careers Begin.
+              © 2026 ShortJob. Where Careers Begin.
             </p>
           </div>
         </div>

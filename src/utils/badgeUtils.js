@@ -4,9 +4,9 @@
  */
 import { badgeConfig } from "./badgeConfig";
 
-// Badges a user can self-select during profile completion
+// Badges a user can self-select during profile completion.
+// Keys are kept for existing data compatibility; labels are generalized in badgeConfig.
 export const SELF_BADGES = [
-  // Academic identity
   "student",
   "teacher",
   "professor",
@@ -15,7 +15,6 @@ export const SELF_BADGES = [
   "researcher",
   "phd_scholar",
   "lecturer",
-  // Institution type
   "school_member",
   "college_member",
   "university_member",
@@ -39,7 +38,7 @@ export const TRUST_BADGES = [
 // Self-selectable badge groups for the wizard grid
 export const BADGE_GROUPS = [
   {
-    label: "Academic Identity",
+    label: "Identity",
     badges: [
       "student",
       "teacher",
@@ -52,7 +51,7 @@ export const BADGE_GROUPS = [
     ],
   },
   {
-    label: "Institution Type",
+    label: "Organization Type",
     badges: [
       "school_member",
       "college_member",
@@ -66,7 +65,7 @@ export const BADGE_GROUPS = [
   },
 ];
 
-// Institution-member badges (can post jobs / notices / stories)
+// Legacy organization-role badges. Features are now open to all signed-in users.
 export const INSTITUTION_MEMBER_BADGES = [
   "teacher",
   "professor",
@@ -79,8 +78,8 @@ export const INSTITUTION_MEMBER_BADGES = [
   "coaching_member",
 ];
 
-// Academic identity badges — used for display "role" label
-const ACADEMIC_ID_BADGES = [
+// Identity badges — used for display label
+const IDENTITY_BADGES = [
   "student",
   "teacher",
   "professor",
@@ -116,9 +115,9 @@ export const hasAnyBadge = (user, badgeTypes) => {
 };
 
 /**
- * Is this user a student (by badge or legacy category)?
+ * Legacy compatibility helper for older flows.
  */
-export const isStudent = (user) => {
+export const isLegacyMember = (user) => {
   return userHasBadge(user, "student") || user?.category === "student";
 };
 
@@ -132,7 +131,6 @@ export const canCreateStories = (user) => Boolean(user);
 
 /**
  * Can this user post jobs / notices / stories?
- * (institution member or admin)
  */
 export const isInstitutionMember = (user) => {
   return Boolean(user);
@@ -169,18 +167,17 @@ export const getUserRoleLabel = (user) => {
   // Check badges first
   if (user.badges) {
     const active = user.badges.filter((b) => b.isActive !== false);
-    const academicBadge = active.find((b) =>
-      ACADEMIC_ID_BADGES.includes(b.type)
+    const identityBadge = active.find((b) =>
+      IDENTITY_BADGES.includes(b.type)
     );
-    if (academicBadge) {
-      const label = badgeConfig[academicBadge.type]?.label;
+    if (identityBadge) {
+      const label = badgeConfig[identityBadge.type]?.label;
       if (label) return label;
-      // Fallback: prettify the type string
-      return academicBadge.type
+      return identityBadge.type
         .replace(/_/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
     }
-    // If no academic badge, show the first active badge
+    // If no identity badge, show the first active badge
     if (active.length > 0) {
       const label = badgeConfig[active[0].type]?.label;
       if (label) return label;

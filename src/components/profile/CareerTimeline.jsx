@@ -34,7 +34,7 @@ const typeConfig = {
 
 const emptyEntry = { year: "", title: "", institution: "", type: "school" };
 
-const AcademicTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
+const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(timeline.length ? timeline : [emptyEntry]);
   const [saving, setSaving] = useState(false);
@@ -92,7 +92,7 @@ const AcademicTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
       });
       onUpdated?.(data.user?.timeline || cleaned, data.user);
       setEditing(false);
-      toast.success("Academic timeline updated");
+      toast.success("Career timeline updated");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update timeline");
     } finally {
@@ -106,7 +106,7 @@ const AcademicTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
       <>
         <div className="mt-4 p-4 bg-base-200/30 rounded-lg text-center">
           <p className="text-sm text-base-content/40">
-            No academic timeline entries yet.
+            No career timeline entries yet.
           </p>
           <button
             onClick={openEditor}
@@ -133,7 +133,7 @@ const AcademicTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
   return (
     <div className="mt-4 mb-4">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-        Academic Journey
+        Career Journey
         {isOwner && (
           <button
             onClick={openEditor}
@@ -201,10 +201,9 @@ const TimelineEditor = ({
     <div className="modal-box max-w-2xl">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="font-bold text-lg">Academic Timeline</h3>
+          <h3 className="font-bold text-lg">Career Timeline</h3>
           <p className="text-xs text-base-content/50">
-            Add education, work, and achievement milestones shown on your
-            profile.
+            Add background, work, and achievement milestones shown on your profile.
           </p>
         </div>
         <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
@@ -230,8 +229,8 @@ const TimelineEditor = ({
                 value={entry.type}
                 onChange={(e) => updateDraft(index, "type", e.target.value)}
               >
-                <option value="school">School</option>
-                <option value="college">College</option>
+                <option value="school">Foundation</option>
+                <option value="college">Advanced</option>
                 <option value="work">Work</option>
                 <option value="achievement">Achievement</option>
               </select>
@@ -245,7 +244,7 @@ const TimelineEditor = ({
             <div className="mt-2 flex gap-2">
               <input
                 className="input input-bordered input-sm flex-1"
-                placeholder="Institution or organization"
+                placeholder="Organization or place"
                 value={entry.institution}
                 onChange={(e) =>
                   updateDraft(index, "institution", e.target.value)
@@ -279,4 +278,4 @@ const TimelineEditor = ({
   </div>
 );
 
-export default AcademicTimeline;
+export default CareerTimeline;

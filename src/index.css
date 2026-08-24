@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* ShortJob Custom Theme — Warm Academic (Teal + Coral) */
+/* ShortJob Custom Theme — Warm Professional (Teal + Coral) */
 @plugin "daisyui/theme" {
   name: "ShortJob";
   default: true;

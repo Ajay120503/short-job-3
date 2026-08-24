@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle, Ban, Unlock, Award, User } from "lucide-react";
+import {
+  CheckCircle,
+  Ban,
+  Unlock,
+  Award,
+  User,
+  ShieldCheck,
+  ShieldOff,
+} from "lucide-react";
 import BadgeChip from "../common/BadgeChip";
 import {
   getActiveBadges,
@@ -51,6 +59,20 @@ const UserRow = ({ user, onUpdate }) => {
       onUpdate?.();
     } catch (err) {
       toast.error(err.response?.data?.message || "Grant badge failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdminRole = async () => {
+    setLoading(true);
+    try {
+      const action = user.isAdmin ? "remove-admin" : "make-admin";
+      const { data } = await API.put(`/admin/users/${user._id}/${action}`);
+      toast.success(data.message || (user.isAdmin ? "Admin access removed" : "User promoted to admin"));
+      onUpdate?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Admin role update failed");
     } finally {
       setLoading(false);
     }
@@ -110,6 +132,11 @@ const UserRow = ({ user, onUpdate }) => {
           ) : (
             <span className="badge badge-success badge-sm">Active</span>
           )}
+          {user.isSuperAdmin ? (
+            <span className="badge badge-primary badge-sm">Super Admin</span>
+          ) : user.isAdmin ? (
+            <span className="badge badge-info badge-sm">Admin</span>
+          ) : null}
           {user.isVerified && <CheckCircle className="w-4 h-4 text-success" />}
         </div>
       </td>
@@ -154,6 +181,22 @@ const UserRow = ({ user, onUpdate }) => {
               disabled={loading}
             >
               <Award className="w-3 h-3" />
+            </button>
+          )}
+          {canManageUsers && (
+            <button
+              onClick={handleAdminRole}
+              className={`btn btn-ghost btn-xs btn-circle ${
+                user.isAdmin ? "text-warning" : "text-primary"
+              }`}
+              title={user.isAdmin ? "Remove admin access" : "Make admin"}
+              disabled={loading}
+            >
+              {user.isAdmin ? (
+                <ShieldOff className="w-3 h-3" />
+              ) : (
+                <ShieldCheck className="w-3 h-3" />
+              )}
             </button>
           )}
         </div>

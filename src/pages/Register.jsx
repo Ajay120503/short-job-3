@@ -64,7 +64,7 @@ const Register = () => {
             ShortJob
           </h1>
           <p className="text-lg text-white/70 mb-10">
-            Where Academic Careers Begin
+            Where Careers Begin
           </p>
 
           <div className="space-y-4 text-left">
@@ -73,7 +73,7 @@ const Register = () => {
                 <Users className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm">
-                Connect with students & teachers worldwide
+                Connect with people and organizations worldwide
               </span>
             </div>
             <div className="flex items-center gap-3 text-white/80">
@@ -89,7 +89,7 @@ const Register = () => {
                 <Star className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm">
-                Build your academic career in one place
+                Build your career in one place
               </span>
             </div>
           </div>
@@ -114,7 +114,7 @@ const Register = () => {
               Create Account
             </h1>
             <p className="text-sm text-base-content/50">
-              Join ShortJob to start your academic journey
+              Join ShortJob to start your journey
             </p>
           </div>
 
@@ -124,7 +124,7 @@ const Register = () => {
               Create Account
             </h1>
             <p className="text-sm text-base-content/50">
-              Join ShortJob to start your academic journey
+              Join ShortJob to start your journey
             </p>
           </div>
 

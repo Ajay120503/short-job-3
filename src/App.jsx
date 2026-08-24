@@ -92,7 +92,7 @@ function App() {
           </div>
           <h1 className="text-3xl font-bold text-primary">ShortJob</h1>
           <p className="mt-2 text-base-content/60">
-            Where Academic Careers Begin
+            Where Careers Begin
           </p>
           <div className="mt-4 loading loading-spinner loading-lg text-primary"></div>
         </div>

@@ -63,7 +63,7 @@ const CreatePost = () => {
         <div>
           <h1 className="text-2xl font-bold font-heading">Create Post</h1>
           <p className="text-sm text-base-content/50 mt-0.5">
-            Share something with your academic community
+            Share something with your community
           </p>
         </div>
       </div>

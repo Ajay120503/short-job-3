@@ -17,6 +17,18 @@ const formatStipend = (stipend, currency, isPaid) => {
   return `₹${formatted}`;
 };
 
+const ROLE_TYPE_LABELS = {
+  teacher: "Creator",
+  professor: "Expert",
+  assistant: "Assistant",
+  research: "Research / Analysis",
+  intern: "Internship",
+  volunteer: "Volunteer",
+  hod: "Team Leadership",
+  principal: "Organization Leadership",
+  other: "Other",
+};
+
 const hasAppliedToJob = (job, userId) =>
   Boolean(
     userId &&
@@ -76,7 +88,7 @@ const Jobs = () => {
         <div>
           <h1 className="text-2xl font-bold font-heading">Job Board</h1>
           <p className="text-sm text-base-content/50 mt-0.5">
-            Find academic opportunities
+            Find relevant opportunities
           </p>
         </div>
         <div className="flex gap-2">
@@ -220,7 +232,7 @@ const Jobs = () => {
                             )}
                           </span>
                           <span className="badge badge-xs badge-soft badge-primary font-medium">
-                            {job.roleType}
+                            {ROLE_TYPE_LABELS[job.roleType] || job.roleType || "Opportunity"}
                           </span>
                           {job.postedBy?._id === user?._id &&
                             job.status &&

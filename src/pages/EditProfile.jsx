@@ -265,7 +265,7 @@ const EditProfile = () => {
                     className="input input-bordered w-full input-sm text-sm"
                     value={form.currentPosition}
                     onChange={handleChange}
-                    placeholder="e.g. Math Teacher"
+                    placeholder="e.g. Product Trainer"
                   />
                 </div>
                 <div className="form-control">
@@ -296,22 +296,22 @@ const EditProfile = () => {
                 rows={3}
                 value={form.previousWork}
                 onChange={handleChange}
-                placeholder="Previous roles, institutions, internships, or projects..."
+                placeholder="Previous roles, organizations, internships, or projects..."
               />
             </div>
           </div>
         </div>
 
-        {/* Education & Institution */}
+        {/* Background & Organization */}
         <div className="card bg-base-100 border border-base-300/50 p-4">
           <h3 className="font-semibold text-sm mb-3">
-            Education & Institution
+            Background & Organization
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="form-control">
               <label className="label py-0 pb-1">
                 <span className="label-text text-xs font-medium">
-                  Institution
+                  Organization
                 </span>
               </label>
               <input
@@ -325,7 +325,7 @@ const EditProfile = () => {
             <div className="form-control">
               <label className="label py-0 pb-1">
                 <span className="label-text text-xs font-medium">
-                  Education Level
+                  Background Level
                 </span>
               </label>
               <select

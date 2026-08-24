@@ -30,6 +30,6 @@ export const getIncompleteFields = (user) => {
   if (!user.resumeUrl) incomplete.push({ label: 'Upload Resume (+20%)', field: 'resume' });
   if (!Array.isArray(user.skills) || user.skills.length < 3) incomplete.push({ label: 'Add 3+ Skills (+15%)', field: 'skills' });
   if (!Array.isArray(user.qualifications) || user.qualifications.length < 1) incomplete.push({ label: 'Add Qualification (+10%)', field: 'qualifications' });
-  if (!user.educationLevel) incomplete.push({ label: 'Add Education Level (+10%)', field: 'educationLevel' });
+  if (!user.educationLevel) incomplete.push({ label: 'Add Background Level (+10%)', field: 'educationLevel' });
   return incomplete;
 };

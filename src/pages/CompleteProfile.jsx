@@ -9,8 +9,8 @@ import toast from "react-hot-toast";
 
 const steps = [
   { key: "details", label: "Your details" },
-  { key: "education", label: "Education & skills" },
-  { key: "institution", label: "Your institution" },
+  { key: "background", label: "Background & skills" },
+  { key: "organization", label: "Your organization" },
 ];
 
 /**
@@ -263,15 +263,15 @@ const CompleteProfile = () => {
     </div>
   );
 
-  // ── Step 2: Education & Skills ──
+  // ── Step 2: Background & Skills ──
   const renderEducationStep = () => (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold mb-4">Education & skills</h2>
+      <h2 className="text-lg font-bold mb-4">Background & skills</h2>
 
       <div className="form-control">
         <label className="label pb-1">
           <span className="label-text font-medium text-sm">
-            Education Level
+            Background Level
           </span>
         </label>
         <select
@@ -310,7 +310,7 @@ const CompleteProfile = () => {
         <input
           type="text"
           className="input input-bordered w-full input-sm"
-          placeholder="e.g. Python, Teaching, React"
+          placeholder="e.g. Python, Design, React"
           value={formData.skills}
           onChange={(e) => updateField("skills", e.target.value)}
         />
@@ -388,7 +388,7 @@ const CompleteProfile = () => {
               <input
                 type="text"
                 className="input input-bordered w-full input-sm"
-                placeholder="e.g. Assistant Teacher"
+                placeholder="e.g. Assistant Manager"
                 value={formData.currentPosition}
                 onChange={(e) => updateField("currentPosition", e.target.value)}
               />
@@ -419,7 +419,7 @@ const CompleteProfile = () => {
           <textarea
             rows={3}
             className="textarea textarea-bordered w-full text-sm"
-            placeholder="Previous roles, institutions, internships, or projects..."
+            placeholder="Previous roles, organizations, internships, or projects..."
             value={formData.previousWork}
             onChange={(e) => updateField("previousWork", e.target.value)}
           />
@@ -428,18 +428,18 @@ const CompleteProfile = () => {
     </div>
   );
 
-  // ── Step 3: Institution ──
+  // ── Step 3: Organization ──
   const renderInstitutionStep = () => (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold mb-2">Your institution (optional)</h2>
+      <h2 className="text-lg font-bold mb-2">Your organization (optional)</h2>
       <p className="text-sm text-base-content/60 mb-4">
-        This helps others identify your academic background.
+        This helps others understand your professional background.
       </p>
 
       <div className="form-control">
         <label className="label pb-1">
           <span className="label-text font-medium text-sm">
-            Institution Type
+            Organization Type
           </span>
         </label>
         <select
@@ -447,11 +447,11 @@ const CompleteProfile = () => {
           value={formData.institutionType}
           onChange={(e) => updateField("institutionType", e.target.value)}
         >
-          <option value="">Select institution type</option>
-          <option value="school">School</option>
-          <option value="college">College</option>
-          <option value="university">University</option>
-          <option value="coaching">Coaching Center</option>
+          <option value="">Select organization type</option>
+          <option value="school">Organization</option>
+          <option value="college">Network</option>
+          <option value="university">Community</option>
+          <option value="coaching">Program</option>
         </select>
       </div>
 

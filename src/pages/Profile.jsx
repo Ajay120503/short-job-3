@@ -25,7 +25,7 @@ import toast from "react-hot-toast";
 import ConfirmModal from "../components/common/ConfirmModal";
 import StrengthMeter from "../components/profile/StrengthMeter";
 import VerifiedBadge from "../components/common/VerifiedBadge";
-import AcademicTimeline from "../components/profile/AcademicTimeline";
+import CareerTimeline from "../components/profile/CareerTimeline";
 import EndorsementTag from "../components/profile/EndorsementTag";
 import UserAvatar from "../components/common/UserAvatar";
 import UserSignalBadge from "../components/common/UserSignalBadge";
@@ -464,8 +464,8 @@ const Profile = () => {
       {/* Strength Meter (own profile only) */}
       {isOwnProfile && <StrengthMeter user={profile} />}
 
-      {/* Academic Timeline */}
-      <AcademicTimeline
+      {/* Career Timeline */}
+      <CareerTimeline
         timeline={profile.timeline}
         isOwner={isOwnProfile}
         userId={profile._id}
