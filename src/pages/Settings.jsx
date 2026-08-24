@@ -12,6 +12,7 @@ import {
   getSpecialUserStyle,
   SPECIAL_STYLE_VARIANTS,
 } from "../utils/specialUserStyles";
+import { isPlatformAdmin } from "../utils/userSignals";
 
 const Settings = () => {
   const { user, logout, deleteAccount, isLoading, updateProfile, setUser } =
@@ -162,7 +163,9 @@ const Settings = () => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {SPECIAL_STYLE_VARIANTS.map((variant) => {
+            {SPECIAL_STYLE_VARIANTS.filter(
+              (v) => !v.adminOnly || isPlatformAdmin(user),
+            ).map((variant) => {
               const selected =
                 (user?.profileThemeVariant || "teal") === variant.value;
               return (

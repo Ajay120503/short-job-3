@@ -57,6 +57,12 @@ export const SPECIAL_STYLE_VARIANTS = [
     label: "Pink",
     swatch: "bg-[#ec4899]",
   },
+  {
+    value: "premium",
+    label: "Premium Gold",
+    swatch: "bg-[#d4af37]",
+    adminOnly: true,
+  },
 ];
 
 export const canUseSpecialStyle = (user) => {
@@ -191,10 +197,25 @@ const variants = {
     storyRing: "bg-[#ec4899]",
     icon: "text-[#ec4899]",
   },
+  premium: {
+    shell:
+      "bg-[#fdf9e7] text-base-content border-[#e6d68a] shadow-sm shadow-[#d4af37]/15",
+    shellHover: "hover:border-[#d4af37]/60 hover:shadow-[#d4af37]/25",
+    label: "bg-[#f5ecc9] text-[#8a6d1a] border-[#e6d68a]",
+    soft: "bg-[#f5ecc9] text-[#8a6d1a] border-[#e6d68a]",
+    muted: "text-[#a8842c]",
+    ring: "ring-2 ring-[#d4af37] ring-offset-2 ring-offset-base-100",
+    storyRing: "bg-[#d4af37]",
+    icon: "text-[#d4af37]",
+  },
 };
 
 export const getSpecialStyleVariant = (user) => {
   const requested = user?.profileThemeVariant;
+  // Premium Gold is admin-only — non-admins fall back to their regular variant
+  if (requested === "premium" && !isPlatformAdmin(user)) {
+    return "teal";
+  }
   if (canUseSpecialStyle(user) && variants[requested]) return requested;
   if (isPlatformAdmin(user)) return "indigo";
   return "teal";
