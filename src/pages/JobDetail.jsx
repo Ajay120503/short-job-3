@@ -20,7 +20,10 @@ import ReachStats from "../components/job/ReachStats";
 import JobQnA from "../components/job/JobQnA";
 import { canApplyToJobs } from "../utils/badgeUtils";
 import UserSignalBadge from "../components/common/UserSignalBadge";
-import { getUserSignal } from "../utils/userSignals";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../utils/specialUserStyles";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -117,8 +120,8 @@ const JobDetail = () => {
     );
   }
 
-  const posterSignal = getUserSignal(job.postedBy);
-  const isAdminJob = posterSignal?.key === "admin";
+  const isSpecialJob = canUseSpecialStyle(job.postedBy);
+  const specialStyle = getSpecialUserStyle(job.postedBy);
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
@@ -133,8 +136,8 @@ const JobDetail = () => {
 
       <div
         className={`card shadow-sm border p-6 ${
-          isAdminJob
-            ? "bg-neutral/5 border-neutral/30"
+          isSpecialJob
+            ? specialStyle.shell
             : "bg-base-100 border-base-300/50"
         }`}
       >
@@ -151,14 +154,22 @@ const JobDetail = () => {
 
         {/* Title & Institution */}
         <div className="flex items-start gap-4 mb-5">
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Briefcase className="w-7 h-7 text-primary" />
+          <div
+            className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${
+              isSpecialJob ? specialStyle.soft : "bg-primary/10"
+            }`}
+          >
+            <Briefcase className={`w-7 h-7 ${isSpecialJob ? specialStyle.icon : "text-primary"}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold font-heading mb-1">
+            <h1 className={`text-2xl font-bold font-heading mb-1 ${isSpecialJob ? specialStyle.muted : ""}`}>
               {job.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 text-sm text-base-content/50">
+            <div
+              className={`flex flex-wrap items-center gap-2 text-sm ${
+                isSpecialJob ? "text-base-content/60" : "text-base-content/50"
+              }`}
+            >
               <Building2 className="w-4 h-4" />
               <span>{job.institutionName || "Unknown Institution"}</span>
               <UserSignalBadge user={job.postedBy} />

@@ -18,6 +18,10 @@ import LinkedJobCard from "../components/job/LinkedJobCard";
 import ConfirmModal from "../components/common/ConfirmModal";
 import UserAvatar from "../components/common/UserAvatar";
 import UserSignalBadge from "../components/common/UserSignalBadge";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../utils/specialUserStyles";
 import toast from "react-hot-toast";
 
 const CommentItem = ({
@@ -317,11 +321,17 @@ const Feed = () => {
             const isSaved =
               post.saves?.includes(user?._id) ||
               post.saves?.some((s) => s === user?._id || s?._id === user?._id);
+            const isSpecialPost = canUseSpecialStyle(post.author);
+            const specialStyle = getSpecialUserStyle(post.author);
 
             return (
               <div
                 key={post._id}
-                className="card bg-base-100 border border-base-300/50 shadow-sm hover:shadow-md transition-shadow"
+                className={`card border shadow-sm hover:shadow-md transition-shadow ${
+                  isSpecialPost
+                    ? `${specialStyle.shell} ${specialStyle.shellHover}`
+                    : "bg-base-100 border-base-300/50"
+                }`}
               >
                 <div className="card-body p-5">
                   {/* Author Row */}
@@ -332,10 +342,18 @@ const Feed = () => {
                     >
                       <UserAvatar user={post.author} size={44} />
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate">
+                        <p
+                          className={`font-semibold text-sm truncate ${
+                            isSpecialPost ? specialStyle.muted : ""
+                          }`}
+                        >
                           {post.author?.name}
                         </p>
-                        <div className="flex items-center gap-2 text-xs text-base-content/40">
+                        <div
+                          className={`flex items-center gap-2 text-xs ${
+                            isSpecialPost ? "text-base-content/55" : "text-base-content/40"
+                          }`}
+                        >
                           <span className="capitalize line-clamp-1 max-w-23">
                             {getUserRoleLabel(post.author)}
                           </span>

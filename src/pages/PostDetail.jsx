@@ -18,6 +18,10 @@ import ConfirmModal from "../components/common/ConfirmModal";
 import LinkedJobCard from "../components/job/LinkedJobCard";
 import UserAvatar from "../components/common/UserAvatar";
 import UserSignalBadge from "../components/common/UserSignalBadge";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../utils/specialUserStyles";
 import toast from "react-hot-toast";
 
 const PostDetail = () => {
@@ -143,6 +147,8 @@ const PostDetail = () => {
   const isOwner = user && postAuthor._id === user._id;
   const isLiked = post.likes?.includes(user?._id) || post.isLiked;
   const isSaved = post.saves?.includes(user?._id) || post.isSaved;
+  const isSpecialPost = canUseSpecialStyle(postAuthor);
+  const specialStyle = getSpecialUserStyle(postAuthor);
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
@@ -156,7 +162,13 @@ const PostDetail = () => {
       </button>
 
       {/* Post Card */}
-      <div className="card bg-base-100 border border-base-300/50 shadow-sm p-5 mb-6">
+      <div
+        className={`card border shadow-sm p-5 mb-6 ${
+          isSpecialPost
+            ? specialStyle.shell
+            : "bg-base-100 border-base-300/50"
+        }`}
+      >
         {/* Author */}
         <div className="flex items-center justify-between mb-4">
           <div
@@ -165,8 +177,14 @@ const PostDetail = () => {
           >
             <UserAvatar user={postAuthor} size={40} />
             <div>
-              <p className="font-semibold text-sm">{postAuthor.name}</p>
-              <div className="flex flex-wrap items-center gap-1.5 text-xs text-base-content/50">
+              <p className={`font-semibold text-sm ${isSpecialPost ? specialStyle.muted : ""}`}>
+                {postAuthor.name}
+              </p>
+              <div
+                className={`flex flex-wrap items-center gap-1.5 text-xs ${
+                  isSpecialPost ? "text-base-content/60" : "text-base-content/50"
+                }`}
+              >
                 <span>{getUserRoleLabel(postAuthor)}</span>
                 <UserSignalBadge user={postAuthor} />
                 {postAuthor.institutionName && (
@@ -207,7 +225,11 @@ const PostDetail = () => {
 
         {/* Content */}
         <div className="mb-4">
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+          <p
+            className={`text-sm whitespace-pre-wrap leading-relaxed ${
+              isSpecialPost ? "text-base-content/80" : ""
+            }`}
+          >
             {post.text}
           </p>
         </div>

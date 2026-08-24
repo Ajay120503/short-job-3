@@ -9,16 +9,17 @@ import {
   ArrowRight,
 } from "lucide-react";
 import UserSignalBadge from "../common/UserSignalBadge";
-import { getUserSignal } from "../../utils/userSignals";
-import { getSpecialUserStyle } from "../../utils/specialUserStyles";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../../utils/specialUserStyles";
 
 const LinkedJobCard = ({ job }) => {
   if (!job) return null;
 
   const deadlinePassed = job.deadline && new Date(job.deadline) < new Date();
   const StipendIcon = job.currency === "USD" ? DollarSign : IndianRupee;
-  const posterSignal = getUserSignal(job.postedBy);
-  const isSpecialJob = Boolean(posterSignal);
+  const isSpecialJob = canUseSpecialStyle(job.postedBy);
   const specialStyle = getSpecialUserStyle(job.postedBy);
 
   const formatStipend = () => {
@@ -41,7 +42,7 @@ const LinkedJobCard = ({ job }) => {
       <div
         className={`card border transition-colors overflow-hidden ${
           isSpecialJob
-            ? `${specialStyle.shell} ${specialStyle.shellHover}`
+            ? "bg-base-100/70 border-base-content/10 hover:border-base-content/20"
             : "bg-base-200/70 border-base-300 hover:border-primary/50"
         }`}
       >
@@ -49,7 +50,11 @@ const LinkedJobCard = ({ job }) => {
           {/* Header Row */}
           <div className="flex items-start gap-3">
             {/* Logo / Icon */}
-            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div
+              className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                isSpecialJob ? specialStyle.soft : "bg-primary/10"
+              }`}
+            >
               {job.institutionLogo?.url ? (
                 <img
                   src={job.institutionLogo.url}
@@ -57,13 +62,17 @@ const LinkedJobCard = ({ job }) => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Briefcase className="w-5 h-5 text-primary" />
+                <Briefcase className={`w-5 h-5 ${isSpecialJob ? specialStyle.icon : "text-primary"}`} />
               )}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="badge badge-xs line-clamp-1 badge-primary badge-soft font-semibold uppercase tracking-wide">
+                <span
+                  className={`badge badge-xs line-clamp-1 font-semibold uppercase tracking-wide ${
+                    isSpecialJob ? specialStyle.soft : "badge-primary badge-soft"
+                  }`}
+                >
                   Job Opening
                 </span>
                 {deadlinePassed && (
@@ -147,7 +156,11 @@ const LinkedJobCard = ({ job }) => {
               <Users className="w-3 h-3" />
               {job.applicants?.length || 0} applicants
             </span>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            <span
+              className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                isSpecialJob ? specialStyle.muted : "text-primary"
+              }`}
+            >
               View Job
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </span>
