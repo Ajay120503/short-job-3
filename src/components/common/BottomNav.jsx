@@ -96,11 +96,25 @@ const BottomNav = () => {
           >
             {({ isActive }) => (
               <>
-                <item.icon
-                  className={`w-5 h-5 transition-transform ${
-                    isActive ? "scale-110" : ""
-                  }`}
-                />
+                {item.avatar ? (
+                  <UserAvatar
+                    user={user}
+                    size={22}
+                    showPresence={false}
+                    className={isActive ? "scale-110" : ""}
+                    ringClass={
+                      isActive
+                        ? "ring-2 ring-primary ring-offset-1 ring-offset-base-100"
+                        : "ring-1 ring-base-300"
+                    }
+                  />
+                ) : (
+                  <item.icon
+                    className={`w-5 h-5 transition-transform ${
+                      isActive ? "scale-110" : ""
+                    }`}
+                  />
+                )}
                 <span className="text-[10px] font-medium leading-tight">
                   {item.label}
                 </span>
