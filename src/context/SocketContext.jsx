@@ -17,6 +17,7 @@ export const SocketProvider = ({ children }) => {
   const [messageCount, setMessageCount] = useState(0);
   const socketRef = useRef(null);
   const { user, isAuthenticated, forceLogout } = useAuthStore();
+  const canViewPresence = user?.showOnlineStatus !== false;
 
   // Fetch initial counts + online users on auth change
   useEffect(() => {
@@ -25,9 +26,13 @@ export const SocketProvider = ({ children }) => {
     const fetchInitialData = async () => {
       try {
         const API = (await import("../utils/axios")).default;
-        const [notifRes, convRes] = await Promise.all([
+        const onlineRequest = canViewPresence
+          ? API.get("/users/online")
+          : Promise.resolve({ data: { onlineUserIds: [] } });
+        const [notifRes, convRes, onlineRes] = await Promise.all([
           API.get("/notifications?limit=1"),
           API.get("/chat/conversations"),
+          onlineRequest,
         ]);
         setNotificationCount(notifRes.data.unreadCount || 0);
         const conversations = convRes.data.conversations || [];
@@ -41,26 +46,29 @@ export const SocketProvider = ({ children }) => {
         }, 0);
         setMessageCount(totalUnread);
 
-        // Populate online users from conversations data
-        const onlineIds = new Set();
+        // Populate online users from the global presence endpoint and
+        // conversation data, so avatar dots work across the whole platform.
+        const onlineIds = new Set(onlineRes.data.onlineUserIds || []);
         conversations.forEach((conv) => {
           if (conv.isOnline && conv.otherParticipant?._id) {
             onlineIds.add(conv.otherParticipant._id);
           }
         });
-        if (onlineIds.size > 0) {
+        if (canViewPresence && onlineIds.size > 0) {
           setOnlineUsers((prev) => {
             const updated = new Set(prev);
             onlineIds.forEach((id) => updated.add(id));
             return updated;
           });
+        } else if (!canViewPresence) {
+          setOnlineUsers(new Set());
         }
       } catch {
         // silent
       }
     };
     fetchInitialData();
-  }, [isAuthenticated, user?._id]);
+  }, [canViewPresence, isAuthenticated, user?._id]);
 
   // Socket connection
   useEffect(() => {
@@ -73,10 +81,23 @@ export const SocketProvider = ({ children }) => {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      socket.emit("join_room", user._id);
+      socket.emit("join_room", {
+        userId: user._id,
+        sharePresence: canViewPresence,
+      });
+      if (canViewPresence) {
+        setOnlineUsers((prev) => {
+          const updated = new Set(prev);
+          updated.add(user._id);
+          return updated;
+        });
+      } else {
+        setOnlineUsers(new Set());
+      }
     });
 
     socket.on("online_status", ({ userId, isOnline }) => {
+      if (!canViewPresence) return;
       setOnlineUsers((prev) => {
         const updated = new Set(prev);
         if (isOnline) updated.add(userId);
@@ -183,9 +204,9 @@ export const SocketProvider = ({ children }) => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [isAuthenticated, user?._id, forceLogout]);
+  }, [canViewPresence, isAuthenticated, user?._id, forceLogout]);
 
-  const isUserOnline = (userId) => onlineUsers.has(userId);
+  const isUserOnline = (userId) => canViewPresence && onlineUsers.has(userId);
 
   const emitTyping = (conversationId, userId) => {
     if (socketRef.current) {
@@ -217,6 +238,7 @@ export const SocketProvider = ({ children }) => {
   const value = {
     socket: socketRef,
     onlineUsers,
+    canViewPresence,
     isUserOnline,
     notificationCount,
     messageCount,

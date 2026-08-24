@@ -1,4 +1,5 @@
 import { BriefcaseBusiness, Shield } from "lucide-react";
+import { useSocket } from "../../context/SocketContext";
 import { isPlatformAdmin } from "../../utils/userSignals";
 import {
   canUseSpecialStyle,
@@ -14,6 +15,7 @@ import {
  * - size: pixel size of the avatar (default 40)
  * - className: additional classes for the wrapper
  * - showIndicator: whether to show the green "open to opportunities" indicator (default true)
+ * - showPresence: whether to show online/offline status dot (default true)
  * - ringClass: custom ring classes to override the default indicator ring
  */
 const UserAvatar = ({
@@ -21,12 +23,23 @@ const UserAvatar = ({
   size = 40,
   className = "",
   showIndicator = true,
+  showPresence = true,
   ringClass = "",
 }) => {
+  const socketContext = useSocket();
   const isOpen = showIndicator && user?.openToOpportunities;
   const isAdmin = isPlatformAdmin(user);
   const isSpecial = canUseSpecialStyle(user);
   const specialStyle = getSpecialUserStyle(user);
+  const userId = user?._id || user?.id;
+  const canViewPresence = socketContext?.canViewPresence !== false;
+  const isOnline = Boolean(
+    showPresence &&
+      canViewPresence &&
+      userId &&
+      (user?.isOnline || socketContext?.isUserOnline?.(userId)),
+  );
+  const showPresenceDot = Boolean(showPresence && canViewPresence && userId);
   const name = user?.name || "U";
   const initial = name.charAt(0)?.toUpperCase() || "U";
   const profilePic = user?.profilePic;
@@ -61,6 +74,22 @@ const UserAvatar = ({
           </div>
         )}
       </div>
+
+      {showPresenceDot && (
+        <span
+          className={`absolute rounded-full shadow-sm ring-2 ring-base-100 ${
+            isOnline ? "bg-success" : "bg-base-300"
+          }`}
+          style={{
+            width: Math.max(size * 0.22, 9),
+            height: Math.max(size * 0.22, 9),
+            right: Math.max(size * 0.02, 1),
+            bottom: Math.max(size * 0.02, 1),
+          }}
+          title={isOnline ? "Online" : "Offline"}
+          aria-label={isOnline ? "Online" : "Offline"}
+        />
+      )}
 
       {/* Admin badge */}
       {/* {isAdmin && (

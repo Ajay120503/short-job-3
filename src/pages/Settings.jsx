@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BriefcaseBusiness, CheckCircle2, CircleOff, Palette } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  CheckCircle2,
+  CircleOff,
+  Eye,
+  EyeOff,
+  Palette,
+} from "lucide-react";
 import useAuthStore from "../store/authStore";
 import ConfirmModal from "../components/common/ConfirmModal";
 import UserAvatar from "../components/common/UserAvatar";
@@ -20,6 +27,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [opportunityLoading, setOpportunityLoading] = useState(false);
+  const [presenceLoading, setPresenceLoading] = useState(false);
   const [themeLoading, setThemeLoading] = useState(false);
   const specialStyle = getSpecialUserStyle(user);
   const canStyleProfile = canUseSpecialStyle(user);
@@ -40,6 +48,24 @@ const Settings = () => {
       toast.error(err.response?.data?.message || "Failed to update");
     } finally {
       setOpportunityLoading(false);
+    }
+  };
+
+  const handlePresenceToggle = async () => {
+    setPresenceLoading(true);
+    try {
+      const data = await updateProfile({
+        showOnlineStatus: !(user?.showOnlineStatus !== false),
+      });
+      toast.success(
+        data.user?.showOnlineStatus === false
+          ? "Online status hidden"
+          : "Online status enabled",
+      );
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setPresenceLoading(false);
     }
   };
 
@@ -144,6 +170,64 @@ const Settings = () => {
           </div>
         </div>
       )}
+
+      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div className="flex items-start gap-4 min-w-0">
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                user?.showOnlineStatus !== false
+                  ? "bg-success/10 text-success"
+                  : "bg-base-200 text-base-content/45"
+              }`}
+            >
+              {user?.showOnlineStatus !== false ? (
+                <Eye className="w-5 h-5" />
+              ) : (
+                <EyeOff className="w-5 h-5" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-lg">Online Status</h3>
+              <p className="font-semibold text-sm">
+                Show when you are online
+              </p>
+              <p className="text-xs text-base-content/50 mt-1 max-w-md">
+                When enabled, others can see your online dot and you can see
+                theirs. When disabled, all online dots are hidden for you.
+              </p>
+              <div
+                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                  user?.showOnlineStatus !== false
+                    ? "bg-success/10 text-success"
+                    : "bg-base-200 text-base-content/60"
+                }`}
+              >
+                {user?.showOnlineStatus !== false ? (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                ) : (
+                  <CircleOff className="w-3.5 h-3.5" />
+                )}
+                {user?.showOnlineStatus !== false
+                  ? "Visible and viewing others"
+                  : "Hidden from everyone"}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+            <span className="text-xs font-medium text-base-content/50">
+              {user?.showOnlineStatus !== false ? "On" : "Off"}
+            </span>
+            <input
+              type="checkbox"
+              className="toggle toggle-success"
+              checked={user?.showOnlineStatus !== false}
+              onChange={handlePresenceToggle}
+              disabled={presenceLoading}
+            />
+          </div>
+        </div>
+      </div>
 
       {canStyleProfile && (
         <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
