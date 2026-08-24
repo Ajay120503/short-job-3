@@ -11,6 +11,8 @@ import {
 import { Link } from "react-router-dom";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
+import ConfirmModal from "../components/common/ConfirmModal";
+import { useSocket } from "../context/SocketContext";
 
 const iconMap = {
   post_like: { icon: Heart, color: "text-error", bg: "bg-error/10" },
@@ -49,6 +51,9 @@ const iconMap = {
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const { resetNotificationCount, setNotificationCount } = useSocket();
 
   const fetchNotifications = async () => {
     try {
@@ -68,7 +73,8 @@ const Notifications = () => {
   const handleMarkAllRead = async () => {
     try {
       await API.put("/notifications/read-all");
-      fetchNotifications();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      resetNotificationCount();
       toast.success("All marked as read");
     } catch {
       toast.error("Failed");
@@ -77,10 +83,35 @@ const Notifications = () => {
 
   const handleDelete = async (id) => {
     try {
-      await API.delete(`/notifications/${id}`);
+      const target = notifications.find((n) => n._id === id);
+      const { data } = await API.delete(`/notifications/${id}`);
       setNotifications((prev) => prev.filter((n) => n._id !== id));
+      if (data.wasUnread || target?.isRead === false) {
+        setNotificationCount((prev) => Math.max(0, prev - 1));
+      }
     } catch {
-      /* ignore */
+      toast.error("Failed to delete notification");
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    setDeletingAll(true);
+    try {
+      const { data } = await API.delete("/notifications/clear-all");
+      setNotifications([]);
+      resetNotificationCount();
+      setShowDeleteAllModal(false);
+      toast.success(
+        data.deletedCount
+          ? `Deleted ${data.deletedCount} notifications`
+          : "No notifications to delete",
+      );
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to delete notifications",
+      );
+    } finally {
+      setDeletingAll(false);
     }
   };
 
@@ -113,14 +144,26 @@ const Notifications = () => {
             {notifications.filter((n) => !n.isRead).length || 0} unread
           </p>
         </div>
-        {notifications.some((n) => !n.isRead) && (
-          <button
-            onClick={handleMarkAllRead}
-            className="btn btn-ghost btn-sm gap-1.5 text-primary"
-          >
-            <Check className="w-4 h-4" /> Mark all read
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {notifications.some((n) => !n.isRead) && (
+            <button
+              onClick={handleMarkAllRead}
+              className="btn btn-ghost btn-sm gap-1.5 text-primary"
+            >
+              <Check className="w-4 h-4" /> Mark all read
+            </button>
+          )}
+          {notifications.length > 0 && (
+            <button
+              onClick={() => setShowDeleteAllModal(true)}
+              className="btn btn-ghost btn-sm btn-square text-base-content/40 hover:text-error"
+              title="Delete all notifications"
+              aria-label="Delete all notifications"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {notifications.length === 0 ? (
@@ -214,6 +257,17 @@ const Notifications = () => {
           })}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showDeleteAllModal}
+        onClose={() => setShowDeleteAllModal(false)}
+        onConfirm={handleDeleteAll}
+        title="Delete all notifications?"
+        message="Unread notifications will be marked as read first, then all notifications will be permanently deleted."
+        confirmText="Delete all"
+        variant="danger"
+        isLoading={deletingAll}
+      />
     </div>
   );
 };
