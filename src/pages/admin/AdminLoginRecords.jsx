@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2, Settings } from "lucide-react";
+import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2, Settings, Camera } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import {
   isAdminUser,
@@ -162,7 +162,13 @@ const AdminLoginRecords = () => {
                     isOpen ? "border-primary/30 bg-primary/5" : "border-base-300"
                   }`}
                 >
-                  <div className="grid gap-3 md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr_44px] md:items-center">
+                  <div
+                    className={`grid gap-3 md:items-center ${
+                      canDeleteRecords
+                        ? "md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr_110px_44px]"
+                        : "md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr_110px]"
+                    }`}
+                  >
                     <div className="w-full max-w-20 md:w-16 h-20 md:h-16 rounded-xl overflow-hidden bg-base-200">
                       {record.photo?.url ? (
                         <img
@@ -204,6 +210,16 @@ const AdminLoginRecords = () => {
                     <p className="text-xs text-base-content/55 flex items-center gap-1">
                       <Laptop className="w-3.5 h-3.5" />
                       {record.device?.browser || "Unknown"}
+                    </p>
+                    <p
+                      className={`text-xs flex items-center gap-1 ${
+                        record.faceDetection?.detected
+                          ? "text-success"
+                          : "text-warning"
+                      }`}
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      {record.faceDetection?.detected ? "Face verified" : "Legacy record"}
                     </p>
                     {canDeleteRecords && (
                       <span

@@ -42,7 +42,16 @@ const Login = () => {
     }
   };
 
-  const handleAuditCapture = async ({ photo, lat, lng, accuracy }) => {
+  const handleAuditCapture = async ({
+    photo,
+    lat,
+    lng,
+    accuracy,
+    faceDetected,
+    faceCount,
+    detector,
+    confidence,
+  }) => {
     setAuditError("");
     try {
       const formData = new FormData();
@@ -50,6 +59,10 @@ const Login = () => {
       formData.append("lat", lat);
       formData.append("lng", lng);
       formData.append("accuracy", accuracy);
+      formData.append("faceDetected", faceDetected ? "true" : "false");
+      formData.append("faceCount", String(faceCount || 0));
+      formData.append("faceDetector", detector || "");
+      formData.append("faceConfidence", String(confidence || 0));
       await completeLoginAudit(auditToken, formData);
       toast.success("Welcome back!");
       navigate("/feed");

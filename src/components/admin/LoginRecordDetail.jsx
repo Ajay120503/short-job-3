@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Calendar, Laptop, MapPin, ShieldCheck } from "lucide-react";
+import { Calendar, Camera, Laptop, MapPin, ShieldCheck } from "lucide-react";
 import UserAvatar from "../common/UserAvatar";
 import BadgeChip from "../common/BadgeChip";
 import { getActiveBadges } from "../../utils/badgeUtils";
@@ -107,6 +107,24 @@ const LoginRecordDetail = ({ record }) => {
             />
             <Info icon={Laptop} label="Device" value={record.device?.browser || "Unknown"} />
             <Info icon={ShieldCheck} label="IP address" value={record.device?.ip || "Unknown"} />
+            <Info
+              icon={Camera}
+              label="Face verification"
+              value={
+                record.faceDetection?.detected
+                  ? `Verified${
+                      record.faceDetection.count
+                        ? ` (${record.faceDetection.count} detected)`
+                        : ""
+                    }`
+                  : "Legacy record"
+              }
+            />
+            <Info
+              icon={ShieldCheck}
+              label="Detector"
+              value={record.faceDetection?.detector || "Not recorded"}
+            />
           </div>
 
           <div className="rounded-xl bg-base-200/60 border border-base-300 p-3 text-xs text-base-content/60">
