@@ -185,7 +185,7 @@ function App() {
                         collapsed={sidebarCollapsed}
                         onToggle={toggleSidebar}
                       />
-                      <main className="flex-1 overflow-y-auto pb-[70px] md:pb-0 scroll-smooth">
+                      <main className="app-main flex-1 overflow-y-auto pb-[70px] md:pb-0 scroll-smooth">
                         <Routes>
                           <Route path="/feed" element={<Feed />} />
                           <Route

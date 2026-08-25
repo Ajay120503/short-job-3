@@ -2,17 +2,19 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   Home,
   Briefcase,
-  Bookmark,
   User,
   PlusCircle,
   Shield,
+  MessageCircle,
 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import { isAdminUser } from "../../utils/badgeUtils";
 import UserAvatar from "./UserAvatar";
+import { useSocket } from "../../context/SocketContext";
 
 const BottomNav = () => {
   const { user } = useAuthStore();
+  const { messageCount } = useSocket();
   const navigate = useNavigate();
   const isAdmin = isAdminUser(user);
 
@@ -21,7 +23,7 @@ const BottomNav = () => {
     { to: "/jobs", icon: Briefcase, label: "Jobs" },
     isAdmin
       ? { to: "/admin", icon: Shield, label: "Admin" }
-      : { to: "/saved", icon: Bookmark, label: "Saved" },
+      : { to: "/chat", icon: MessageCircle, label: "Chat", badge: messageCount },
     { to: `/profile/${user?._id}`, icon: User, label: "Profile", avatar: true },
   ];
 
@@ -55,11 +57,18 @@ const BottomNav = () => {
                     }
                   />
                 ) : (
-                  <item.icon
-                    className={`w-5 h-5 transition-transform ${
-                      isActive ? "scale-110" : ""
-                    }`}
-                  />
+                  <span className="relative">
+                    <item.icon
+                      className={`w-5 h-5 transition-transform ${
+                        isActive ? "scale-110" : ""
+                      }`}
+                    />
+                    {item.badge > 0 && (
+                      <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                        {item.badge > 9 ? "9+" : item.badge}
+                      </span>
+                    )}
+                  </span>
                 )}
                 <span className="text-[10px] font-medium leading-tight">
                   {item.label}
@@ -109,11 +118,18 @@ const BottomNav = () => {
                     }
                   />
                 ) : (
-                  <item.icon
-                    className={`w-5 h-5 transition-transform ${
-                      isActive ? "scale-110" : ""
-                    }`}
-                  />
+                  <span className="relative">
+                    <item.icon
+                      className={`w-5 h-5 transition-transform ${
+                        isActive ? "scale-110" : ""
+                      }`}
+                    />
+                    {item.badge > 0 && (
+                      <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                        {item.badge > 9 ? "9+" : item.badge}
+                      </span>
+                    )}
+                  </span>
                 )}
                 <span className="text-[10px] font-medium leading-tight">
                   {item.label}

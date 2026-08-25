@@ -83,6 +83,13 @@ h6 {
 }
 
 /* Mobile bottom nav spacing - handled inline via pb-[70px] */
+@media (max-width: 767px) {
+  .app-main > div[class*="max-w-"] {
+    max-width: 100%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
 
 /* Consistent placeholder backgrounds for icons, avatars, and image placeholders */
 .bg-placeholder {

@@ -35,6 +35,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
   ];
 
   const isAdmin = isAdminUser(user);
+  const labelClass = collapsed
+    ? "max-w-0 -translate-x-2 opacity-0 delay-0"
+    : "max-w-40 translate-x-0 opacity-100 delay-100";
+  const navItemClass = collapsed
+    ? "h-10 w-10 mx-auto justify-center gap-0 px-0"
+    : "w-full justify-start gap-3 px-3 py-2.5";
+  const smoothTransition = "transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]";
 
   const secondaryNavItems = [
     {
@@ -60,7 +67,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   return (
     <aside
-      className={`hidden md:flex flex-col bg-base-100 border-r border-base-300 sticky top-0 h-screen transition-all duration-300 ease-in-out z-30 ${
+      className={`hidden md:flex flex-col bg-base-100 border-r border-base-300 sticky top-0 h-screen overflow-visible transition-[width,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] z-30 will-change-[width] ${
         collapsed ? "w-[72px]" : "w-64"
       }`}
     >
@@ -70,20 +77,26 @@ const Sidebar = ({ collapsed, onToggle }) => {
           collapsed ? "justify-center" : "justify-between"
         }`}
       >
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-              <FontAwesomeIcon
-                icon={faUserGraduate}
-                className="w-4 h-4 text-white"
-              />
-            </div>
-            <span className="text-lg font-bold text-primary">ShortJob</span>
+        <div
+          className={`flex items-center gap-2 overflow-hidden ${smoothTransition} ${
+            collapsed
+              ? "max-w-0 -translate-x-2 scale-95 opacity-0"
+              : "max-w-44 translate-x-0 scale-100 opacity-100 delay-100"
+          }`}
+        >
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm shrink-0">
+            <FontAwesomeIcon
+              icon={faUserGraduate}
+              className="w-4 h-4 text-white"
+            />
           </div>
-        )}
+          <span className="text-lg font-bold text-primary whitespace-nowrap">
+            ShortJob
+          </span>
+        </div>
         <button
           onClick={onToggle}
-          className="btn btn-ghost btn-circle btn-sm hover:bg-base-200"
+          className={`btn btn-ghost btn-circle btn-sm hover:bg-base-200 shrink-0 ${smoothTransition}`}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -101,20 +114,24 @@ const Sidebar = ({ collapsed, onToggle }) => {
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative ${
+              `flex items-center rounded-xl ${smoothTransition} group relative ${
                 isActive
                   ? "bg-primary/10 text-primary font-semibold"
                   : "text-base-content/70 hover:bg-base-200"
-              } ${collapsed ? "justify-center" : ""}`
+              } ${navItemClass}`
             }
             title={collapsed ? item.label : undefined}
           >
             <item.icon
-              className={`w-5 h-5 flex-shrink-0 ${
-                collapsed ? "group-hover:scale-110 transition-transform" : ""
+              className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 ${
+                collapsed ? "group-hover:scale-110" : ""
               }`}
             />
-            {!collapsed && <span className="text-sm">{item.label}</span>}
+            <span
+              className={`overflow-hidden whitespace-nowrap text-sm ${smoothTransition} ${labelClass}`}
+            >
+              {item.label}
+            </span>
             {collapsed && (
               <div className="absolute left-full ml-2 px-2 py-1 bg-neutral text-neutral-content rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-lg">
                 {item.label}
@@ -127,14 +144,24 @@ const Sidebar = ({ collapsed, onToggle }) => {
       {/* Create Post */}
       <div className="px-2 pb-2">
         <button
-          className={`btn btn-primary shadow-lg shadow-primary/20 hover:shadow-xl transition-all ${
-            collapsed ? "btn-circle btn-sm w-10 h-10 mx-auto flex" : "w-full"
+          className={`btn btn-primary shadow-lg shadow-primary/20 hover:shadow-xl ${smoothTransition} ${
+            collapsed
+              ? "btn-circle btn-sm w-10 h-10 mx-auto flex gap-0 px-0"
+              : "w-full gap-2"
           }`}
           onClick={() => navigate("/posts/create")}
           title={collapsed ? "Create Post" : undefined}
         >
           <PlusCircle className="w-5 h-5" />
-          {!collapsed && <span>Create Post</span>}
+          <span
+            className={`overflow-hidden whitespace-nowrap ${smoothTransition} ${
+              collapsed
+                ? "max-w-0 -translate-x-2 opacity-0"
+                : "max-w-28 translate-x-0 opacity-100 delay-100"
+            }`}
+          >
+            Create Post
+          </span>
         </button>
       </div>
 
@@ -146,25 +173,29 @@ const Sidebar = ({ collapsed, onToggle }) => {
             to={item.to}
             end={item.to === "/admin"}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative ${
+              `flex items-center rounded-xl ${smoothTransition} group relative ${
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "text-base-content/50 hover:text-base-content/80 hover:bg-base-200"
-              } ${collapsed ? "justify-center" : ""}`
+              } ${navItemClass}`
             }
             title={collapsed ? item.label : undefined}
           >
             <div className="relative">
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {item.badge > 0 && (
+              <item.icon className="w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-105" />
+              {collapsed && item.badge > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {item.badge > 9 ? "9+" : item.badge}
                 </span>
               )}
             </div>
-            {!collapsed && <span className="text-sm flex-1">{item.label}</span>}
+            <span
+              className={`flex-1 overflow-hidden whitespace-nowrap text-sm ${smoothTransition} ${labelClass}`}
+            >
+              {item.label}
+            </span>
             {!collapsed && item.badge > 0 && (
-              <span className="badge badge-xs badge-error text-white">
+              <span className={`badge badge-xs badge-error text-white ${smoothTransition}`}>
                 {item.badge}
               </span>
             )}
@@ -182,19 +213,23 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <div className="px-2 py-2 border-t border-base-300 mt-auto">
         <NavLink
           to={`/profile/${user?._id}`}
-          className={`flex items-center gap-3 p-2 rounded-xl hover:bg-base-200 transition-colors ${
-            collapsed ? "justify-center" : ""
+          className={`flex items-center rounded-xl hover:bg-base-200 ${smoothTransition} ${
+            collapsed ? "h-12 w-12 mx-auto justify-center gap-0 p-0" : "gap-3 p-2"
           }`}
         >
           <UserAvatar user={user} size={36} ringClass="ring-2 ring-base-200" />
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
+          <div
+            className={`min-w-0 overflow-hidden ${smoothTransition} ${
+              collapsed
+                ? "max-w-0 -translate-x-2 opacity-0 delay-0"
+                : "max-w-44 translate-x-0 opacity-100 delay-100"
+            }`}
+          >
               <p className="text-sm font-semibold truncate">{user?.name}</p>
               <p className="text-xs text-base-content/50 truncate capitalize">
                 {getUserRoleLabel(user)}
               </p>
-            </div>
-          )}
+          </div>
         </NavLink>
       </div>
     </aside>

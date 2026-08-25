@@ -72,6 +72,15 @@ const MobileHeader = () => {
               )}
             </button>
 
+            {/* Saved quick access */}
+            <button
+              onClick={() => handleNavigate("/saved")}
+              className="btn btn-ghost btn-circle btn-sm"
+              aria-label="Saved posts"
+            >
+              <Bookmark className="w-5 h-5" />
+            </button>
+
             {/* Hamburger menu */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
