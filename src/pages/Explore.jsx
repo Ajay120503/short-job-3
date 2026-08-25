@@ -238,6 +238,9 @@ const Explore = () => {
       {/* Header */}
       <div className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:mb-5 sm:p-5">
         <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Sparkle className="h-5 w-5" />
+          </div>
           <div className="min-w-0">
             <h1 className="text-xl font-bold font-heading sm:text-2xl">
               Explore
