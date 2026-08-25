@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Camera, Clock, Laptop, MapPin, ShieldCheck, Trash2 } from "lucide-react";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
+import useAuthStore from "../store/authStore";
 
 const formatDate = (value) =>
   value
@@ -12,10 +14,17 @@ const formatDate = (value) =>
     : "Unknown";
 
 const LoginHistory = () => {
+  const { user } = useAuthStore();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const auditEnabled = user?.loginAuditEnabled !== false;
 
   useEffect(() => {
+    if (!auditEnabled) {
+      setLoading(false);
+      return;
+    }
+
     const load = async () => {
       try {
         const { data } = await API.get("/users/me/login-history");
@@ -25,7 +34,7 @@ const LoginHistory = () => {
       }
     };
     load();
-  }, []);
+  }, [auditEnabled]);
 
   const handleDelete = async (recordId) => {
     try {
@@ -49,7 +58,21 @@ const LoginHistory = () => {
         </p>
       </div>
 
-      {loading ? (
+      {!auditEnabled ? (
+        <div className="rounded-2xl border border-base-300 bg-base-100 p-10 text-center">
+          <ShieldCheck className="w-10 h-10 text-base-content/20 mx-auto mb-3" />
+          <p className="font-semibold text-base-content/65">
+            Login audit is disabled
+          </p>
+          <p className="text-sm text-base-content/45 mt-1 max-w-md mx-auto">
+            Your account will not create login photo or location records while
+            this setting is off.
+          </p>
+          <Link to="/settings" className="btn btn-primary btn-sm mt-4">
+            Open Settings
+          </Link>
+        </div>
+      ) : loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((item) => (
             <div key={item} className="h-24 skeleton rounded-2xl" />

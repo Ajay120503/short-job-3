@@ -167,6 +167,21 @@ const AdminUserDetail = () => {
     }
   };
 
+  const handleLoginAuditToggle = async () => {
+    setActionLoading(true);
+    try {
+      const { data } = await API.put(`/admin/users/${id}/login-audit`, {
+        loginAuditEnabled: !(profile?.loginAuditEnabled !== false),
+      });
+      toast.success(data.message || "Login audit preference updated");
+      await fetchUser();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login audit update failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -351,12 +366,72 @@ const AdminUserDetail = () => {
                   {trustStatus === "none" ? "None" : trustStatusLabel}
                 </span>
               </div>
+              <div className="flex items-center gap-2 text-sm">
+                {profile.loginAuditEnabled !== false ? (
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                ) : (
+                  <ShieldOff className="w-4 h-4 text-base-content/40" />
+                )}
+                <span>Login Audit:</span>
+                <span
+                  className={`badge badge-sm ${
+                    profile.loginAuditEnabled !== false
+                      ? "badge-primary"
+                      : "badge-ghost"
+                  }`}
+                >
+                  {profile.loginAuditEnabled !== false ? "Allowed" : "Disabled"}
+                </span>
+              </div>
               {profile.isBlocked && (
                 <div className="flex items-center gap-2 text-sm">
                   <Ban className="w-4 h-4 text-error" />
                   <span className="text-error">
                     Blocked: {profile.blockedReason || "No reason provided"}
                   </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-xl border border-base-300/60 bg-base-200/35 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                    profile.loginAuditEnabled !== false
+                      ? "bg-primary/10 text-primary"
+                      : "bg-base-300/60 text-base-content/45"
+                  }`}
+                >
+                  {profile.loginAuditEnabled !== false ? (
+                    <ShieldCheck className="h-5 w-5" />
+                  ) : (
+                    <ShieldOff className="h-5 w-5" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">
+                    User Login Audit Preference
+                  </h3>
+                  <p className="mt-1 text-xs text-base-content/55">
+                    When disabled for this account, login photo, location, and
+                    face audit records are not created for this user.
+                  </p>
+                </div>
+              </div>
+              {canManageUser && (
+                <div className="flex items-center justify-between gap-3 sm:justify-end">
+                  <span className="text-xs font-medium text-base-content/50">
+                    {profile.loginAuditEnabled !== false ? "On" : "Off"}
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={profile.loginAuditEnabled !== false}
+                    onChange={handleLoginAuditToggle}
+                    disabled={actionLoading}
+                  />
                 </div>
               )}
             </div>

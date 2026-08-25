@@ -30,6 +30,7 @@ const Settings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [opportunityLoading, setOpportunityLoading] = useState(false);
   const [presenceLoading, setPresenceLoading] = useState(false);
+  const [loginAuditLoading, setLoginAuditLoading] = useState(false);
   const [themeLoading, setThemeLoading] = useState(false);
   const specialStyle = getSpecialUserStyle(user);
   const canStyleProfile = canUseSpecialStyle(user);
@@ -68,6 +69,26 @@ const Settings = () => {
       toast.error(err.response?.data?.message || "Failed to update status");
     } finally {
       setPresenceLoading(false);
+    }
+  };
+
+  const handleLoginAuditToggle = async () => {
+    const nextValue = !(user?.loginAuditEnabled !== false);
+    setLoginAuditLoading(true);
+    try {
+      const { data } = await API.patch("/users/me/login-audit", {
+        loginAuditEnabled: nextValue,
+      });
+      setUser(data.user || { ...user, loginAuditEnabled: data.loginAuditEnabled });
+      toast.success(
+        data.loginAuditEnabled === false
+          ? "Login audit disabled for your account"
+          : "Login audit enabled for your account",
+      );
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update login audit");
+    } finally {
+      setLoginAuditLoading(false);
     }
   };
 
@@ -126,19 +147,66 @@ const Settings = () => {
       <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-              <History className="w-5 h-5" />
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                user?.loginAuditEnabled !== false
+                  ? "bg-primary/10 text-primary"
+                  : "bg-base-200 text-base-content/45"
+              }`}
+            >
+              {user?.loginAuditEnabled !== false ? (
+                <History className="w-5 h-5" />
+              ) : (
+                <EyeOff className="w-5 h-5" />
+              )}
             </div>
             <div>
               <h3 className="font-semibold text-lg">Login History</h3>
               <p className="text-xs text-base-content/50 mt-1 max-w-md">
-                Review your own security verification records when login audit is enabled.
+                Control whether your account can create login audit records. If
+                disabled here, no login photo or location record is captured for
+                you even when admin security audit is globally active.
               </p>
+              <div
+                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                  user?.loginAuditEnabled !== false
+                    ? "bg-primary/10 text-primary"
+                    : "bg-base-200 text-base-content/60"
+                }`}
+              >
+                {user?.loginAuditEnabled !== false ? (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                ) : (
+                  <CircleOff className="w-3.5 h-3.5" />
+                )}
+                {user?.loginAuditEnabled !== false
+                  ? "Audit records allowed"
+                  : "Audit recording disabled"}
+              </div>
             </div>
           </div>
-          <Link to="/settings/login-history" className="btn btn-outline btn-sm">
-            View History
-          </Link>
+          <div className="flex flex-col sm:items-end gap-3">
+            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+              <span className="text-xs font-medium text-base-content/50">
+                {user?.loginAuditEnabled !== false ? "On" : "Off"}
+              </span>
+              <input
+                type="checkbox"
+                className="toggle toggle-primary"
+                checked={user?.loginAuditEnabled !== false}
+                onChange={handleLoginAuditToggle}
+                disabled={loginAuditLoading}
+              />
+            </div>
+            {user?.loginAuditEnabled !== false && (
+              <Link
+                to="/settings/login-history"
+                className="btn btn-outline btn-sm min-w-28 whitespace-nowrap"
+              >
+                View History
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

@@ -216,7 +216,7 @@ const AdminSettings = () => {
             <SettingToggle
               icon={ShieldCheck}
               title="Require Location + Photo Capture at Login"
-              description="When enabled, every user must allow location and camera access to sign in. No exceptions, no skip."
+              description="When enabled globally, users who keep login audit active must complete location, camera, and face capture before sign-in. Users can disable recording for their own account."
               checked={settings.loginAuditEnabled}
               onClick={() =>
                 handleImmediateChange("loginAuditEnabled", !settings.loginAuditEnabled)

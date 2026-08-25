@@ -269,190 +269,200 @@ const Profile = () => {
           }`}
         />
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 px-4 pb-4 md:px-6 md:pb-6 -mt-12 md:-mt-14">
-        {/* Avatar */}
-        <div className="shrink-0">
-          <UserAvatar
-            user={profile}
-            size={104}
-            className="md:hidden"
-            showBadges
-            ringClass={isSpecialProfile ? specialStyle.ring : "ring-4 ring-base-100"}
-          />
-          <UserAvatar
-            user={profile}
-            size={144}
-            className="hidden md:block"
-            showBadges
-            ringClass={isSpecialProfile ? specialStyle.ring : "ring-2 ring-base-300/50"}
-          />
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 text-center md:text-left min-w-0">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4 mb-4">
-            <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center md:justify-start gap-2 flex-wrap min-w-0">
-              {profile.name}
-              <VerifiedBadge verifiedStatus={profile.verifiedStatus} />
-              <UserSignalBadge user={profile} size="sm" />
-            </h1>
-
-            {/* Action buttons */}
-            {!isOwnProfile ? (
-              <div className="grid grid-cols-2 gap-2 md:flex md:justify-start">
-                <button
-                  onClick={handleFollow}
-                  className={`btn btn-active btn-sm gap-1.5 font-medium ${
-                    isFollowing
-                      ? "btn-outline"
-                      : "btn-primary shadow-md shadow-primary/20"
-                  }`}
-                >
-                  <UserPlus className="w-4 h-4" />
-                  {isFollowing ? "Following" : "Follow"}
-                </button>
-                <Link
-                  to={`/chat/${profile._id}`}
-                  className="btn btn-active btn-outline btn-sm gap-1.5 font-medium"
-                >
-                  <MessageCircle className="w-4 h-4" /> Message
-                </Link>
-              </div>
-            ) : (
-              <Link
-                to="/edit-profile"
-                className="btn btn-active btn-outline btn-sm gap-1.5 font-medium md:shrink-0"
-              >
-                <Edit3 className="w-4 h-4" /> Edit Profile
-              </Link>
-            )}
+          {/* Avatar */}
+          <div className="shrink-0">
+            <UserAvatar
+              user={profile}
+              size={104}
+              className="md:hidden"
+              showBadges
+              ringClass={
+                isSpecialProfile ? specialStyle.ring : "ring-4 ring-base-100"
+              }
+            />
+            <UserAvatar
+              user={profile}
+              size={144}
+              className="hidden md:block"
+              showBadges
+              ringClass={
+                isSpecialProfile ? specialStyle.ring : "ring-2 ring-base-300/50"
+              }
+            />
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2 mb-4 max-w-md mx-auto md:mx-0">
-            <div className={`rounded-xl border px-3 py-2 text-center ${isSpecialProfile ? specialStyle.soft : "bg-base-200/55 border-base-300/50"}`}>
-              <span className="block font-bold">{userPosts.length}</span>
-              <span className={`text-xs ${mutedTextClass}`}>posts</span>
-            </div>
-            <button
-              onClick={handleOpenFollowers}
-              className={`rounded-xl border px-3 py-2 text-center hover:opacity-80 transition-opacity ${isSpecialProfile ? specialStyle.soft : "bg-base-200/55 border-base-300/50"}`}
-              title="View followers"
-            >
-              <span className="block font-bold">{followerCount}</span>
-              <span className={`text-xs ${mutedTextClass}`}>followers</span>
-            </button>
-            <button
-              onClick={handleOpenFollowing}
-              className={`rounded-xl border px-3 py-2 text-center hover:opacity-80 transition-opacity ${isSpecialProfile ? specialStyle.soft : "bg-base-200/55 border-base-300/50"}`}
-              title="View following"
-            >
-              <span className="block font-bold">{followingCount}</span>
-              <span className={`text-xs ${mutedTextClass}`}>following</span>
-            </button>
-          </div>
+          {/* Info */}
+          <div className="flex-1 text-center md:text-left min-w-0">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4 mb-4">
+              <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center md:justify-start gap-2 flex-wrap min-w-0">
+                {profile.name}
+                <VerifiedBadge verifiedStatus={profile.verifiedStatus} />
+                <UserSignalBadge user={profile} size="sm" />
+              </h1>
 
-          {/* Badges */}
-          <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mb-2">
-            {getActiveBadges(profile)
-              .slice(0, 4)
-              .map((badge) => (
-                <BadgeChip
-                  key={badge._id || badge.type}
-                  badgeType={badge.type}
-                  size="sm"
-                />
-              ))}
-            {getActiveBadges(profile).length === 0 && (
-              <span className="badge badge-sm badge-soft badge-primary font-medium">
-                {getUserRoleLabel(profile)}
-              </span>
-            )}
-            {profile.institutionName && (
-              <span
-                className={`badge badge-sm font-medium ${isSpecialProfile ? specialStyle.soft : "badge-ghost"}`}
-              >
-                {profile.institutionName}
-              </span>
-            )}
-          </div>
-
-          {/* Bio */}
-          {profile.bio && (
-            <p
-              className={`mx-auto max-w-2xl text-sm leading-relaxed md:mx-0 ${isSpecialProfile ? "text-base-content/75" : "text-base-content/70"}`}
-            >
-              {profile.bio}
-            </p>
-          )}
-
-          {(profile.isCurrentlyWorking ||
-            profile.currentPosition ||
-            profile.currentCompany ||
-            profile.previousWork) && (
-            <div
-              className={`mt-3 mx-auto max-w-2xl rounded-xl border p-3 text-left md:mx-0 ${isSpecialProfile ? specialStyle.soft : "bg-base-200/60 border-base-300/50"}`}
-            >
-              {(profile.currentPosition || profile.currentCompany) && (
-                <div className="flex items-start gap-2 text-sm">
-                  <Briefcase
-                    className={`w-4 h-4 mt-0.5 shrink-0 ${isSpecialProfile ? specialStyle.icon : "text-primary"}`}
-                  />
-                  <div>
-                    <p className="font-semibold">
-                      {profile.currentPosition || "Currently working"}
-                    </p>
-                    {profile.currentCompany && (
-                      <p
-                        className={`text-xs flex items-center gap-1 mt-0.5 ${mutedTextClass}`}
-                      >
-                        <Building2 className="w-3 h-3" />
-                        {profile.currentCompany}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-              {profile.previousWork && (
-                <div
-                  className={`mt-2 text-xs leading-relaxed ${isSpecialProfile ? "text-base-content/65" : "text-base-content/60"}`}
-                >
-                  <span
-                    className={`font-semibold ${isSpecialProfile ? "text-base-content/80" : "text-base-content/70"}`}
+              {/* Action buttons */}
+              {!isOwnProfile ? (
+                <div className="grid grid-cols-2 gap-2 md:flex md:justify-start">
+                  <button
+                    onClick={handleFollow}
+                    className={`btn btn-active btn-sm gap-1.5 font-medium ${
+                      isFollowing
+                        ? "btn-outline"
+                        : "btn-primary shadow-md shadow-primary/20"
+                    }`}
                   >
-                    Previous work:
-                  </span>{" "}
-                  {profile.previousWork}
+                    <UserPlus className="w-4 h-4" />
+                    {isFollowing ? "Following" : "Follow"}
+                  </button>
+                  <Link
+                    to={`/chat/${profile._id}`}
+                    className="btn btn-active btn-outline btn-sm gap-1.5 font-medium"
+                  >
+                    <MessageCircle className="w-4 h-4" /> Message
+                  </Link>
                 </div>
+              ) : (
+                <Link
+                  to="/edit-profile"
+                  className="btn btn-active btn-outline btn-sm gap-1.5 font-medium md:shrink-0"
+                >
+                  <Edit3 className="w-4 h-4" /> Edit Profile
+                </Link>
               )}
             </div>
-          )}
 
-          {/* Skills with Endorsements */}
-          {profile.skills?.length > 0 && (
-            <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mt-2">
-              {profile.skills.map((skill, idx) => (
-                <EndorsementTag key={idx} skill={skill} profileId={id} />
-              ))}
+            {/* Stats */}
+            <div className="mb-4 flex items-center justify-center gap-4 lg:pt-4 pt-0 text-sm md:justify-start">
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-base">{userPosts.length}</span>
+                <span className={mutedTextClass}>posts</span>
+              </div>
+              <span className="h-4 w-px bg-base-content/15" />
+              <button
+                type="button"
+                onClick={handleOpenFollowers}
+                className="flex items-baseline gap-1.5 rounded-md transition-colors hover:text-primary"
+                title="View followers"
+              >
+                <span className="font-bold text-base">{followerCount}</span>
+                <span className={mutedTextClass}>followers</span>
+              </button>
+              <span className="h-4 w-px bg-base-content/15" />
+              <button
+                type="button"
+                onClick={handleOpenFollowing}
+                className="flex items-baseline gap-1.5 rounded-md transition-colors hover:text-primary"
+                title="View following"
+              >
+                <span className="font-bold text-base">{followingCount}</span>
+                <span className={mutedTextClass}>following</span>
+              </button>
             </div>
-          )}
 
-          {/* Location / Contact */}
-          {(profile.city || profile.email) && (
-            <div className={`flex flex-wrap justify-center md:justify-start gap-3 mt-2 text-xs ${isSpecialProfile ? "text-base-content/55" : "text-base-content/40"}`}>
-              {profile.city && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {profile.city}
-                  {profile.state ? `, ${profile.state}` : ""}
+            {/* Badges */}
+            <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mb-2">
+              {getActiveBadges(profile)
+                .slice(0, 4)
+                .map((badge) => (
+                  <BadgeChip
+                    key={badge._id || badge.type}
+                    badgeType={badge.type}
+                    size="sm"
+                  />
+                ))}
+              {getActiveBadges(profile).length === 0 && (
+                <span className="badge badge-sm badge-soft badge-primary font-medium">
+                  {getUserRoleLabel(profile)}
                 </span>
               )}
-              {profile.email && (
-                <span className="flex items-center gap-1">
-                  <Mail className="w-3 h-3" /> {profile.email}
+              {profile.institutionName && (
+                <span
+                  className={`badge badge-sm font-medium ${isSpecialProfile ? specialStyle.soft : "badge-ghost"}`}
+                >
+                  {profile.institutionName}
                 </span>
               )}
             </div>
-          )}
-        </div>
+
+            {/* Bio */}
+            {profile.bio && (
+              <p
+                className={`mx-auto max-w-2xl text-sm leading-relaxed md:mx-0 ${isSpecialProfile ? "text-base-content/75" : "text-base-content/70"}`}
+              >
+                {profile.bio}
+              </p>
+            )}
+
+            {(profile.isCurrentlyWorking ||
+              profile.currentPosition ||
+              profile.currentCompany ||
+              profile.previousWork) && (
+              <div
+                className={`mt-3 mx-auto max-w-2xl rounded-xl border p-3 text-left md:mx-0 ${isSpecialProfile ? specialStyle.soft : "bg-base-200/60 border-base-300/50"}`}
+              >
+                {(profile.currentPosition || profile.currentCompany) && (
+                  <div className="flex items-start gap-2 text-sm">
+                    <Briefcase
+                      className={`w-4 h-4 mt-0.5 shrink-0 ${isSpecialProfile ? specialStyle.icon : "text-primary"}`}
+                    />
+                    <div>
+                      <p className="font-semibold">
+                        {profile.currentPosition || "Currently working"}
+                      </p>
+                      {profile.currentCompany && (
+                        <p
+                          className={`text-xs flex items-center gap-1 mt-0.5 ${mutedTextClass}`}
+                        >
+                          <Building2 className="w-3 h-3" />
+                          {profile.currentCompany}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {profile.previousWork && (
+                  <div
+                    className={`mt-2 text-xs leading-relaxed ${isSpecialProfile ? "text-base-content/65" : "text-base-content/60"}`}
+                  >
+                    <span
+                      className={`font-semibold ${isSpecialProfile ? "text-base-content/80" : "text-base-content/70"}`}
+                    >
+                      Previous work:
+                    </span>{" "}
+                    {profile.previousWork}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Skills with Endorsements */}
+            {profile.skills?.length > 0 && (
+              <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mt-2">
+                {profile.skills.map((skill, idx) => (
+                  <EndorsementTag key={idx} skill={skill} profileId={id} />
+                ))}
+              </div>
+            )}
+
+            {/* Location / Contact */}
+            {(profile.city || profile.email) && (
+              <div
+                className={`flex flex-wrap justify-center md:justify-start gap-3 mt-2 text-xs ${isSpecialProfile ? "text-base-content/55" : "text-base-content/40"}`}
+              >
+                {profile.city && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3" /> {profile.city}
+                    {profile.state ? `, ${profile.state}` : ""}
+                  </span>
+                )}
+                {profile.email && (
+                  <span className="flex items-center gap-1">
+                    <Mail className="w-3 h-3" /> {profile.email}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -842,7 +852,9 @@ const Profile = () => {
 
                     {/* Time + Deadline */}
                     <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-base-300/50 pt-3 text-xs text-base-content/45">
-                      <span className="rounded-full bg-base-200/60 px-2 py-1">{timeAgo(job.createdAt)}</span>
+                      <span className="rounded-full bg-base-200/60 px-2 py-1">
+                        {timeAgo(job.createdAt)}
+                      </span>
                       <span className="rounded-full bg-base-200/60 px-2 py-1">
                         Deadline:{" "}
                         {new Date(job.deadline).toLocaleDateString("en-IN", {
