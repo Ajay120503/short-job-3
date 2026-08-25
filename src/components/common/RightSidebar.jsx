@@ -4,7 +4,6 @@ import {
   UserPlus,
   Briefcase,
   MapPin,
-  Sparkles,
   TrendingUp,
   ArrowRight,
   Search,
@@ -354,9 +353,6 @@ const RightSidebar = () => {
         <div className="card bg-primary/5 border border-primary/15 shadow-sm">
           <div className="card-body p-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-primary" />
-              </div>
               <div>
                 <p className="text-sm font-semibold">Complete Your Profile</p>
                 <p className="text-xs text-base-content/50 mt-1 leading-relaxed">

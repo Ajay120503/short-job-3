@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Users,
   Briefcase,
-  Sparkles,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -57,9 +56,7 @@ const ResetPassword = () => {
           <h1 className="text-4xl font-bold text-white font-heading mb-4">
             ShortJob
           </h1>
-          <p className="text-lg text-white/70 mb-10">
-            Where Careers Begin
-          </p>
+          <p className="text-lg text-white/70 mb-10">Where Careers Begin</p>
 
           {/* Feature highlights */}
           <div className="space-y-4 text-left">
@@ -80,12 +77,7 @@ const ResetPassword = () => {
               </span>
             </div>
             <div className="flex items-center gap-3 text-white/80">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm">
-                Build your career in one place
-              </span>
+              <span className="text-sm">Build your career in one place</span>
             </div>
           </div>
 

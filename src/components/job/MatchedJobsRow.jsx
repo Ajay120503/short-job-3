@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
 import { canApplyToJobs } from "../../utils/badgeUtils";
@@ -53,7 +52,6 @@ const MatchedJobsRow = () => {
   return (
     <div className="mb-6">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
-        <Sparkles className="w-4 h-4 text-warning" />
         Matched for You
       </h3>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
@@ -69,8 +67,8 @@ const MatchedJobsRow = () => {
                   score >= 70
                     ? "badge-success"
                     : score >= 40
-                    ? "badge-warning"
-                    : "badge-ghost"
+                      ? "badge-warning"
+                      : "badge-ghost"
                 }`}
               >
                 {score}%

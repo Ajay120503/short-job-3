@@ -13,7 +13,6 @@ import {
   Settings,
   Shield,
   ShieldCheck,
-  Sparkles,
   TrendingUp,
   UserCheck,
   Users,
@@ -260,9 +259,12 @@ const AdminDashboard = () => {
               <Shield className="w-6 h-6 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-heading">Admin Dashboard</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-heading">
+                Admin Dashboard
+              </h1>
               <p className="text-xs sm:text-sm text-base-content/50">
-                Platform health, user trust, moderation, and operational controls
+                Platform health, user trust, moderation, and operational
+                controls
               </p>
             </div>
           </div>
@@ -305,7 +307,12 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
-        <StatTile icon={Users} label="Total Users" value={stats.totalUsers} note={`${stats.activeUsers} active`} />
+        <StatTile
+          icon={Users}
+          label="Total Users"
+          value={stats.totalUsers}
+          note={`${stats.activeUsers} active`}
+        />
         <StatTile
           icon={Ban}
           label="Blocked Users"
@@ -341,7 +348,11 @@ const AdminDashboard = () => {
             <Panel
               title="Platform Health"
               icon={Gauge}
-              action={<span className="badge badge-sm badge-success badge-soft">Live</span>}
+              action={
+                <span className="badge badge-sm badge-success badge-soft">
+                  Live
+                </span>
+              }
             >
               <div className="grid gap-3 p-3 sm:p-4 md:grid-cols-3 md:gap-4">
                 <div className="rounded-xl bg-base-200/50 border border-base-300/60 p-4">
@@ -349,9 +360,19 @@ const AdminDashboard = () => {
                     <TrendingUp className="w-4 h-4 text-primary" />
                     Trust Coverage
                   </div>
-                  <ProgressRow label="Verified users" value={stats.verifiedUsers} total={stats.totalUsers} tone="success" />
+                  <ProgressRow
+                    label="Verified users"
+                    value={stats.verifiedUsers}
+                    total={stats.totalUsers}
+                    tone="success"
+                  />
                   <div className="mt-3">
-                    <ProgressRow label="Blocked accounts" value={stats.blockedUsers} total={stats.totalUsers} tone="warning" />
+                    <ProgressRow
+                      label="Blocked accounts"
+                      value={stats.blockedUsers}
+                      total={stats.totalUsers}
+                      tone="warning"
+                    />
                   </div>
                 </div>
                 <div className="rounded-xl bg-base-200/50 border border-base-300/60 p-4">
@@ -359,19 +380,37 @@ const AdminDashboard = () => {
                     <Layers className="w-4 h-4 text-info" />
                     Moderation Load
                   </div>
-                  <p className="text-3xl font-bold text-info">{stats.pendingQueue}</p>
-                  <p className="text-xs text-base-content/45 mt-1">Pending {queueType} reviews</p>
+                  <p className="text-3xl font-bold text-info">
+                    {stats.pendingQueue}
+                  </p>
+                  <p className="text-xs text-base-content/45 mt-1">
+                    Pending {queueType} reviews
+                  </p>
                 </div>
                 <div className="rounded-xl bg-base-200/50 border border-base-300/60 p-4">
                   <div className="flex items-center gap-2 text-sm font-semibold mb-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
                     Quick Actions
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Link to="/admin/queue" className="btn btn-outline btn-primary btn-sm justify-start">Review content</Link>
-                    <Link to="/admin/users" className="btn btn-outline btn-sm justify-start">Manage users</Link>
+                    <Link
+                      to="/admin/queue"
+                      className="btn btn-outline btn-primary btn-sm justify-start"
+                    >
+                      Review content
+                    </Link>
+                    <Link
+                      to="/admin/users"
+                      className="btn btn-outline btn-sm justify-start"
+                    >
+                      Manage users
+                    </Link>
                     {canManagePlatform && (
-                      <Link to="/admin/settings" className="btn btn-ghost btn-sm justify-start">Open settings</Link>
+                      <Link
+                        to="/admin/settings"
+                        className="btn btn-ghost btn-sm justify-start"
+                      >
+                        Open settings
+                      </Link>
                     )}
                   </div>
                 </div>
@@ -381,7 +420,11 @@ const AdminDashboard = () => {
             <Panel
               title="Recent Users"
               icon={Users}
-              action={<Link to="/admin/users" className="btn btn-ghost btn-xs">View All</Link>}
+              action={
+                <Link to="/admin/users" className="btn btn-ghost btn-xs">
+                  View All
+                </Link>
+              }
             >
               <div className="block space-y-2 p-3 sm:hidden">
                 {loadingUsers ? (
@@ -397,51 +440,51 @@ const AdminDashboard = () => {
                 )}
               </div>
               <div className="hidden overflow-x-auto sm:block">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loadingUsers ? (
+                <table className="table">
+                  <thead>
                     <tr>
-                      <td colSpan="4" className="text-center py-10">
-                        <span className="loading loading-spinner loading-md text-primary"></span>
-                      </td>
+                      <th>User</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Joined</th>
                     </tr>
-                  ) : (
-                    recentUsers.map((item) => (
-                      <tr key={item._id}>
-                        <td>
-                          <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-base-content/50">
-                            {item.email}
-                          </div>
-                        </td>
-                        <td className="text-sm">{getUserRoleLabel(item)}</td>
-                        <td>
-                          <span
-                            className={`badge badge-sm ${
-                              item.isBlocked ? "badge-error" : "badge-success"
-                            }`}
-                          >
-                            {item.isBlocked ? "Blocked" : "Active"}
-                          </span>
-                        </td>
-                        <td className="text-sm text-base-content/50">
-                          {item.createdAt
-                            ? new Date(item.createdAt).toLocaleDateString()
-                            : "N/A"}
+                  </thead>
+                  <tbody>
+                    {loadingUsers ? (
+                      <tr>
+                        <td colSpan="4" className="text-center py-10">
+                          <span className="loading loading-spinner loading-md text-primary"></span>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      recentUsers.map((item) => (
+                        <tr key={item._id}>
+                          <td>
+                            <div className="font-medium">{item.name}</div>
+                            <div className="text-xs text-base-content/50">
+                              {item.email}
+                            </div>
+                          </td>
+                          <td className="text-sm">{getUserRoleLabel(item)}</td>
+                          <td>
+                            <span
+                              className={`badge badge-sm ${
+                                item.isBlocked ? "badge-error" : "badge-success"
+                              }`}
+                            >
+                              {item.isBlocked ? "Blocked" : "Active"}
+                            </span>
+                          </td>
+                          <td className="text-sm text-base-content/50">
+                            {item.createdAt
+                              ? new Date(item.createdAt).toLocaleDateString()
+                              : "N/A"}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </Panel>
           </div>
@@ -449,7 +492,11 @@ const AdminDashboard = () => {
           <Panel
             title="Moderation Queue"
             icon={FileText}
-            action={<Link to="/admin/queue" className="btn btn-ghost btn-xs">Open Queue</Link>}
+            action={
+              <Link to="/admin/queue" className="btn btn-ghost btn-xs">
+                Open Queue
+              </Link>
+            }
           >
             <div className="p-3 sm:p-4 space-y-3">
               <div className="join w-full">
@@ -579,7 +626,10 @@ const AdminDashboard = () => {
                 </button>
               ))}
             </div>
-            <Link to="/admin/queue" className="btn btn-outline btn-sm w-full sm:w-auto">
+            <Link
+              to="/admin/queue"
+              className="btn btn-outline btn-sm w-full sm:w-auto"
+            >
               Dedicated Queue
             </Link>
           </div>

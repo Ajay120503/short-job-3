@@ -7,7 +7,6 @@ import {
   Clock,
   UserPlus,
   MapPin,
-  Sparkles,
   ChevronRight,
   Shield,
   BriefcaseBusiness,
@@ -32,7 +31,7 @@ import toast from "react-hot-toast";
 const exploreFilters = [
   { value: "", label: "All", icon: Users },
   { value: "popular", label: "Popular", icon: Flame, clientOnly: true },
-  { value: "active", label: "Active", icon: Sparkles, clientOnly: true },
+  { value: "active", label: "Active", clientOnly: true },
   {
     value: "open_to_work",
     label: "Open to Work",
@@ -238,9 +237,6 @@ const Explore = () => {
       {/* Header */}
       <div className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:mb-5 sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
-            <Sparkles className="h-5 w-5" />
-          </div>
           <div className="min-w-0">
             <h1 className="text-xl font-bold font-heading sm:text-2xl">
               Explore
@@ -436,7 +432,7 @@ const Explore = () => {
             </div>
           ) : (
             <div className="text-center py-20">
-                <div className="w-20 h-20 bg-base-200 rounded-xl flex items-center justify-center mx-auto mb-5">
+              <div className="w-20 h-20 bg-base-200 rounded-xl flex items-center justify-center mx-auto mb-5">
                 <Search className="w-10 h-10 text-base-content/15" />
               </div>
               <h3 className="text-lg font-semibold text-base-content/40 mb-1">
@@ -501,7 +497,12 @@ const Explore = () => {
                             : "bg-base-100 border border-base-300/50 hover:border-primary/20"
                         }`}
                       >
-                        <UserAvatar user={u} size={56} className="mx-auto" showBadges />
+                        <UserAvatar
+                          user={u}
+                          size={56}
+                          className="mx-auto"
+                          showBadges
+                        />
                         <p
                           className={`font-semibold text-sm mt-2.5 line-clamp-2 min-h-[40px] transition-colors ${isSpecialUser ? specialStyle.muted : "group-hover:text-primary"}`}
                         >
@@ -586,7 +587,7 @@ const Explore = () => {
                   return (
                     <div
                       key={u._id}
-                    className={`flex items-center gap-3 rounded-xl border p-3 transition-all hover:shadow-sm sm:gap-4 sm:p-4 group ${
+                      className={`flex items-center gap-3 rounded-xl border p-3 transition-all hover:shadow-sm sm:gap-4 sm:p-4 group ${
                         isSpecialUser
                           ? `${specialStyle.shell} ${specialStyle.shellHover}`
                           : "bg-base-100 border-base-300/30 hover:border-primary/20"

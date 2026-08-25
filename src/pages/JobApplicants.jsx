@@ -27,7 +27,6 @@ import {
   Users,
   Phone,
   Building2,
-  Sparkles,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
@@ -172,11 +171,6 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
           <div className="flex min-w-0 flex-1 items-start gap-3">
             <div className="relative shrink-0">
               <UserAvatar user={a} size={58} ringClass="ring-2 ring-base-200" />
-              {a.openToOpportunities && (
-                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-base-100 bg-success text-success-content">
-                  <Sparkles className="h-3 w-3" />
-                </span>
-              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -215,7 +209,10 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
                 )}
                 {a?.educationLevel && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-base-300/60 bg-base-200/70 px-2.5 py-1 text-xs font-medium text-base-content/65">
-                    <FontAwesomeIcon icon={faUserGraduate} className="h-3.5 w-3.5" />
+                    <FontAwesomeIcon
+                      icon={faUserGraduate}
+                      className="h-3.5 w-3.5"
+                    />
                     {a.educationLevel}
                   </span>
                 )}
