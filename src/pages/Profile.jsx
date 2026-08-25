@@ -254,23 +254,29 @@ const Profile = () => {
   const mutedTextClass = isSpecialProfile ? specialStyle.muted : "text-base-content/50";
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
+    <div className="max-w-4xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
       {/* ============ PROFILE HEADER ============ */}
       <div
-        className={`flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-10 mb-8 rounded-2xl border p-4 md:p-6 ${
+        className={`overflow-hidden rounded-xl border shadow-sm mb-5 md:mb-6 ${
           isSpecialProfile
             ? specialStyle.shell
             : "bg-base-100 border-base-300/50"
         }`}
       >
+        <div
+          className={`h-20 md:h-24 ${
+            isSpecialProfile ? specialStyle.soft : "bg-primary/10"
+          }`}
+        />
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 px-4 pb-4 md:px-6 md:pb-6 -mt-12 md:-mt-14">
         {/* Avatar */}
         <div className="shrink-0">
           <UserAvatar
             user={profile}
-            size={96}
+            size={104}
             className="md:hidden"
             showBadges
-            ringClass={isSpecialProfile ? specialStyle.ring : "ring-2 ring-base-300/50"}
+            ringClass={isSpecialProfile ? specialStyle.ring : "ring-4 ring-base-100"}
           />
           <UserAvatar
             user={profile}
@@ -282,9 +288,9 @@ const Profile = () => {
         </div>
 
         {/* Info */}
-        <div className="flex-1 text-center md:text-left">
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-3">
-            <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center gap-2 flex-wrap">
+        <div className="flex-1 text-center md:text-left min-w-0">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4 mb-4">
+            <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center md:justify-start gap-2 flex-wrap min-w-0">
               {profile.name}
               <VerifiedBadge verifiedStatus={profile.verifiedStatus} />
               <UserSignalBadge user={profile} size="sm" />
@@ -292,7 +298,7 @@ const Profile = () => {
 
             {/* Action buttons */}
             {!isOwnProfile ? (
-              <div className="flex gap-2 justify-center md:justify-start">
+              <div className="grid grid-cols-2 gap-2 md:flex md:justify-start">
                 <button
                   onClick={handleFollow}
                   className={`btn btn-active btn-sm gap-1.5 font-medium ${
@@ -314,7 +320,7 @@ const Profile = () => {
             ) : (
               <Link
                 to="/edit-profile"
-                className="btn btn-active btn-outline btn-sm gap-1.5 font-medium"
+                className="btn btn-active btn-outline btn-sm gap-1.5 font-medium md:shrink-0"
               >
                 <Edit3 className="w-4 h-4" /> Edit Profile
               </Link>
@@ -322,38 +328,26 @@ const Profile = () => {
           </div>
 
           {/* Stats */}
-          <div className="flex justify-center md:justify-start gap-8 mb-3">
-            <div className="text-center md:text-left">
-              <span className="font-bold">{userPosts.length}</span>
-              <span
-                className={`text-sm ml-1 ${mutedTextClass}`}
-              >
-                posts
-              </span>
+          <div className="grid grid-cols-3 gap-2 mb-4 max-w-md mx-auto md:mx-0">
+            <div className={`rounded-xl border px-3 py-2 text-center ${isSpecialProfile ? specialStyle.soft : "bg-base-200/55 border-base-300/50"}`}>
+              <span className="block font-bold">{userPosts.length}</span>
+              <span className={`text-xs ${mutedTextClass}`}>posts</span>
             </div>
             <button
               onClick={handleOpenFollowers}
-              className="text-center md:text-left hover:opacity-70 transition-opacity"
+              className={`rounded-xl border px-3 py-2 text-center hover:opacity-80 transition-opacity ${isSpecialProfile ? specialStyle.soft : "bg-base-200/55 border-base-300/50"}`}
               title="View followers"
             >
-              <span className="font-bold">{followerCount}</span>
-              <span
-                className={`text-sm ml-1 ${mutedTextClass}`}
-              >
-                followers
-              </span>
+              <span className="block font-bold">{followerCount}</span>
+              <span className={`text-xs ${mutedTextClass}`}>followers</span>
             </button>
             <button
               onClick={handleOpenFollowing}
-              className="text-center md:text-left hover:opacity-70 transition-opacity"
+              className={`rounded-xl border px-3 py-2 text-center hover:opacity-80 transition-opacity ${isSpecialProfile ? specialStyle.soft : "bg-base-200/55 border-base-300/50"}`}
               title="View following"
             >
-              <span className="font-bold">{followingCount}</span>
-              <span
-                className={`text-sm ml-1 ${mutedTextClass}`}
-              >
-                following
-              </span>
+              <span className="block font-bold">{followingCount}</span>
+              <span className={`text-xs ${mutedTextClass}`}>following</span>
             </button>
           </div>
 
@@ -385,7 +379,7 @@ const Profile = () => {
           {/* Bio */}
           {profile.bio && (
             <p
-              className={`text-sm leading-relaxed max-w-lg ${isSpecialProfile ? "text-base-content/75" : "text-base-content/70"}`}
+              className={`mx-auto max-w-2xl text-sm leading-relaxed md:mx-0 ${isSpecialProfile ? "text-base-content/75" : "text-base-content/70"}`}
             >
               {profile.bio}
             </p>
@@ -396,7 +390,7 @@ const Profile = () => {
             profile.currentCompany ||
             profile.previousWork) && (
             <div
-              className={`mt-3 max-w-lg rounded-xl border p-3 text-left ${isSpecialProfile ? specialStyle.soft : "bg-base-200/60 border-base-300/50"}`}
+              className={`mt-3 mx-auto max-w-2xl rounded-xl border p-3 text-left md:mx-0 ${isSpecialProfile ? specialStyle.soft : "bg-base-200/60 border-base-300/50"}`}
             >
               {(profile.currentPosition || profile.currentCompany) && (
                 <div className="flex items-start gap-2 text-sm">
@@ -459,6 +453,7 @@ const Profile = () => {
             </div>
           )}
         </div>
+        </div>
       </div>
 
       {/* Strength Meter (own profile only) */}
@@ -478,23 +473,24 @@ const Profile = () => {
       />
 
       {/* ============ TAB BAR ============ */}
-      <div className="flex border-t border-base-300 mb-0">
+      <div className="sticky top-[57px] z-10 flex rounded-xl border border-base-300/70 bg-base-100/95 backdrop-blur-md shadow-sm mb-3 overflow-hidden md:static">
         <button
           onClick={() => setActiveTab("posts")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium border-t-2 -mt-[2px] transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
             activeTab === "posts"
-              ? "border-primary text-primary"
-              : "border-transparent text-base-content/40 hover:text-base-content/60"
+              ? "bg-primary/10 text-primary"
+              : "text-base-content/45 hover:bg-base-200/70 hover:text-base-content/70"
           }`}
         >
+          <Grid3X3 className="w-4 h-4" />
           <span className="hidden sm:inline">POSTS</span>
         </button>
         <button
           onClick={() => setActiveTab("jobs")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium border-t-2 -mt-[2px] transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
             activeTab === "jobs"
-              ? "border-primary text-primary"
-              : "border-transparent text-base-content/40 hover:text-base-content/60"
+              ? "bg-primary/10 text-primary"
+              : "text-base-content/45 hover:bg-base-200/70 hover:text-base-content/70"
           }`}
         >
           <Briefcase className="w-4 h-4" />
@@ -728,18 +724,18 @@ const Profile = () => {
               {userJobs.map((job) => (
                 <div
                   key={job._id}
-                  className={`card border shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
+                  className={`rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 cursor-pointer ${
                     isSpecialProfile
                       ? specialStyle.shell
-                      : "bg-base-100 border-base-300/50"
+                      : "bg-base-100 border-base-300/60 hover:border-primary/25"
                   }`}
                   onClick={() => navigate(`/jobs/${job._id}`)}
                 >
-                  <div className="card-body p-4">
+                  <div>
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-start gap-3 min-w-0">
                         {/* Institution Logo */}
-                        <div className="w-10 h-10 rounded-lg bg-placeholder overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-placeholder overflow-hidden flex-shrink-0 flex items-center justify-center ring-1 ring-base-300/60">
                           {job.institutionLogo?.url ? (
                             <img
                               src={job.institutionLogo.url}
@@ -751,7 +747,7 @@ const Profile = () => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-semibold text-sm line-clamp-1">
+                          <h4 className="font-semibold text-sm sm:text-base line-clamp-1">
                             {job.title}
                           </h4>
                           <p
@@ -759,7 +755,7 @@ const Profile = () => {
                           >
                             {job.institutionName}
                           </p>
-                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          <div className="flex flex-wrap gap-1.5 mt-2">
                             {job.isPaid ? (
                               <span className="badge badge-xs badge-success badge-soft">
                                 Paid
@@ -845,9 +841,9 @@ const Profile = () => {
                     </div>
 
                     {/* Time + Deadline */}
-                    <div className="flex items-center gap-4 mt-3 text-xs text-base-content/40">
-                      <span>{timeAgo(job.createdAt)}</span>
-                      <span>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-base-300/50 pt-3 text-xs text-base-content/45">
+                      <span className="rounded-full bg-base-200/60 px-2 py-1">{timeAgo(job.createdAt)}</span>
+                      <span className="rounded-full bg-base-200/60 px-2 py-1">
                         Deadline:{" "}
                         {new Date(job.deadline).toLocaleDateString("en-IN", {
                           month: "short",

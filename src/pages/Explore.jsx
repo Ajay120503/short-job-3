@@ -232,24 +232,30 @@ const Explore = () => {
   const isSearching = query.trim() || exploreFilter;
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
+    <div className="max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
       <NoticeboardBanner />
 
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold font-heading flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-warning" />
-          Explore
-        </h1>
-        <p className="text-sm text-base-content/50 mt-1">
-          Discover people, skills, and institutions
-        </p>
+      <div className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:mb-5 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold font-heading sm:text-2xl">
+              Explore
+            </h1>
+            <p className="text-xs text-base-content/50 sm:text-sm">
+              Discover people, skills, institutions, and active profiles.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Search Bar + Filters */}
-      <div className="space-y-3 mb-6">
+      <div className="mb-5 space-y-3 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:mb-6 sm:p-4">
         <form onSubmit={handleSearch}>
-          <label className="input input-bordered flex items-center gap-2 rounded-2xl px-5 py-2 shadow-sm focus-within:shadow-md focus-within:border-primary/50 transition-all">
+          <label className="input input-bordered flex items-center gap-2 rounded-xl px-4 py-2 shadow-sm transition-all focus-within:border-primary/50 focus-within:shadow-md">
             <Search className="w-4 h-4 text-base-content/30 flex-shrink-0" />
             <input
               type="text"
@@ -270,14 +276,14 @@ const Explore = () => {
         </form>
 
         {/* Discovery Filters */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 scrollbar-hide">
           {exploreFilters.map((f) => {
             const Icon = f.icon;
             return (
               <button
                 key={f.value}
                 onClick={() => setExploreFilter(f.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap ${
                   exploreFilter === f.value
                     ? "bg-primary text-primary-content shadow-sm"
                     : "bg-base-200 text-base-content/60 hover:bg-base-300 hover:text-base-content/80"
@@ -311,7 +317,7 @@ const Explore = () => {
             </div>
           ) : users.length > 0 ? (
             <div className="space-y-2">
-              <p className="text-xs text-base-content/40 font-medium mb-3 flex items-center gap-2">
+              <p className="mb-3 flex items-center gap-2 rounded-full bg-base-200/70 px-3 py-1.5 text-xs font-medium text-base-content/45 w-fit">
                 <Users className="w-3.5 h-3.5" />
                 {users.length} result{users.length !== 1 ? "s" : ""} found
               </p>
@@ -322,7 +328,7 @@ const Explore = () => {
                 return (
                   <div
                     key={u._id}
-                    className={`flex items-center gap-4 rounded-2xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md group ${
+                    className={`flex items-center gap-3 rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md sm:gap-4 sm:p-4 group ${
                       isSpecialUser
                         ? `${specialStyle.shell} ${specialStyle.shellHover}`
                         : "bg-base-100 border-base-300/50 hover:border-primary/30"
@@ -330,9 +336,9 @@ const Explore = () => {
                   >
                     <Link
                       to={`/profile/${u._id}`}
-                      className="flex items-center gap-4 flex-1 min-w-0"
+                      className="flex items-center gap-3 flex-1 min-w-0 sm:gap-4"
                     >
-                      <UserAvatar user={u} size={56} showBadges />
+                      <UserAvatar user={u} size={52} showBadges />
                       <div className="min-w-0 flex-1">
                         <p
                           className={`font-semibold text-sm truncate transition-colors ${
@@ -430,7 +436,7 @@ const Explore = () => {
             </div>
           ) : (
             <div className="text-center py-20">
-              <div className="w-20 h-20 bg-base-200 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <div className="w-20 h-20 bg-base-200 rounded-xl flex items-center justify-center mx-auto mb-5">
                 <Search className="w-10 h-10 text-base-content/15" />
               </div>
               <h3 className="text-lg font-semibold text-base-content/40 mb-1">
@@ -444,7 +450,7 @@ const Explore = () => {
         </>
       ) : (
         /* Default View - Trending + Recent */
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Trending Users */}
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -479,7 +485,7 @@ const Explore = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
                 {trendingUsers.map((u) =>
                   (() => {
                     const signal = getUserSignal(u);
@@ -489,7 +495,7 @@ const Explore = () => {
                       <Link
                         key={u._id}
                         to={`/profile/${u._id}`}
-                        className={`card rounded-2xl p-4 text-center transition-all hover:-translate-y-1 hover:shadow-md group min-h-[184px] ${
+                        className={`card rounded-xl p-3 text-center transition-all hover:-translate-y-1 hover:shadow-md sm:p-4 group min-h-[176px] ${
                           isSpecialUser
                             ? `${specialStyle.shell} ${specialStyle.shellHover}`
                             : "bg-base-100 border border-base-300/50 hover:border-primary/20"
@@ -580,7 +586,7 @@ const Explore = () => {
                   return (
                     <div
                       key={u._id}
-                      className={`flex items-center gap-4 rounded-2xl border p-4 transition-all hover:shadow-sm group ${
+                    className={`flex items-center gap-3 rounded-xl border p-3 transition-all hover:shadow-sm sm:gap-4 sm:p-4 group ${
                         isSpecialUser
                           ? `${specialStyle.shell} ${specialStyle.shellHover}`
                           : "bg-base-100 border-base-300/30 hover:border-primary/20"

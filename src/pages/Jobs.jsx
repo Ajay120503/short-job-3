@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Briefcase, MapPin, Clock, Plus } from "lucide-react";
+import { Briefcase, MapPin, Clock, Plus, Search, SlidersHorizontal, Users } from "lucide-react";
 import API from "../utils/axios";
 import useAuthStore from "../store/authStore";
 import { canCreateJobs } from "../utils/badgeUtils";
@@ -44,6 +44,7 @@ const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const canPost = canCreateJobs(user);
 
@@ -75,26 +76,65 @@ const Jobs = () => {
     );
   }
 
-  const filtered =
-    filter === "all"
-      ? jobs
-      : jobs.filter((j) => j.isPaid === (filter === "paid"));
+  const filtered = jobs
+    .filter((j) => (filter === "all" ? true : j.isPaid === (filter === "paid")))
+    .filter((j) => {
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return true;
+      return [
+        j.title,
+        j.institutionName,
+        j.location,
+        j.roleType,
+        j.description,
+        ...(j.skillsRequired || []),
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term));
+    });
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-6">
+    <div className="max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
       <MatchedJobsRow />
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold font-heading">Job Board</h1>
-          <p className="text-sm text-base-content/50 mt-0.5">
-            Find relevant opportunities
-          </p>
+      <div className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:mb-5 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Briefcase className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-heading sm:text-2xl">
+                Job Board
+              </h1>
+              <p className="text-xs text-base-content/50 sm:text-sm">
+                Find relevant opportunities and quick-apply matches.
+              </p>
+            </div>
+          </div>
+          {canPost && (
+            <Link to="/jobs/create" className="btn btn-primary btn-sm gap-1.5">
+              <Plus className="w-4 h-4" />
+              Post a Job
+            </Link>
+          )}
         </div>
-        <div className="flex gap-2">
-          <div className="join">
+      </div>
+
+      <div className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <label className="input input-bordered h-10 rounded-xl flex items-center gap-2">
+            <Search className="h-4 w-4 text-base-content/35" />
+            <input
+              className="grow text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search jobs, skills, organization..."
+            />
+          </label>
+          <div className="join w-full sm:w-auto">
             <button
-              className={`btn btn-sm join-item ${
+              className={`btn btn-sm join-item flex-1 sm:flex-none ${
                 filter === "all" ? "btn-primary" : "btn-ghost"
               }`}
               onClick={() => setFilter("all")}
@@ -102,7 +142,7 @@ const Jobs = () => {
               All
             </button>
             <button
-              className={`btn btn-sm join-item ${
+              className={`btn btn-sm join-item flex-1 sm:flex-none ${
                 filter === "paid" ? "btn-primary" : "btn-ghost"
               }`}
               onClick={() => setFilter("paid")}
@@ -110,7 +150,7 @@ const Jobs = () => {
               Paid
             </button>
             <button
-              className={`btn btn-sm join-item ${
+              className={`btn btn-sm join-item flex-1 sm:flex-none ${
                 filter === "unpaid" ? "btn-primary" : "btn-ghost"
               }`}
               onClick={() => setFilter("unpaid")}
@@ -118,13 +158,14 @@ const Jobs = () => {
               Unpaid
             </button>
           </div>
-
-          {canPost && (
-            <Link to="/jobs/create" className="btn btn-primary btn-sm gap-1.5">
-              <Plus className="w-4 h-4" />
-              Post a Job
-            </Link>
-          )}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-base-content/45">
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <span>{filtered.length} showing</span>
+          <span className="h-1 w-1 rounded-full bg-base-content/25" />
+          <span>{jobs.filter((j) => j.isPaid).length} paid</span>
+          <span className="h-1 w-1 rounded-full bg-base-content/25" />
+          <span>{jobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0)} total applicants</span>
         </div>
       </div>
 
@@ -149,15 +190,15 @@ const Jobs = () => {
               <Link
                 key={job._id}
                 to={`/jobs/${job._id}`}
-                className={`card border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-4 block ${
+                className={`block rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 ${
                   isSpecialJob
                     ? `${specialStyle.shell} ${specialStyle.shellHover}`
                     : "bg-base-100 border-base-300/50 hover:border-primary/30"
                 }`}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   {/* Job image or institution logo */}
-                  <div className="w-14 h-14 rounded-xl bg-placeholder overflow-hidden shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-placeholder overflow-hidden shrink-0 ring-1 ring-base-300/60">
                     {job.image?.url ? (
                       <img
                         src={job.image.url}
@@ -178,7 +219,7 @@ const Jobs = () => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <h3
                           className={`font-semibold text-base mb-0.5 ${isSpecialJob ? specialStyle.muted : ""}`}
@@ -193,7 +234,7 @@ const Jobs = () => {
                           </p>
                           <UserSignalBadge user={job.postedBy} />
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs">
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
                           <span
                             className={`flex items-center gap-1 ${isSpecialJob ? "text-base-content/60" : "text-base-content/50"}`}
                           >
@@ -251,7 +292,7 @@ const Jobs = () => {
                             )}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <div className="flex items-center justify-between gap-2 sm:flex-col sm:items-end flex-shrink-0">
                         <QuickApplyBtn
                           jobId={job._id}
                           alreadyApplied={hasAppliedToJob(job, user?._id)}
@@ -275,6 +316,7 @@ const Jobs = () => {
                           <span
                             className={`text-xs ${isSpecialJob ? "text-base-content/50" : "text-base-content/30"}`}
                           >
+                            <Users className="mr-1 inline h-3 w-3" />
                             {job.applicants.length} applicant
                             {job.applicants.length !== 1 ? "s" : ""}
                           </span>

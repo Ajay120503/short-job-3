@@ -5,6 +5,9 @@ import {
   Share2,
   Bookmark,
   BookmarkCheck,
+  Search,
+  Filter,
+  X,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
@@ -17,6 +20,8 @@ const SavedPosts = () => {
   const { user } = useAuthStore();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const fetchSaved = async () => {
     try {
@@ -69,17 +74,76 @@ const SavedPosts = () => {
     );
   }
 
+  const filteredPosts = posts
+    .filter((post) => typeFilter === "all" || post.type === typeFilter)
+    .filter((post) => {
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return true;
+      return [
+        post.text,
+        post.author?.name,
+        post.author?.institutionName,
+        post.type,
+        ...(post.tags || []),
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term));
+    });
+
   return (
-    <div className="max-w-2xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
-      <div className="flex items-center gap-3 mb-6">
-        <BookmarkCheck className="w-6 h-6 text-primary" />
-        <div>
-          <h1 className="text-2xl font-bold font-heading">Saved Posts</h1>
-          <p className="text-sm text-base-content/40 mt-0.5">
-            {posts.length} saved post{posts.length !== 1 ? "s" : ""}
-          </p>
+    <div className="max-w-2xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
+      <div className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <BookmarkCheck className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold font-heading sm:text-2xl">
+              Saved Posts
+            </h1>
+            <p className="text-xs text-base-content/50 sm:text-sm">
+              {posts.length} saved post{posts.length !== 1 ? "s" : ""}
+            </p>
+          </div>
         </div>
       </div>
+
+      {posts.length > 0 && (
+        <div className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+          <label className="input input-bordered h-10 rounded-xl flex items-center gap-2">
+            <Search className="h-4 w-4 text-base-content/35" />
+            <input
+              className="grow text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search saved posts..."
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="btn btn-ghost btn-xs btn-circle"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </label>
+          <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
+            {["all", "general", "achievement", "job"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setTypeFilter(type)}
+                className={`btn btn-xs rounded-full capitalize ${
+                  typeFilter === type ? "btn-primary" : "btn-ghost bg-base-200/70"
+                }`}
+              >
+                <Filter className="h-3 w-3" />
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {posts.length === 0 ? (
         <div className="text-center py-20 px-6">
@@ -93,9 +157,16 @@ const SavedPosts = () => {
             Save posts from your feed to read them later.
           </p>
         </div>
+      ) : filteredPosts.length === 0 ? (
+        <div className="text-center py-16 px-6">
+          <Search className="mx-auto mb-3 h-10 w-10 text-base-content/20" />
+          <p className="font-semibold text-base-content/45">
+            No saved posts match your search
+          </p>
+        </div>
       ) : (
         <div className="space-y-5">
-          {posts.map((post) => {
+          {filteredPosts.map((post) => {
             const isLiked =
               post.likes?.includes(user?._id) ||
               post.likes?.some((l) => l === user?._id || l?._id === user?._id);
@@ -103,9 +174,9 @@ const SavedPosts = () => {
             return (
               <div
                 key={post._id}
-                className="card bg-base-100 border border-base-300/50 shadow-sm hover:shadow-md transition-shadow"
+                className="overflow-hidden rounded-xl border border-base-300/60 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
               >
-                <div className="card-body p-5">
+                <div className="p-4 sm:p-5">
                   {/* Author Row */}
                   <div className="flex items-center gap-3 mb-4">
                     <UserAvatar user={post.author} size={44} />
@@ -120,7 +191,7 @@ const SavedPosts = () => {
                         <UserSignalBadge user={post.author} />
                         <span>·</span>
                         <span>
-                          {new Date(post.createdAt).toLocaleDateString(
+                          Saved from {new Date(post.createdAt).toLocaleDateString(
                             "en-US",
                             { month: "short", day: "numeric" }
                           )}
@@ -136,7 +207,7 @@ const SavedPosts = () => {
 
                   {/* Text */}
                   {post.text && (
-                    <p className="text-sm leading-relaxed mb-4 whitespace-pre-line">
+                    <p className="text-sm leading-relaxed mb-4 whitespace-pre-line text-base-content/80">
                       {post.text}
                     </p>
                   )}
@@ -153,7 +224,7 @@ const SavedPosts = () => {
                           key={i}
                           src={img.url}
                           alt=""
-                          className="w-full object-cover rounded-lg max-h-96"
+                          className="w-full object-cover rounded-lg max-h-96 bg-base-200"
                           loading="lazy"
                         />
                       ))}
