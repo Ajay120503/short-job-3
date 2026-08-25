@@ -1,11 +1,80 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Users, Search, Download, RefreshCw, Shield } from "lucide-react";
+import {
+  Users,
+  Search,
+  Download,
+  RefreshCw,
+  Shield,
+  Ban,
+  CheckCircle,
+} from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import API from "../../utils/axios";
-import { isAdminUser } from "../../utils/badgeUtils";
+import { getUserRoleLabel, isAdminUser } from "../../utils/badgeUtils";
 import toast from "react-hot-toast";
 import UserRow from "../../components/admin/UserRow";
+import UserAvatar from "../../components/common/UserAvatar";
+
+const StatCard = ({ icon: Icon, label, value, tone = "primary" }) => {
+  const toneClass = {
+    primary: "text-primary bg-primary/10",
+    warning: "text-warning bg-warning/10",
+    success: "text-success bg-success/10",
+    info: "text-info bg-info/10",
+  }[tone];
+
+  return (
+    <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-bold uppercase tracking-wide text-base-content/45">
+            {label}
+          </p>
+          <p className="mt-1 text-2xl font-bold">{value}</p>
+        </div>
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toneClass}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const UserMobileCard = ({ user }) => (
+  <Link
+    to={`/admin/users/${user._id}`}
+    className="block rounded-xl border border-base-300/60 bg-base-100 p-3 shadow-sm transition-all hover:border-primary/30 hover:bg-primary/5"
+  >
+    <div className="flex items-start gap-3">
+      <UserAvatar user={user} size={44} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate font-semibold">{user.name}</p>
+            <p className="truncate text-xs text-base-content/50">{user.email}</p>
+          </div>
+          <span className={`badge badge-xs shrink-0 ${user.isBlocked ? "badge-error" : "badge-success"}`}>
+            {user.isBlocked ? "Blocked" : "Active"}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <span className="badge badge-xs badge-primary badge-soft">
+            {getUserRoleLabel(user)}
+          </span>
+          {user.isSuperAdmin ? (
+            <span className="badge badge-xs badge-primary">Super Admin</span>
+          ) : user.isAdmin ? (
+            <span className="badge badge-xs badge-info">Admin</span>
+          ) : null}
+          {user.isVerified && (
+            <span className="badge badge-xs badge-success badge-soft">Verified</span>
+          )}
+        </div>
+      </div>
+    </div>
+  </Link>
+);
 
 const AdminUsers = () => {
   const { user: currentUser, isAuthenticated } = useAuthStore();
@@ -77,64 +146,38 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Shield className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold font-heading">User Management</h1>
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-heading sm:text-2xl">User Management</h1>
+              <p className="text-xs text-base-content/50 sm:text-sm">
+                Search, verify, audit, and manage platform accounts.
+              </p>
+            </div>
+          </div>
+          <Link to="/admin" className="btn btn-ghost btn-sm justify-start sm:justify-center">
+            Back to Dashboard
+          </Link>
         </div>
-        <Link to="/admin" className="btn btn-ghost btn-sm">
-          Back to Dashboard
-        </Link>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="stats bg-base-100 shadow rounded-xl">
-          <div className="stat">
-            <div className="stat-figure text-primary">
-              <Users className="w-5 h-5" />
-            </div>
-            <div className="stat-title">Total Users</div>
-            <div className="stat-value text-primary text-lg">{stats.total}</div>
-          </div>
-        </div>
-        <div className="stats bg-base-100 shadow rounded-xl">
-          <div className="stat">
-            <div className="stat-figure text-warning">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div className="stat-title">Blocked</div>
-            <div className="stat-value text-warning text-lg">
-              {stats.blocked}
-            </div>
-          </div>
-        </div>
-        <div className="stats bg-base-100 shadow rounded-xl">
-          <div className="stat">
-            <div className="stat-figure text-success">
-              <Download className="w-5 h-5" />
-            </div>
-            <div className="stat-title">Verified</div>
-            <div className="stat-value text-success text-lg">
-              {stats.verified}
-            </div>
-          </div>
-        </div>
-        <div className="stats bg-base-100 shadow rounded-xl">
-          <div className="stat">
-            <div className="stat-figure text-info">
-              <RefreshCw className="w-5 h-5" />
-            </div>
-            <div className="stat-title">Pending Verification</div>
-            <div className="stat-value text-info text-lg">{stats.pending}</div>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+        <StatCard icon={Users} label="Total Users" value={stats.total} />
+        <StatCard icon={Ban} label="Blocked" value={stats.blocked} tone="warning" />
+        <StatCard icon={CheckCircle} label="Verified" value={stats.verified} tone="success" />
+        <StatCard icon={Download} label="Pending" value={stats.pending} tone="info" />
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-4">
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+      <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_170px_150px_44px]">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40" />
           <input
@@ -146,7 +189,7 @@ const AdminUsers = () => {
           />
         </div>
         <select
-          className="select select-bordered select-sm w-40"
+          className="select select-bordered select-sm w-full"
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
@@ -156,7 +199,7 @@ const AdminUsers = () => {
           <option value="college">Networks</option>
         </select>
         <select
-          className="select select-bordered select-sm w-32"
+          className="select select-bordered select-sm w-full"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -173,11 +216,23 @@ const AdminUsers = () => {
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
+      </div>
 
       {/* Users Table */}
-      <div className="card bg-base-100 shadow-xl">
+      <div className="card border border-base-300/70 bg-base-100 shadow-sm">
         <div className="card-body p-0">
-          <div className="overflow-x-auto">
+          <div className="block space-y-2 p-3 sm:hidden">
+            {loading ? (
+              <div className="h-24 skeleton rounded-xl" />
+            ) : filteredUsers.length === 0 ? (
+              <div className="py-12 text-center text-sm text-base-content/40">
+                No users found matching your search.
+              </div>
+            ) : (
+              filteredUsers.map((u) => <UserMobileCard key={u._id} user={u} />)
+            )}
+          </div>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="table table-hover">
               <thead>
                 <tr>

@@ -134,7 +134,7 @@ const AdminSettings = () => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="mx-auto max-w-4xl px-2 py-3 sm:px-4 md:p-6">
         <div className="space-y-4">
           <div className="h-8 w-48 skeleton rounded mb-4"></div>
           <div className="card bg-base-100 border border-base-300 rounded-xl p-6 space-y-4">
@@ -148,13 +148,13 @@ const AdminSettings = () => {
   }
 
   const SettingToggle = ({ icon: Icon, title, description, checked, onClick }) => (
-    <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-base-200/50 border border-base-300/50">
+    <div className="flex items-start justify-between gap-3 p-3 sm:p-4 rounded-lg bg-base-200/50 border border-base-300/50">
       <div className="flex items-start gap-3 min-w-0">
         <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
           <Icon className="w-4 h-4" />
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-sm">{title}</p>
+          <p className="font-semibold text-sm leading-snug">{title}</p>
           <p className="text-xs text-base-content/50 leading-relaxed mt-0.5">
             {description}
           </p>
@@ -176,30 +176,39 @@ const AdminSettings = () => {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-5 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Shield className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold font-heading">Admin Settings</h1>
-        </div>
-        <div className="flex gap-2">
-          <Link to="/admin" className="btn btn-ghost btn-sm">
-            Back to Dashboard
-          </Link>
-          <button
-            onClick={fetchSettings}
-            className="btn btn-ghost btn-sm"
-            title="Refresh"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-heading sm:text-2xl">Admin Settings</h1>
+              <p className="text-xs text-base-content/50 sm:text-sm">
+                Platform security, moderation rules, and creator notifications.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-[1fr_auto] gap-2 sm:flex">
+            <Link to="/admin" className="btn btn-ghost btn-sm">
+              Back to Dashboard
+            </Link>
+            <button
+              onClick={fetchSettings}
+              className="btn btn-ghost btn-sm"
+              title="Refresh"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-4 md:space-y-5">
         <div className="card bg-base-100 shadow-sm border border-base-300/50">
-          <div className="card-body">
+          <div className="card-body p-4 sm:p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-primary" />
               Login Security
@@ -217,7 +226,7 @@ const AdminSettings = () => {
         </div>
 
         <div className="card bg-base-100 shadow-sm border border-base-300/50">
-          <div className="card-body">
+          <div className="card-body p-4 sm:p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-primary" />
               Moderation Controls
@@ -268,7 +277,7 @@ const AdminSettings = () => {
                     key={key}
                     type="button"
                     onClick={() => handleContentTypeChange(key, !checked)}
-                    className={`rounded-lg border p-4 text-left transition-colors ${
+                    className={`rounded-lg border p-3 sm:p-4 text-left transition-colors ${
                       checked
                         ? "border-primary/40 bg-primary/10 text-primary"
                         : "border-base-300 bg-base-100 text-base-content/55"
@@ -287,7 +296,7 @@ const AdminSettings = () => {
         </div>
 
         <div className="card bg-base-100 shadow-sm border border-base-300/50">
-          <div className="card-body">
+          <div className="card-body p-4 sm:p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <TimerReset className="w-5 h-5 text-primary" />
               Review Rules
@@ -375,7 +384,7 @@ const AdminSettings = () => {
           </div>
 
           {/* Save button */}
-          <div className="px-8 pb-8">
+          <div className="px-4 pb-4 sm:px-6 sm:pb-6">
             <button
               onClick={handleSave}
               disabled={saving}

@@ -7,6 +7,8 @@ import {
   Sparkles,
   TrendingUp,
   ArrowRight,
+  Search,
+  PlusCircle,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
@@ -71,21 +73,41 @@ const RightSidebar = () => {
   }, [user?._id, user?.following]);
 
   return (
-    <aside className="hidden lg:flex flex-col w-90 bg-base-100 border-l border-base-200/80 sticky top-0 h-screen overflow-hidden">
-      <div className="flex-1 overflow-y-auto scrollbar-thin p-5 space-y-5">
+    <aside className="hidden lg:flex flex-col w-[360px] xl:w-[380px] bg-base-100 border-l border-base-200/80 sticky top-0 h-screen overflow-hidden">
+      <div className="border-b border-base-200/80 p-4">
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Link
+            to="/explore"
+            className="flex h-10 items-center gap-2 rounded-xl border border-base-300/60 bg-base-200/45 px-3 text-sm text-base-content/45 transition-colors hover:border-primary/25 hover:bg-primary/5 hover:text-primary"
+          >
+            <Search className="h-4 w-4" />
+            Search ShortJob
+          </Link>
+          <Link
+            to="/posts/create"
+            className="btn btn-primary btn-sm h-10 w-10 rounded-xl p-0"
+            title="Create post"
+            aria-label="Create post"
+          >
+            <PlusCircle className="h-5 w-5" />
+          </Link>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto scrollbar-thin p-4 xl:p-5 space-y-4">
         {/* Who to Follow */}
-        <div className="card bg-base-200/50 border border-base-300/30 shadow-sm">
+        <div className="rounded-xl border border-base-300/60 bg-base-100 shadow-sm overflow-hidden">
           <div className="card-body p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-sm flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-sm flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <UserPlus className="w-4 h-4 text-primary" />
                 </div>
-                Who to Follow
+                <span className="truncate">Who to Follow</span>
               </h3>
               <Link
                 to="/explore"
-                className="text-xs text-primary hover:underline flex items-center gap-1"
+                className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0"
               >
                 See all <ArrowRight className="w-3 h-3" />
               </Link>
@@ -116,7 +138,7 @@ const RightSidebar = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {suggestedUsers.map((u) => {
                   const signal = getUserSignal(u);
                   const isSpecialUser = Boolean(signal);
@@ -126,13 +148,13 @@ const RightSidebar = () => {
                     <Link
                       key={u._id}
                       to={`/profile/${u._id}`}
-                      className={`flex items-center gap-3 overflow-hidden rounded-xl p-2.5 transition-all group ${
+                      className={`flex items-center gap-3 overflow-hidden rounded-xl border p-2.5 transition-all group ${
                         isSpecialUser
                           ? `${specialStyle.shell} ${specialStyle.shellHover}`
-                          : "hover:bg-base-200/70"
+                          : "border-transparent hover:border-base-300/60 hover:bg-base-200/70"
                       }`}
                     >
-                      <UserAvatar user={u} size={40} />
+                      <UserAvatar user={u} size={42} />
                       <div className="flex-1 min-w-0">
                         <p
                           className={`text-sm font-semibold line-clamp-1 transition-colors ${
@@ -143,13 +165,13 @@ const RightSidebar = () => {
                         >
                           {u.name}
                         </p>
-                        <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                          <span className="badge badge-xs badge-soft badge-primary text-[10px] max-w-23 line-clamp-1 capitalize font-medium shrink-0">
+                        <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                          <span className="badge badge-xs badge-soft badge-primary text-[10px] max-w-24 truncate capitalize font-medium shrink-0">
                             {getUserRoleLabel(u)}
                           </span>
                           {signal && (
                             <span
-                              className={`badge badge-xs text-[10px] line-clamp-1 font-semibold shrink-0 ${signal.className}`}
+                              className={`badge badge-xs text-[10px] truncate font-semibold shrink-0 ${signal.className}`}
                             >
                               {signal.label}
                             </span>
@@ -183,18 +205,18 @@ const RightSidebar = () => {
         </div>
 
         {/* Trending Jobs */}
-        <div className="card bg-base-200/50 border border-base-300/30 shadow-sm">
+        <div className="rounded-xl border border-base-300/60 bg-base-100 shadow-sm overflow-hidden">
           <div className="card-body p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-sm flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-sm flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center shrink-0">
                   <TrendingUp className="w-4 h-4 text-warning" />
                 </div>
-                Trending Jobs
+                <span className="truncate">Trending Jobs</span>
               </h3>
               <Link
                 to="/jobs"
-                className="text-xs text-primary hover:underline flex items-center gap-1"
+                className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0"
               >
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
@@ -226,7 +248,7 @@ const RightSidebar = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {recentJobs.map((job) => {
                   const signal = getUserSignal(job.postedBy);
                   const isSpecialJob = Boolean(signal);
@@ -235,10 +257,10 @@ const RightSidebar = () => {
                     <Link
                       key={job._id}
                       to={`/jobs/${job._id}`}
-                      className={`block p-2.5 rounded-xl transition-all group ${
+                      className={`block p-2.5 rounded-xl border transition-all group ${
                         isSpecialJob
                           ? `${specialStyle.shell} ${specialStyle.shellHover}`
-                          : "hover:bg-base-200/70"
+                          : "border-transparent hover:border-base-300/60 hover:bg-base-200/70"
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
@@ -272,7 +294,7 @@ const RightSidebar = () => {
                           >
                             {job.institutionName || "Institution"}
                           </p>
-                          <div className="flex items-center gap-2 mt-2 min-w-0">
+                          <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                             <span className="flex min-w-0 items-center gap-1 text-[10px] text-base-content/40">
                               <MapPin className="w-3 h-3 shrink-0" />
                               <span className="truncate capitalize">
@@ -280,13 +302,13 @@ const RightSidebar = () => {
                               </span>
                             </span>
                             <span
-                              className={`flex min-w-0 items-center gap-1 text-[10px] font-medium ${
+                              className={`flex min-w-0 items-center gap-1 text-[10px] font-semibold ${
                                 job.isPaid
                                   ? "text-success"
                                   : "text-base-content/40"
                               }`}
                             >
-                              <span className="truncate">
+                              <span className="max-w-24 truncate rounded-full bg-success/10 px-1.5 py-0.5">
                                 {job.isPaid
                                   ? job.currency === "USD"
                                     ? `$${Number(job.stipend).toLocaleString()}`
@@ -296,14 +318,14 @@ const RightSidebar = () => {
                             </span>
                           </div>
                           {job.skillsRequired?.length > 0 && (
-                            <div className="mt-1.5 flex max-w-full items-center gap-1 overflow-hidden">
+                            <div className="mt-2 flex max-w-full items-center gap-1 overflow-hidden">
                               {job.skillsRequired
                                 .slice(0, visibleSkillsLimit)
                                 .map((skill, i) => (
                                   <span
                                     key={i}
                                     title={skill}
-                                    className="badge badge-xs badge-outline shrink line-clamp-1 px-1.5"
+                                    className="badge badge-xs badge-outline max-w-[86px] shrink truncate px-1.5"
                                   >
                                     {skill}
                                   </span>
@@ -329,7 +351,7 @@ const RightSidebar = () => {
         </div>
 
         {/* Quick Tip Card */}
-        <div className="card bg-primary/5 border border-primary/10 shadow-sm">
+        <div className="card bg-primary/5 border border-primary/15 shadow-sm">
           <div className="card-body p-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -345,7 +367,7 @@ const RightSidebar = () => {
                   to="/edit-profile"
                   className="btn btn-xs btn-ghost text-primary mt-2 px-0 hover:underline"
                 >
-                  Update now →
+                  Update now <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>

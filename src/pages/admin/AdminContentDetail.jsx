@@ -106,7 +106,7 @@ const AdminContentDetail = () => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="mx-auto max-w-4xl px-2 py-3 sm:px-4 md:p-6">
         <div className="space-y-4">
           <div className="h-8 w-48 skeleton rounded mb-4"></div>
           <div className="card bg-base-100 border border-base-300 rounded-xl p-6 space-y-4">
@@ -122,7 +122,7 @@ const AdminContentDetail = () => {
 
   if (!content) {
     return (
-      <div className="p-6 max-w-4xl mx-auto text-center py-20">
+      <div className="mx-auto max-w-4xl px-2 py-20 text-center sm:px-4 md:p-6">
         <FileText className="w-12 h-12 text-base-content/20 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-base-content/40">
           Content not found
@@ -145,27 +145,36 @@ const AdminContentDetail = () => {
         : "badge-success badge-soft";
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Shield className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold font-heading">
-            Content Review — {type?.toUpperCase()}
-          </h1>
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-heading sm:text-2xl">
+                Content Review
+              </h1>
+              <p className="text-xs uppercase tracking-wide text-base-content/45">
+                {type}
+              </p>
+            </div>
+          </div>
+          <Link to="/admin/queue" className="btn btn-ghost btn-sm gap-2 justify-start sm:justify-center">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Queue
+          </Link>
         </div>
-        <Link to="/admin/queue" className="btn btn-ghost btn-sm gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Queue
-        </Link>
       </div>
 
       {/* Content Card */}
-      <div className="card bg-base-100 shadow-xl border border-base-300/50 mb-6">
-        <div className="card-body">
+      <div className="card bg-base-100 shadow-sm border border-base-300/60">
+        <div className="card-body p-4 sm:p-6">
           {/* Author info */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+          <div className="flex items-center gap-3 mb-4 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
               {author?.profilePic?.url ? (
                 <img
                   src={author.profilePic.url}
@@ -176,8 +185,8 @@ const AdminContentDetail = () => {
                 <User className="w-5 h-5 text-primary" />
               )}
             </div>
-            <div>
-              <div className="font-semibold">{author?.name || "Unknown"}</div>
+            <div className="min-w-0">
+              <div className="font-semibold truncate">{author?.name || "Unknown"}</div>
               <div className="flex items-center gap-2 text-xs text-base-content/50">
                 <BadgeChip badgeType={authorBadge} size="sm" />
                 <span>{formatDate(content.createdAt)}</span>
@@ -328,7 +337,7 @@ const AdminContentDetail = () => {
           )}
 
           {/* Content metadata */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-base-300/50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-base-300/50">
             {content.roleType && (
               <div>
                 <span className="text-xs text-base-content/50">
@@ -377,13 +386,13 @@ const AdminContentDetail = () => {
       </div>
 
       {/* Moderation Actions */}
-      <div className="card bg-base-100 shadow-xl border border-base-300/50">
-        <div className="card-body">
+      <div className="card bg-base-100 shadow-sm border border-base-300/60">
+        <div className="card-body p-4 sm:p-6">
           <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
             <Shield className="w-4 h-4" /> Moderation Actions
           </h3>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <button
               onClick={handleRunRuleCheck}
               disabled={actionLoading}

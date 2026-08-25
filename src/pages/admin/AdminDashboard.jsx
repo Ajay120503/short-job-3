@@ -24,6 +24,7 @@ import API from "../../utils/axios";
 import { getUserRoleLabel, isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";
 import QueueItem from "../../components/admin/QueueItem";
 import UserRow from "../../components/admin/UserRow";
+import UserAvatar from "../../components/common/UserAvatar";
 
 const tabs = [
   { value: "overview", label: "Overview", icon: BarChart3 },
@@ -51,19 +52,19 @@ const statTones = {
 };
 
 const StatTile = ({ icon: Icon, label, value, tone = "primary", note }) => (
-  <div className="rounded-xl bg-base-100 border border-base-300/70 shadow-sm p-4">
-    <div className="flex items-start justify-between gap-4">
-      <div>
-        <p className="text-[11px] font-bold text-base-content/45 uppercase tracking-wide">
+  <div className="rounded-xl bg-base-100 border border-base-300/70 shadow-sm p-3 sm:p-4 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md">
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-[10px] sm:text-[11px] font-bold text-base-content/45 uppercase tracking-wide truncate">
           {label}
         </p>
-        <p className={`mt-2 text-3xl font-bold ${statTones[tone].value}`}>
+        <p className={`mt-1.5 text-2xl sm:text-3xl font-bold ${statTones[tone].value}`}>
           {value}
         </p>
-        {note && <p className="mt-1 text-xs text-base-content/45">{note}</p>}
+        {note && <p className="mt-1 text-[11px] sm:text-xs text-base-content/45 truncate">{note}</p>}
       </div>
       <div
-        className={`w-10 h-10 rounded-lg flex items-center justify-center ${statTones[tone].icon}`}
+        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${statTones[tone].icon}`}
       >
         <Icon className="w-5 h-5" />
       </div>
@@ -91,14 +92,14 @@ const TabButton = ({ tab, activeTab, onSelect }) => {
 
 const Panel = ({ title, action, children, icon: Icon }) => (
   <section className="rounded-xl bg-base-100 border border-base-300/70 shadow-sm overflow-hidden">
-    <div className="px-4 py-3 border-b border-base-300/60 flex items-center justify-between bg-base-200/40">
-      <div className="flex items-center gap-2">
+    <div className="px-3 sm:px-4 py-3 border-b border-base-300/60 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-base-200/40">
+      <div className="flex items-center gap-2 min-w-0">
         {Icon && (
-          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <Icon className="w-4 h-4" />
           </div>
         )}
-        <h2 className="font-semibold">{title}</h2>
+        <h2 className="font-semibold truncate">{title}</h2>
       </div>
       {action}
     </div>
@@ -127,6 +128,45 @@ const ProgressRow = ({ label, value, total, tone = "primary" }) => {
     </div>
   );
 };
+
+const AdminUserCard = ({ item }) => (
+  <Link
+    to={`/admin/users/${item._id}`}
+    className="block rounded-xl border border-base-300/60 bg-base-100 p-3 shadow-sm transition-all hover:border-primary/25 hover:bg-primary/5"
+  >
+    <div className="flex items-start gap-3">
+      <UserAvatar user={item} size={42} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="font-semibold truncate">{item.name}</p>
+            <p className="text-xs text-base-content/50 truncate">{item.email}</p>
+          </div>
+          <span
+            className={`badge badge-xs shrink-0 ${
+              item.isBlocked ? "badge-error" : "badge-success"
+            }`}
+          >
+            {item.isBlocked ? "Blocked" : "Active"}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <span className="badge badge-xs badge-soft badge-primary">
+            {getUserRoleLabel(item)}
+          </span>
+          {item.isSuperAdmin ? (
+            <span className="badge badge-xs badge-primary">Super Admin</span>
+          ) : item.isAdmin ? (
+            <span className="badge badge-xs badge-info">Admin</span>
+          ) : null}
+          {item.isVerified && (
+            <span className="badge badge-xs badge-success badge-soft">Verified</span>
+          )}
+        </div>
+      </div>
+    </div>
+  </Link>
+);
 
 const AdminDashboard = () => {
   const { user, isAuthenticated } = useAuthStore();
@@ -212,22 +252,22 @@ const AdminDashboard = () => {
   const canManagePlatform = isSuperAdminUser(user);
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-      <div className="rounded-2xl bg-base-100 border border-base-300/70 shadow-sm p-5">
+    <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
+      <div className="rounded-xl sm:rounded-2xl bg-base-100 border border-base-300/70 shadow-sm p-4 sm:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <Shield className="w-6 h-6 text-primary" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold font-heading">Admin Dashboard</h1>
-              <p className="text-sm text-base-content/50">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-heading">Admin Dashboard</h1>
+              <p className="text-xs sm:text-sm text-base-content/50">
                 Platform health, user trust, moderation, and operational controls
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center md:justify-end">
             <button
               type="button"
               onClick={() => {
@@ -238,7 +278,7 @@ const AdminDashboard = () => {
               title="Refresh"
             >
               <RefreshCw className="w-4 h-4" />
-              <span className="sm:hidden">Refresh</span>
+              <span>Refresh</span>
             </button>
             {canManagePlatform && (
               <Link
@@ -252,7 +292,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-1 rounded-xl bg-base-200/70 p-1 sm:flex sm:overflow-x-auto">
+        <div className="mt-4 sm:mt-5 grid grid-cols-3 gap-1 rounded-xl bg-base-200/70 p-1 sm:inline-flex sm:max-w-full sm:overflow-x-auto">
           {tabs.map((tab) => (
             <TabButton
               key={tab.value}
@@ -264,7 +304,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
         <StatTile icon={Users} label="Total Users" value={stats.totalUsers} note={`${stats.activeUsers} active`} />
         <StatTile
           icon={Ban}
@@ -296,14 +336,14 @@ const AdminDashboard = () => {
       </div>
 
       {activeTab === "overview" && (
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-6">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-4 md:gap-6">
+          <div className="space-y-4 md:space-y-6">
             <Panel
               title="Platform Health"
               icon={Gauge}
               action={<span className="badge badge-sm badge-success badge-soft">Live</span>}
             >
-              <div className="grid md:grid-cols-3 gap-4 p-4">
+              <div className="grid gap-3 p-3 sm:p-4 md:grid-cols-3 md:gap-4">
                 <div className="rounded-xl bg-base-200/50 border border-base-300/60 p-4">
                   <div className="flex items-center gap-2 text-sm font-semibold mb-3">
                     <TrendingUp className="w-4 h-4 text-primary" />
@@ -343,7 +383,20 @@ const AdminDashboard = () => {
               icon={Users}
               action={<Link to="/admin/users" className="btn btn-ghost btn-xs">View All</Link>}
             >
-              <div className="overflow-x-auto">
+              <div className="block space-y-2 p-3 sm:hidden">
+                {loadingUsers ? (
+                  <div className="h-24 skeleton rounded-lg"></div>
+                ) : recentUsers.length === 0 ? (
+                  <div className="py-8 text-center text-sm text-base-content/40">
+                    No recent users.
+                  </div>
+                ) : (
+                  recentUsers.map((item) => (
+                    <AdminUserCard key={item._id} item={item} />
+                  ))
+                )}
+              </div>
+              <div className="hidden overflow-x-auto sm:block">
               <table className="table">
                 <thead>
                   <tr>
@@ -398,7 +451,7 @@ const AdminDashboard = () => {
             icon={FileText}
             action={<Link to="/admin/queue" className="btn btn-ghost btn-xs">Open Queue</Link>}
           >
-            <div className="p-4 space-y-3">
+            <div className="p-3 sm:p-4 space-y-3">
               <div className="join w-full">
                 {["post", "job", "story"].map((type) => (
                   <button
@@ -438,7 +491,7 @@ const AdminDashboard = () => {
 
       {activeTab === "users" && (
         <section className="bg-base-100 border border-base-300/70 rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-base-300/60 bg-base-200/40 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="p-3 sm:p-4 border-b border-base-300/60 bg-base-200/40 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="relative md:max-w-md w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40" />
               <input
@@ -454,7 +507,21 @@ const AdminDashboard = () => {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="block space-y-2 p-3 sm:hidden">
+            {loadingUsers ? (
+              <div className="h-24 skeleton rounded-lg"></div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="py-10 text-center text-base-content/40">
+                No users found.
+              </div>
+            ) : (
+              filteredUsers.map((item) => (
+                <AdminUserCard key={item._id} item={item} />
+              ))
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto sm:block">
             <table className="table">
               <thead>
                 <tr>
@@ -495,14 +562,14 @@ const AdminDashboard = () => {
 
       {activeTab === "moderation" && (
         <section className="space-y-4">
-          <div className="rounded-xl bg-base-100 border border-base-300/70 shadow-sm p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="join">
+          <div className="rounded-xl bg-base-100 border border-base-300/70 shadow-sm p-3 sm:p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="join w-full sm:w-auto">
               {["post", "job", "story"].map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setQueueType(type)}
-                  className={`btn btn-sm join-item capitalize ${
+                  className={`btn btn-sm join-item flex-1 sm:flex-none capitalize ${
                     queueType === type
                       ? "bg-primary/10 text-primary border-primary/25"
                       : "btn-ghost"
@@ -512,7 +579,7 @@ const AdminDashboard = () => {
                 </button>
               ))}
             </div>
-            <Link to="/admin/queue" className="btn btn-outline btn-sm">
+            <Link to="/admin/queue" className="btn btn-outline btn-sm w-full sm:w-auto">
               Dedicated Queue
             </Link>
           </div>

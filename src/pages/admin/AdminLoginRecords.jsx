@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2 } from "lucide-react";
+import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2, Settings } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import {
   isAdminUser,
@@ -72,23 +72,30 @@ const AdminLoginRecords = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto pb-20">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold font-heading flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-primary" />
-            Login Records
-          </h1>
-          <p className="text-sm text-base-content/50 mt-1">
-            Admin-only audit trail for location and photo verified sign-ins.
-          </p>
+    <div className="mx-auto max-w-6xl space-y-4 px-2 py-3 pb-20 sm:px-4 md:p-6">
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-heading sm:text-2xl">
+                Login Records
+              </h1>
+              <p className="text-xs text-base-content/50 sm:text-sm">
+                Admin-only audit trail for location and photo verified sign-ins.
+              </p>
+            </div>
+          </div>
+          <Link to="/admin/settings" className="btn btn-outline btn-sm justify-start gap-2 sm:justify-center">
+            <Settings className="h-4 w-4" />
+            Login Security Settings
+          </Link>
         </div>
-        <Link to="/admin/settings" className="btn btn-outline btn-sm">
-          Login Security Settings
-        </Link>
       </div>
 
-      <div className="rounded-2xl border border-base-300 bg-base-100 p-3 mb-4">
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
         <div className="grid gap-2 md:grid-cols-[1fr_160px_150px_150px]">
           <label className="input input-bordered input-sm flex items-center gap-2">
             <Search className="w-4 h-4 text-base-content/35" />
@@ -131,11 +138,11 @@ const AdminLoginRecords = () => {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="h-20 skeleton rounded-2xl" />
+            <div key={item} className="h-24 skeleton rounded-xl" />
           ))}
         </div>
       ) : records.length === 0 ? (
-        <div className="rounded-2xl border border-base-300 bg-base-100 p-10 text-center">
+        <div className="rounded-xl border border-base-300 bg-base-100 p-10 text-center shadow-sm">
           <ShieldCheck className="w-10 h-10 text-base-content/20 mx-auto mb-3" />
           <p className="font-semibold text-base-content/55">
             No login records found
@@ -151,10 +158,12 @@ const AdminLoginRecords = () => {
                 <button
                   type="button"
                   onClick={() => setExpanded(isOpen ? null : record._id)}
-                  className="w-full rounded-2xl border border-base-300 bg-base-100 p-3 text-left hover:border-primary/30 transition-colors"
+                  className={`w-full rounded-xl border bg-base-100 p-3 text-left shadow-sm transition-all hover:border-primary/30 hover:bg-primary/5 ${
+                    isOpen ? "border-primary/30 bg-primary/5" : "border-base-300"
+                  }`}
                 >
                   <div className="grid gap-3 md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr_44px] md:items-center">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-base-200">
+                    <div className="w-full max-w-20 md:w-16 h-20 md:h-16 rounded-xl overflow-hidden bg-base-200">
                       {record.photo?.url ? (
                         <img
                           src={record.photo.url}
@@ -180,11 +189,13 @@ const AdminLoginRecords = () => {
                     <p className="text-xs text-base-content/55 truncate">
                       {userInfo.email}
                     </p>
-                    <p className="text-xs text-base-content/55 flex items-center gap-1">
+                    <p className="text-xs text-base-content/55 flex items-center gap-1 min-w-0">
                       <MapPin className="w-3.5 h-3.5" />
-                      {[record.location?.city, record.location?.state]
-                        .filter(Boolean)
-                        .join(", ") || "Unknown"}
+                      <span className="truncate">
+                        {[record.location?.city, record.location?.state]
+                          .filter(Boolean)
+                          .join(", ") || "Unknown"}
+                      </span>
                     </p>
                     <p className="text-xs text-base-content/55 flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />

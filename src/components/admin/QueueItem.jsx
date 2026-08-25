@@ -99,11 +99,11 @@ const QueueItem = ({ item, type, onUpdate }) => {
     type === "job" ? Briefcase : type === "story" ? Image : FileText;
 
   return (
-    <div className="card bg-base-200/30 border border-base-300 rounded-xl p-5 space-y-4">
-      <div className="flex items-start justify-between">
+    <div className="card bg-base-200/30 border border-base-300 rounded-xl p-3 sm:p-5 space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         {/* Author info */}
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
             {author.profilePic?.url ? (
               <img
                 src={author.profilePic.url}
@@ -114,9 +114,9 @@ const QueueItem = ({ item, type, onUpdate }) => {
               <Users className="w-6 h-6 text-primary" />
             )}
           </div>
-          <div>
-            <div className="font-semibold text-sm">{authorName}</div>
-            <div className="text-xs text-base-content/50">{authorEmail}</div>
+          <div className="min-w-0">
+            <div className="font-semibold text-sm truncate">{authorName}</div>
+            <div className="text-xs text-base-content/50 truncate">{authorEmail}</div>
             <div className="mt-1">
               <BadgeChip badgeType={authorBadge} size="sm" />
             </div>
@@ -124,7 +124,7 @@ const QueueItem = ({ item, type, onUpdate }) => {
         </div>
 
         {/* Date */}
-        <div className="text-xs text-base-content/50 flex items-center gap-1">
+        <div className="text-xs text-base-content/50 flex items-center gap-1 sm:justify-end">
           <Calendar className="w-3 h-3" />
           {formatDate(item.createdAt)}
         </div>
@@ -212,16 +212,16 @@ const QueueItem = ({ item, type, onUpdate }) => {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-base-300/50">
+      <div className="flex flex-col gap-3 pt-3 border-t border-base-300/50 sm:flex-row sm:items-center sm:justify-between">
         <Link
           to={`/admin/content/${type}/${item._id}`}
-          className="btn btn-ghost btn-xs gap-1.5"
+          className="btn btn-ghost btn-xs gap-1.5 justify-start sm:justify-center"
         >
           <Eye className="w-3 h-3" />
           Review Detail
         </Link>
 
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex">
           <button
             onClick={() => handleModerate("reject")}
             className="btn btn-outline btn-error btn-sm"

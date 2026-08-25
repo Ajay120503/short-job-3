@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Shield, Clock, CheckCircle, RefreshCw } from "lucide-react";
+import { Shield, Clock, CheckCircle, RefreshCw, FileText, Briefcase, Image } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import { isAdminUser } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
@@ -53,66 +53,76 @@ const AdminQueue = () => {
   ).length;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Shield className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold font-heading">
-            Content Moderation Queue
-          </h1>
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-heading sm:text-2xl">
+                Content Moderation Queue
+              </h1>
+              <p className="text-xs text-base-content/50 sm:text-sm">
+                Review pending posts, jobs, and stories before they go public.
+              </p>
+            </div>
+          </div>
+          <Link to="/admin" className="btn btn-ghost btn-sm justify-start sm:justify-center">
+            Back to Dashboard
+          </Link>
         </div>
-        <Link to="/admin" className="btn btn-ghost btn-sm">
-          Back to Dashboard
-        </Link>
       </div>
 
       {/* Content type tabs */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex gap-1 bg-base-300/50 rounded-lg p-1">
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid grid-cols-3 gap-1 rounded-lg bg-base-200/70 p-1 sm:inline-grid">
+            {[
+              ["post", "Posts", FileText],
+              ["job", "Jobs", Briefcase],
+              ["story", "Stories", Image],
+            ].map(([key, label, Icon]) => (
+              <button
+                key={key}
+                onClick={() => setQueueType(key)}
+                className={`btn btn-sm gap-1.5 ${
+                  queueType === key
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/25"
+                    : "btn-ghost text-base-content/60"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+
           <button
-            onClick={() => setQueueType("post")}
-            className={`btn btn-sm btn-ghost ${
-              queueType === "post" ? "btn-active" : ""
-            }`}
+            onClick={fetchQueue}
+            className="btn btn-ghost btn-sm justify-start gap-2 sm:justify-center"
+            title="Refresh"
           >
-            Posts
-          </button>
-          <button
-            onClick={() => setQueueType("job")}
-            className={`btn btn-sm btn-ghost ${
-              queueType === "job" ? "btn-active" : ""
-            }`}
-          >
-            Jobs
-          </button>
-          <button
-            onClick={() => setQueueType("story")}
-            className={`btn btn-sm btn-ghost ${
-              queueType === "story" ? "btn-active" : ""
-            }`}
-          >
-            Stories
+            <RefreshCw className="w-4 h-4" />
+            Refresh
           </button>
         </div>
-
-        <button
-          onClick={fetchQueue}
-          className="btn btn-ghost btn-sm"
-          title="Refresh"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Stats */}
-      <div className="stats bg-base-100 shadow rounded-xl mb-6">
-        <div className="stat">
-          <div className="stat-figure text-warning">
+      <div className="rounded-xl border border-warning/20 bg-warning/5 p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-warning/80">
+              Pending Review
+            </p>
+            <p className="mt-1 text-2xl font-bold text-warning">{pendingCount}</p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
             <Clock className="w-5 h-5" />
           </div>
-          <div className="stat-title">Pending Review</div>
-          <div className="stat-value text-warning text-lg">{pendingCount}</div>
         </div>
       </div>
 
@@ -120,10 +130,7 @@ const AdminQueue = () => {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="card bg-base-100 border border-base-300 rounded-xl p-5"
-            >
+            <div key={i} className="card bg-base-100 border border-base-300 rounded-xl p-4 sm:p-5">
               <div className="space-y-3">
                 <div className="h-4 w-3/4 skeleton rounded"></div>
                 <div className="h-3 w-1/2 skeleton rounded"></div>

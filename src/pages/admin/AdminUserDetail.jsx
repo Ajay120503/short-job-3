@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Shield,
-  User,
   Mail,
   MapPin,
   Calendar,
@@ -26,6 +25,7 @@ import {
 import { badgeConfig } from "../../utils/badgeConfig";
 import BadgeChip from "../../components/common/BadgeChip";
 import ConfirmModal from "../../components/common/ConfirmModal";
+import UserAvatar from "../../components/common/UserAvatar";
 import API from "../../utils/axios";
 import toast from "react-hot-toast";
 
@@ -180,7 +180,7 @@ const AdminUserDetail = () => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="mx-auto max-w-4xl px-2 py-3 sm:px-4 md:p-6">
         <div className="space-y-4">
           <div className="h-8 w-48 skeleton rounded mb-4"></div>
           <div className="card bg-base-100 p-6 space-y-4">
@@ -195,7 +195,7 @@ const AdminUserDetail = () => {
 
   if (!profile) {
     return (
-      <div className="p-6 max-w-4xl mx-auto text-center py-20">
+      <div className="mx-auto max-w-4xl px-2 py-20 text-center sm:px-4 md:p-6">
         <h2 className="text-xl font-semibold text-base-content/40">
           User not found
         </h2>
@@ -214,42 +214,41 @@ const AdminUserDetail = () => {
     !profile.isSuperAdmin;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Shield className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold font-heading">User Details</h1>
-        </div>
-        <div className="flex gap-2">
-          <Link to="/admin/users" className="btn btn-ghost btn-sm">
-            Back to Users
-          </Link>
-          <Link to="/admin" className="btn btn-ghost btn-sm">
-            Dashboard
-          </Link>
+      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-heading sm:text-2xl">User Details</h1>
+              <p className="text-xs text-base-content/50 sm:text-sm">
+                Account trust, badges, notes, and access controls.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:flex">
+            <Link to="/admin/users" className="btn btn-ghost btn-sm">
+              Back to Users
+            </Link>
+            <Link to="/admin" className="btn btn-ghost btn-sm">
+              Dashboard
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* User Info Card */}
-      <div className="card bg-base-100 shadow-xl border border-base-300/50 mb-6">
-        <div className="card-body">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                {profile.profilePic?.url ? (
-                  <img
-                    src={profile.profilePic.url}
-                    alt={profile.name}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <User className="w-8 h-8 text-primary" />
-                )}
-              </div>
-              <div>
+      <div className="card bg-base-100 shadow-sm border border-base-300/60">
+        <div className="card-body p-4 sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              <UserAvatar user={profile} size={64} ringClass="ring-2 ring-primary/15" />
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-xl font-bold">{profile.name}</h2>
+                  <h2 className="truncate text-xl font-bold">{profile.name}</h2>
                   {profile.isSuperAdmin ? (
                     <span className="badge badge-primary badge-sm">Super Admin</span>
                   ) : profile.isAdmin ? (
@@ -263,7 +262,7 @@ const AdminUserDetail = () => {
             </div>
 
             {canManageUser && (
-              <div className="flex flex-wrap justify-end gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex lg:flex-wrap lg:justify-end">
                 <button
                   onClick={handleAdminRole}
                   className={`btn btn-sm gap-2 ${profile.isAdmin ? "btn-warning" : "btn-primary"}`}
@@ -300,7 +299,7 @@ const AdminUserDetail = () => {
           </div>
 
           {/* User Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <div className="grid grid-cols-1 gap-4 mt-5 md:grid-cols-2 md:gap-6">
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-base-content/40" />
@@ -389,7 +388,7 @@ const AdminUserDetail = () => {
 
           {/* Grant Badge */}
           {canManageUser && (
-            <div className="mt-6 flex items-end gap-3">
+            <div className="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
               <div className="flex-1">
                 <label className="label pb-1">
                   <span className="label-text text-xs font-medium">
@@ -434,7 +433,7 @@ const AdminUserDetail = () => {
             <button
               onClick={handleAddNote}
               disabled={actionLoading}
-              className="btn btn-ghost btn-sm mt-2"
+              className="btn btn-ghost btn-sm mt-2 w-full sm:w-auto"
             >
               Save Notes
             </button>
@@ -448,7 +447,7 @@ const AdminUserDetail = () => {
               </h3>
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="btn btn-error btn-sm gap-2"
+                className="btn btn-error btn-sm gap-2 w-full sm:w-auto"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete User
