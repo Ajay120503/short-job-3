@@ -11,6 +11,9 @@ import toast from "react-hot-toast";
 import useAuthStore from "../store/authStore";
 import { getAvailablePostTypes } from "../utils/postTypeConfig";
 
+const MAX_POST_IMAGES = 4;
+const MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024;
+
 const CreatePost = () => {
   const navigate = useNavigate();
   const [text, setText] = useState("");
@@ -18,14 +21,40 @@ const CreatePost = () => {
   const [type, setType] = useState("general");
   const [images, setImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const { user } = useAuthStore();
   const availableTypes = getAvailablePostTypes(user);
 
+  const handleImagesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    const nextErrors = {};
+    if (files.length > MAX_POST_IMAGES) {
+      nextErrors.images = `You can upload up to ${MAX_POST_IMAGES} images.`;
+    }
+    const invalidFile = files.find((file) => !file.type.startsWith("image/"));
+    if (invalidFile) nextErrors.images = "Please upload image files only.";
+    const oversizedFile = files.find((file) => file.size > MAX_POST_IMAGE_SIZE);
+    if (oversizedFile) nextErrors.images = "Each image must be under 5MB.";
+    if (Object.keys(nextErrors).length) {
+      setErrors((prev) => ({ ...prev, ...nextErrors }));
+      return;
+    }
+    setErrors((prev) => ({ ...prev, images: "", form: "" }));
+    setImages(files);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const nextErrors = {};
     if (!text.trim() && images.length === 0) {
-      toast.error("Please add text or images to your post.");
+      nextErrors.form = "Please add text or images to your post.";
+    }
+    if (text.length > 2000) nextErrors.text = "Post text cannot exceed 2000 characters.";
+    if (tags.length > 160) nextErrors.tags = "Tags are too long.";
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      toast.error("Please fix the highlighted fields.");
       return;
     }
 
@@ -74,10 +103,13 @@ const CreatePost = () => {
           {/* Text Area */}
           <div className="form-control">
             <textarea
-              className="textarea textarea-bordered w-full min-h-[150px] text-base placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 transition-colors resize-none"
+              className={`textarea textarea-bordered w-full min-h-[150px] text-base placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 transition-colors resize-none ${errors.text || errors.form ? "textarea-error" : ""}`}
               placeholder="What's on your mind?"
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                setText(e.target.value);
+                setErrors((prev) => ({ ...prev, text: "", form: "" }));
+              }}
               maxLength={2000}
               autoFocus
             />
@@ -86,6 +118,8 @@ const CreatePost = () => {
                 {text.length}/2000
               </span>
             </label>
+            {errors.text && <FieldError>{errors.text}</FieldError>}
+            {errors.form && <FieldError>{errors.form}</FieldError>}
           </div>
 
           {/* Post Type Selector */}
@@ -119,11 +153,15 @@ const CreatePost = () => {
           <div className="form-control">
             <input
               type="text"
-              className="input input-bordered w-full text-sm focus:outline-none focus:border-primary/50"
+              className={`input input-bordered w-full text-sm focus:outline-none focus:border-primary/50 ${errors.tags ? "input-error" : ""}`}
               placeholder="Tags (comma separated, e.g. React, Node.js)"
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={(e) => {
+                setTags(e.target.value);
+                setErrors((prev) => ({ ...prev, tags: "" }));
+              }}
             />
+            {errors.tags && <FieldError>{errors.tags}</FieldError>}
           </div>
 
           {/* Image Upload */}
@@ -136,7 +174,7 @@ const CreatePost = () => {
                 className="hidden"
                 accept="image/*"
                 multiple
-                onChange={(e) => setImages([...e.target.files])}
+                onChange={handleImagesChange}
               />
             </label>
             {images.length > 0 && (
@@ -144,6 +182,7 @@ const CreatePost = () => {
                 {images.length} image{images.length > 1 ? "s" : ""} selected
               </span>
             )}
+            {errors.images && <FieldError>{errors.images}</FieldError>}
           </div>
 
           {/* Image Preview */}
@@ -199,5 +238,9 @@ const CreatePost = () => {
     </div>
   );
 };
+
+const FieldError = ({ children }) => (
+  <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
 
 export default CreatePost;

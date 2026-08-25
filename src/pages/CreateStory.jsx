@@ -4,16 +4,28 @@ import { ArrowLeft, X, Image, Send } from "lucide-react";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
 
+const MAX_STORY_IMAGE_SIZE = 5 * 1024 * 1024;
+
 const CreateStory = () => {
   const navigate = useNavigate();
   const [storyImage, setStoryImage] = useState(null);
   const [storyText, setStoryText] = useState("");
   const [storyUploading, setStoryUploading] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({ ...prev, image: "Please upload an image file." }));
+        return;
+      }
+      if (file.size > MAX_STORY_IMAGE_SIZE) {
+        setErrors((prev) => ({ ...prev, image: "Story image must be under 5MB." }));
+        return;
+      }
+      setErrors((prev) => ({ ...prev, image: "", form: "" }));
       setStoryImage(file);
       setPreview(URL.createObjectURL(file));
     }
@@ -21,6 +33,7 @@ const CreateStory = () => {
 
   const handleRemoveImage = () => {
     setStoryImage(null);
+    setErrors((prev) => ({ ...prev, image: "" }));
     if (preview) {
       URL.revokeObjectURL(preview);
       setPreview(null);
@@ -29,8 +42,16 @@ const CreateStory = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const nextErrors = {};
     if (!storyImage && !storyText.trim()) {
-      toast.error("Please add an image or caption to your story.");
+      nextErrors.form = "Please add an image or caption to your story.";
+    }
+    if (storyText.length > 200) {
+      nextErrors.storyText = "Caption cannot exceed 200 characters.";
+    }
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      toast.error("Please fix the highlighted fields.");
       return;
     }
 
@@ -105,6 +126,8 @@ const CreateStory = () => {
                 />
               </label>
             )}
+            {errors.image && <FieldError>{errors.image}</FieldError>}
+            {errors.form && <FieldError>{errors.form}</FieldError>}
           </div>
 
           {/* Caption */}
@@ -116,10 +139,13 @@ const CreateStory = () => {
             </label>
             <input
               type="text"
-              className="input input-bordered w-full text-sm"
+              className={`input input-bordered w-full text-sm ${errors.storyText ? "input-error" : ""}`}
               placeholder="Add a caption..."
               value={storyText}
-              onChange={(e) => setStoryText(e.target.value)}
+              onChange={(e) => {
+                setStoryText(e.target.value);
+                setErrors((prev) => ({ ...prev, storyText: "", form: "" }));
+              }}
               maxLength={200}
             />
             <label className="label">
@@ -127,6 +153,7 @@ const CreateStory = () => {
                 {storyText.length}/200
               </span>
             </label>
+            {errors.storyText && <FieldError>{errors.storyText}</FieldError>}
           </div>
 
           {/* Action Buttons */}
@@ -156,5 +183,9 @@ const CreateStory = () => {
     </div>
   );
 };
+
+const FieldError = ({ children }) => (
+  <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
 
 export default CreateStory;

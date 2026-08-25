@@ -13,6 +13,26 @@ const steps = [
   { key: "organization", label: "Your organization" },
 ];
 
+const calculateAge = (dateValue) => {
+  if (!dateValue) return "";
+  const birthDate = new Date(dateValue);
+  if (Number.isNaN(birthDate.getTime()) || birthDate > new Date()) return "";
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age -= 1;
+  }
+  return Math.max(age, 0);
+};
+
+const todayInputValue = new Date().toISOString().split("T")[0];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
 /**
  * Profile completion wizard after OTP/email verification.
  */
@@ -25,6 +45,8 @@ const CompleteProfile = () => {
   const [formData, setFormData] = useState({
     bio: user?.bio || "",
     address: user?.address || "",
+    age: user?.age || "",
+    dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.split("T")[0] : "",
     city: user?.city || "",
     state: user?.state || "",
     institutionName: user?.institutionName || "",
@@ -47,6 +69,7 @@ const CompleteProfile = () => {
   const [profilePicPreview, setProfilePicPreview] = useState(
     user?.profilePic?.url || "",
   );
+  const [errors, setErrors] = useState({});
 
   // If user already has profile basics and is verified, skip wizard
   useEffect(() => {
@@ -59,22 +82,75 @@ const CompleteProfile = () => {
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErrors((prev) => ({ ...prev, profilePic: "Please choose an image file." }));
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setErrors((prev) => ({ ...prev, profilePic: "Profile photo must be under 5MB." }));
+      return;
+    }
+    setErrors((prev) => ({ ...prev, profilePic: "" }));
     setProfilePicFile(file);
     setProfilePicPreview(URL.createObjectURL(file));
   };
 
   // ── Form handlers ──
   const updateField = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "dateOfBirth" ? { age: calculateAge(value) } : {}),
+    }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  const nextStep = () =>
+  const validateStep = (targetStep = step) => {
+    const nextErrors = {};
+    if (targetStep === 0) {
+      if (formData.bio.length > 200) nextErrors.bio = "Bio cannot exceed 200 characters.";
+      if (formData.dateOfBirth) {
+        const age = calculateAge(formData.dateOfBirth);
+        if (age === "") nextErrors.dateOfBirth = "Choose a valid past date.";
+        if (age !== "" && age > 120) {
+          nextErrors.dateOfBirth = "Please choose a realistic date of birth.";
+        }
+      }
+      if (formData.linkedinUrl && !/^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(formData.linkedinUrl.trim())) {
+        nextErrors.linkedinUrl = "Enter a valid LinkedIn URL.";
+      }
+    }
+    if (targetStep === 1) {
+      if (Number(formData.experience) < 0) {
+        nextErrors.experience = "Experience cannot be negative.";
+      }
+      if (formData.isCurrentlyWorking && !formData.currentPosition.trim()) {
+        nextErrors.currentPosition = "Current position is required.";
+      }
+      if (formData.isCurrentlyWorking && !formData.currentCompany.trim()) {
+        nextErrors.currentCompany = "Current workplace is required.";
+      }
+    }
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const nextStep = () => {
+    if (!validateStep()) {
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
     setStep((prev) => Math.min(prev + 1, steps.length - 1));
+  };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
 
   // ── Submit ──
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateStep()) {
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -83,6 +159,8 @@ const CompleteProfile = () => {
       profileFormData.append("name", user?.name || "");
       profileFormData.append("bio", formData.bio);
       profileFormData.append("address", formData.address);
+      profileFormData.append("age", formData.age);
+      profileFormData.append("dateOfBirth", formData.dateOfBirth);
       profileFormData.append("city", formData.city);
       profileFormData.append("state", formData.state);
       profileFormData.append("institutionName", formData.institutionName);
@@ -189,6 +267,7 @@ const CompleteProfile = () => {
             />
           </label>
         </div>
+        {errors.profilePic && <FieldError>{errors.profilePic}</FieldError>}
       </div>
 
       <div className="form-control">
@@ -206,6 +285,35 @@ const CompleteProfile = () => {
         <span className="label-text-alt text-base-content/40">
           {formData.bio.length}/200
         </span>
+        {errors.bio && <FieldError>{errors.bio}</FieldError>}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="form-control">
+          <label className="label pb-1">
+            <span className="label-text font-medium text-sm">Date of Birth</span>
+          </label>
+          <input
+            type="date"
+            className={`input input-bordered w-full input-sm ${errors.dateOfBirth ? "input-error" : ""}`}
+            max={todayInputValue}
+            value={formData.dateOfBirth}
+            onChange={(e) => updateField("dateOfBirth", e.target.value)}
+          />
+          {errors.dateOfBirth && <FieldError>{errors.dateOfBirth}</FieldError>}
+        </div>
+        <div className="form-control">
+          <label className="label pb-1">
+            <span className="label-text font-medium text-sm">Age</span>
+          </label>
+          <input
+            type="number"
+            className="input input-bordered w-full input-sm bg-base-200/70"
+            value={formData.age}
+            readOnly
+            placeholder="Auto"
+          />
+        </div>
       </div>
 
       <div className="form-control">
@@ -254,11 +362,12 @@ const CompleteProfile = () => {
         </label>
         <input
           type="url"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.linkedinUrl ? "input-error" : ""}`}
           placeholder="https://linkedin.com/in/yourprofile"
           value={formData.linkedinUrl}
           onChange={(e) => updateField("linkedinUrl", e.target.value)}
         />
+        {errors.linkedinUrl && <FieldError>{errors.linkedinUrl}</FieldError>}
       </div>
     </div>
   );
@@ -339,7 +448,7 @@ const CompleteProfile = () => {
         </label>
         <input
           type="number"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.experience ? "input-error" : ""}`}
           placeholder="0"
           min="0"
           value={formData.experience}
@@ -347,6 +456,7 @@ const CompleteProfile = () => {
             updateField("experience", parseInt(e.target.value) || 0)
           }
         />
+        {errors.experience && <FieldError>{errors.experience}</FieldError>}
       </div>
 
       <div className="form-control">
@@ -387,11 +497,12 @@ const CompleteProfile = () => {
               </label>
               <input
                 type="text"
-                className="input input-bordered w-full input-sm"
+                className={`input input-bordered w-full input-sm ${errors.currentPosition ? "input-error" : ""}`}
                 placeholder="e.g. Assistant Manager"
                 value={formData.currentPosition}
                 onChange={(e) => updateField("currentPosition", e.target.value)}
               />
+              {errors.currentPosition && <FieldError>{errors.currentPosition}</FieldError>}
             </div>
             <div className="form-control">
               <label className="label pb-1">
@@ -401,11 +512,12 @@ const CompleteProfile = () => {
               </label>
               <input
                 type="text"
-                className="input input-bordered w-full input-sm"
+                className={`input input-bordered w-full input-sm ${errors.currentCompany ? "input-error" : ""}`}
                 placeholder="e.g. Delhi Public School"
                 value={formData.currentCompany}
                 onChange={(e) => updateField("currentCompany", e.target.value)}
               />
+              {errors.currentCompany && <FieldError>{errors.currentCompany}</FieldError>}
             </div>
           </div>
         )}
@@ -540,5 +652,9 @@ const CompleteProfile = () => {
     </div>
   );
 };
+
+const FieldError = ({ children }) => (
+  <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
 
 export default CompleteProfile;

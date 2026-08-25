@@ -5,6 +5,28 @@ import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_RESUME_SIZE = 10 * 1024 * 1024;
+
+const calculateAge = (dateValue) => {
+  if (!dateValue) return "";
+  const birthDate = new Date(dateValue);
+  if (Number.isNaN(birthDate.getTime()) || birthDate > new Date()) return "";
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age -= 1;
+  }
+  return Math.max(age, 0);
+};
+
+const todayInputValue = new Date().toISOString().split("T")[0];
+
 const EditProfile = () => {
   const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
@@ -38,15 +60,31 @@ const EditProfile = () => {
     user?.institutionPic?.url || ""
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+    const nextValue = type === "checkbox" ? checked : value;
+    setForm((prev) => ({
+      ...prev,
+      [name]: nextValue,
+      ...(name === "dateOfBirth" ? { age: calculateAge(nextValue) } : {}),
+    }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErrors((prev) => ({ ...prev, profilePic: "Please choose an image file." }));
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setErrors((prev) => ({ ...prev, profilePic: "Profile photo must be under 5MB." }));
+      return;
+    }
+    setErrors((prev) => ({ ...prev, profilePic: "" }));
     setProfilePic(file);
     setPreviewUrl(URL.createObjectURL(file));
   };
@@ -54,12 +92,72 @@ const EditProfile = () => {
   const handleInstitutionPicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErrors((prev) => ({ ...prev, institutionPic: "Please choose an image file." }));
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setErrors((prev) => ({ ...prev, institutionPic: "Logo must be under 5MB." }));
+      return;
+    }
+    setErrors((prev) => ({ ...prev, institutionPic: "" }));
     setInstitutionPic(file);
     setInstitutionPreview(URL.createObjectURL(file));
   };
 
+  const handleResumeChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const allowed = file.type === "application/pdf" || file.type.startsWith("image/");
+    if (!allowed) {
+      setErrors((prev) => ({ ...prev, resume: "Upload a PDF or image file." }));
+      return;
+    }
+    if (file.size > MAX_RESUME_SIZE) {
+      setErrors((prev) => ({ ...prev, resume: "CV must be under 10MB." }));
+      return;
+    }
+    setErrors((prev) => ({ ...prev, resume: "" }));
+    setResumeFile(file);
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+    if (!form.name.trim()) nextErrors.name = "Full name is required.";
+    if (form.name.trim().length > 100) {
+      nextErrors.name = "Full name cannot exceed 100 characters.";
+    }
+    if (form.bio.length > 200) nextErrors.bio = "Bio cannot exceed 200 characters.";
+    if (form.dateOfBirth) {
+      const calculatedAge = calculateAge(form.dateOfBirth);
+      if (calculatedAge === "") nextErrors.dateOfBirth = "Choose a valid past date.";
+      if (calculatedAge !== "" && calculatedAge > 120) {
+        nextErrors.dateOfBirth = "Please choose a realistic date of birth.";
+      }
+    }
+    if (form.experience !== "" && Number(form.experience) < 0) {
+      nextErrors.experience = "Experience cannot be negative.";
+    }
+    if (form.linkedinUrl && !/^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedinUrl.trim())) {
+      nextErrors.linkedinUrl = "Enter a valid LinkedIn URL.";
+    }
+    if (form.isCurrentlyWorking && !form.currentPosition.trim()) {
+      nextErrors.currentPosition = "Current position is required when currently working.";
+    }
+    if (form.isCurrentlyWorking && !form.currentCompany.trim()) {
+      nextErrors.currentCompany = "Current workplace is required when currently working.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -130,6 +228,7 @@ const EditProfile = () => {
               />
             </label>
           </div>
+          {errors.profilePic && <FieldError>{errors.profilePic}</FieldError>}
         </div>
 
         {/* Institution Picture */}
@@ -158,6 +257,7 @@ const EditProfile = () => {
               />
             </label>
           </div>
+          {errors.institutionPic && <FieldError>{errors.institutionPic}</FieldError>}
         </div>
 
         {/* Basic Info */}
@@ -172,11 +272,12 @@ const EditProfile = () => {
               </label>
               <input
                 name="name"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.name ? "input-error" : ""}`}
                 value={form.name}
                 onChange={handleChange}
                 required
               />
+              {errors.name && <FieldError>{errors.name}</FieldError>}
             </div>
             <div className="form-control">
               <label className="label py-0 pb-1">
@@ -184,7 +285,7 @@ const EditProfile = () => {
               </label>
               <textarea
                 name="bio"
-                className="textarea textarea-bordered w-full textarea-sm text-sm"
+                className={`textarea textarea-bordered w-full textarea-sm text-sm ${errors.bio ? "textarea-error" : ""}`}
                 rows={2}
                 maxLength={200}
                 value={form.bio}
@@ -194,6 +295,7 @@ const EditProfile = () => {
               <span className="label-text-alt text-base-content/40">
                 {form.bio.length}/200
               </span>
+              {errors.bio && <FieldError>{errors.bio}</FieldError>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="form-control">
@@ -203,11 +305,15 @@ const EditProfile = () => {
                 <input
                   name="age"
                   type="number"
-                  className="input input-bordered w-full input-sm text-sm"
+                  className="input input-bordered w-full input-sm text-sm bg-base-200/70"
                   value={form.age}
-                  onChange={handleChange}
+                  readOnly
                   min="0"
+                  placeholder="Auto"
                 />
+                <p className="mt-1 text-[11px] text-base-content/40">
+                  Calculated from date of birth.
+                </p>
               </div>
               <div className="form-control">
                 <label className="label py-0 pb-1">
@@ -218,10 +324,12 @@ const EditProfile = () => {
                 <input
                   name="dateOfBirth"
                   type="date"
-                  className="input input-bordered w-full input-sm text-sm"
+                  className={`input input-bordered w-full input-sm text-sm ${errors.dateOfBirth ? "input-error" : ""}`}
                   value={form.dateOfBirth}
                   onChange={handleChange}
+                  max={todayInputValue}
                 />
+                {errors.dateOfBirth && <FieldError>{errors.dateOfBirth}</FieldError>}
               </div>
             </div>
             <div className="form-control">
@@ -262,11 +370,12 @@ const EditProfile = () => {
                   </label>
                   <input
                     name="currentPosition"
-                    className="input input-bordered w-full input-sm text-sm"
+                    className={`input input-bordered w-full input-sm text-sm ${errors.currentPosition ? "input-error" : ""}`}
                     value={form.currentPosition}
                     onChange={handleChange}
                     placeholder="e.g. Product Trainer"
                   />
+                  {errors.currentPosition && <FieldError>{errors.currentPosition}</FieldError>}
                 </div>
                 <div className="form-control">
                   <label className="label py-0 pb-1">
@@ -276,11 +385,12 @@ const EditProfile = () => {
                   </label>
                   <input
                     name="currentCompany"
-                    className="input input-bordered w-full input-sm text-sm"
+                    className={`input input-bordered w-full input-sm text-sm ${errors.currentCompany ? "input-error" : ""}`}
                     value={form.currentCompany}
                     onChange={handleChange}
                     placeholder="e.g. DPS Pune"
                   />
+                  {errors.currentCompany && <FieldError>{errors.currentCompany}</FieldError>}
                 </div>
               </div>
             )}
@@ -363,11 +473,12 @@ const EditProfile = () => {
               <input
                 name="experience"
                 type="number"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.experience ? "input-error" : ""}`}
                 value={form.experience}
                 onChange={handleChange}
                 min="0"
               />
+              {errors.experience && <FieldError>{errors.experience}</FieldError>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 mt-3">
@@ -450,11 +561,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="linkedinUrl"
-                className="input input-bordered w-full input-sm text-sm"
+                type="url"
+                className={`input input-bordered w-full input-sm text-sm ${errors.linkedinUrl ? "input-error" : ""}`}
                 value={form.linkedinUrl}
                 onChange={handleChange}
                 placeholder="https://linkedin.com/in/yourprofile"
               />
+              {errors.linkedinUrl && <FieldError>{errors.linkedinUrl}</FieldError>}
             </div>
             <div className="form-control col-span-2">
               <label className="label py-0 pb-1">
@@ -498,10 +611,11 @@ const EditProfile = () => {
                 type="file"
                 className="hidden"
                 accept=".pdf,image/*"
-                onChange={(e) => setResumeFile(e.target.files[0])}
+                onChange={handleResumeChange}
               />
             </label>
           </div>
+          {errors.resume && <FieldError>{errors.resume}</FieldError>}
         </div>
 
         {/* Submit */}
@@ -520,5 +634,9 @@ const EditProfile = () => {
     </div>
   );
 };
+
+const FieldError = ({ children }) => (
+  <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
 
 export default EditProfile;

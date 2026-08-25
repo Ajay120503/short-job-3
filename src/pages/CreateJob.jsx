@@ -33,6 +33,9 @@ const LOCATIONS = [
   { value: "hybrid", label: "Hybrid" },
 ];
 
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+const todayInputValue = new Date().toISOString().split("T")[0];
+
 const CreateJob = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,6 +58,7 @@ const CreateJob = () => {
 
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -62,15 +66,21 @@ const CreateJob = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image must be less than 5MB");
+        setErrors((prev) => ({ ...prev, image: "Image must be less than 5MB." }));
         return;
       }
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({ ...prev, image: "Please upload an image file." }));
+        return;
+      }
+      setErrors((prev) => ({ ...prev, image: "" }));
       setImage(file);
       setImagePreview(URL.createObjectURL(file));
     }
@@ -84,18 +94,37 @@ const CreateJob = () => {
     }
   };
 
+  const validateForm = () => {
+    const nextErrors = {};
+    if (!form.title.trim()) nextErrors.title = "Job title is required.";
+    if (form.title.trim().length > 120) nextErrors.title = "Job title is too long.";
+    if (!form.description.trim()) nextErrors.description = "Description is required.";
+    if (form.description.trim().length < 30) {
+      nextErrors.description = "Add at least 30 characters so applicants understand the role.";
+    }
+    if (!form.deadline) nextErrors.deadline = "Application deadline is required.";
+    if (form.deadline && form.deadline < todayInputValue) {
+      nextErrors.deadline = "Deadline cannot be in the past.";
+    }
+    if (!form.contactEmail.trim()) nextErrors.contactEmail = "Contact email is required.";
+    if (form.contactEmail && !isValidEmail(form.contactEmail)) {
+      nextErrors.contactEmail = "Enter a valid email address.";
+    }
+    if (form.isPaid && (!form.stipend || Number(form.stipend) <= 0)) {
+      nextErrors.stipend = "Enter a valid paid amount.";
+    }
+    if (form.maxApplicants && Number(form.maxApplicants) < 1) {
+      nextErrors.maxApplicants = "Applicant limit must be at least 1.";
+    }
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !form.title ||
-      !form.description ||
-      !form.deadline ||
-      !form.contactEmail
-    ) {
-      toast.error(
-        "Title, description, deadline, and contact email are required."
-      );
+    if (!validateForm()) {
+      toast.error("Please fix the highlighted fields.");
       return;
     }
 
@@ -174,12 +203,13 @@ const CreateJob = () => {
               <input
                 type="text"
                 name="title"
-                className="input input-bordered w-full h-12 text-sm"
+                className={`input input-bordered w-full h-12 text-sm ${errors.title ? "input-error" : ""}`}
                 placeholder="e.g., Content Creator for training program"
                 value={form.title}
                 onChange={handleChange}
                 required
               />
+              {errors.title && <FieldError>{errors.title}</FieldError>}
             </div>
 
             {/* Organization Name */}
@@ -209,12 +239,13 @@ const CreateJob = () => {
               </label>
               <textarea
                 name="description"
-                className="textarea textarea-bordered w-full text-sm min-h-[120px]"
+                className={`textarea textarea-bordered w-full text-sm min-h-[120px] ${errors.description ? "textarea-error" : ""}`}
                 placeholder="Describe the role, responsibilities, and expectations..."
                 value={form.description}
                 onChange={handleChange}
                 required
               />
+              {errors.description && <FieldError>{errors.description}</FieldError>}
             </div>
 
             {/* Opportunity Type */}
@@ -298,7 +329,7 @@ const CreateJob = () => {
                     <input
                       type="number"
                       name="stipend"
-                      className="input input-bordered flex-1 h-12 text-sm"
+                      className={`input input-bordered flex-1 h-12 text-sm ${errors.stipend ? "input-error" : ""}`}
                       placeholder="e.g., 50000"
                       value={form.stipend}
                       onChange={handleChange}
@@ -314,6 +345,7 @@ const CreateJob = () => {
                       <option value="USD">$ USD</option>
                     </select>
                   </div>
+                  {errors.stipend && <FieldError>{errors.stipend}</FieldError>}
                 </div>
               </div>
             )}
@@ -371,12 +403,13 @@ const CreateJob = () => {
               <input
                 type="date"
                 name="deadline"
-                className="input input-bordered w-full h-12 text-sm"
+                className={`input input-bordered w-full h-12 text-sm ${errors.deadline ? "input-error" : ""}`}
                 value={form.deadline}
                 onChange={handleChange}
-                min={new Date().toISOString().split("T")[0]}
+                min={todayInputValue}
                 required
               />
+              {errors.deadline && <FieldError>{errors.deadline}</FieldError>}
             </div>
 
             {/* Contact Email */}
@@ -390,12 +423,13 @@ const CreateJob = () => {
               <input
                 type="email"
                 name="contactEmail"
-                className="input input-bordered w-full h-12 text-sm"
+                className={`input input-bordered w-full h-12 text-sm ${errors.contactEmail ? "input-error" : ""}`}
                 placeholder="hr@institution.com"
                 value={form.contactEmail}
                 onChange={handleChange}
                 required
               />
+              {errors.contactEmail && <FieldError>{errors.contactEmail}</FieldError>}
             </div>
 
             {/* Max Applicants */}
@@ -408,12 +442,13 @@ const CreateJob = () => {
               <input
                 type="number"
                 name="maxApplicants"
-                className="input input-bordered w-full h-12 text-sm"
+                className={`input input-bordered w-full h-12 text-sm ${errors.maxApplicants ? "input-error" : ""}`}
                 placeholder="e.g., 50"
                 value={form.maxApplicants}
                 onChange={handleChange}
                 min="0"
               />
+              {errors.maxApplicants && <FieldError>{errors.maxApplicants}</FieldError>}
             </div>
           </div>
         </div>
@@ -454,6 +489,7 @@ const CreateJob = () => {
               />
             </label>
           )}
+          {errors.image && <FieldError>{errors.image}</FieldError>}
         </div>
 
         {/* Submit */}
@@ -476,5 +512,9 @@ const CreateJob = () => {
     </div>
   );
 };
+
+const FieldError = ({ children }) => (
+  <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
 
 export default CreateJob;
