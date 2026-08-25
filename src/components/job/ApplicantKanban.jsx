@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../../utils/axios";
 import UserAvatar from "../common/UserAvatar";
@@ -15,6 +15,10 @@ const COLUMNS = [
 const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
   const [apps, setApps] = useState(initialApps || []);
   const [draggedApp, setDraggedApp] = useState(null);
+
+  useEffect(() => {
+    setApps(initialApps || []);
+  }, [initialApps]);
 
   const grouped = COLUMNS.reduce((acc, col) => {
     acc[col.key] = apps.filter((a) => a.status === col.key);

@@ -20,6 +20,14 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
+  FileSpreadsheet,
+  Printer,
+  Search,
+  Send,
+  Users,
+  Phone,
+  Building2,
+  Sparkles,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
@@ -37,65 +45,213 @@ const statusColors = {
 };
 
 const statusSteps = ["applied", "reviewed", "shortlisted", "selected"];
+const statusLabels = {
+  applied: "Applied",
+  reviewed: "Reviewed",
+  shortlisted: "Shortlisted",
+  selected: "Selected",
+  rejected: "Rejected",
+};
+
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const formatDate = (value) =>
+  value
+    ? new Date(value).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "";
+
+const getApplicantRows = (applications) =>
+  applications.map((app, index) => {
+    const a = app.applicant || {};
+    return {
+      "#": index + 1,
+      Name: a.name || "Unknown",
+      Email: a.email || "",
+      Phone: a.phone || "",
+      Status: statusLabels[app.status] || app.status,
+      Profession: a.profession || "",
+      "Current Position": a.currentPosition || "",
+      "Current Company": a.currentCompany || "",
+      Experience: a.experience ? `${a.experience} years` : "",
+      Education: a.educationLevel || "",
+      Subject: a.subject || "",
+      Location: [a.city, a.state].filter(Boolean).join(", "),
+      Skills: (a.skills || []).join(", "),
+      Qualifications: (a.qualifications || []).join(", "),
+      Interests: (a.interests || []).join(", "),
+      "Open to Opportunities": a.openToOpportunities ? "Yes" : "No",
+      "Applied On": formatDate(app.createdAt),
+      "Cover Letter": app.coverLetter || "",
+      Resume: a.resumeUrl || "",
+      LinkedIn: a.linkedinUrl || "",
+      Notes: app.notes || "",
+    };
+  });
+
+const downloadFile = (content, filename, type) => {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+const buildApplicantTable = (rows) => {
+  if (!rows.length) return "<p>No applicants found.</p>";
+  const headers = Object.keys(rows[0]);
+  return `
+    <table>
+      <thead>
+        <tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(
+            (row) =>
+              `<tr>${headers
+                .map((h) => `<td>${escapeHtml(row[h])}</td>`)
+                .join("")}</tr>`,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+};
+
+const InfoPill = ({ icon: Icon, children, tone = "base" }) => {
+  const tones = {
+    base: "bg-base-200/70 text-base-content/65 border-base-300/60",
+    primary: "bg-primary/8 text-primary border-primary/15",
+    accent: "bg-accent/10 text-accent border-accent/15",
+    success: "bg-success/10 text-success border-success/15",
+  };
+
+  return (
+    <span
+      className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${tones[tone]}`}
+    >
+      {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+      <span className="truncate">{children}</span>
+    </span>
+  );
+};
 
 const ApplicantCard = ({ app, onStatusUpdate }) => {
   const [expanded, setExpanded] = useState(false);
   const a = app.applicant || {};
+  const location = [a.city, a.state].filter(Boolean).join(", ");
+  const currentRole = [a.currentPosition || a.profession, a.currentCompany]
+    .filter(Boolean)
+    .join(" at ");
+  const profileSignals = [
+    a.resumeUrl && "Resume",
+    a.linkedinUrl && "LinkedIn",
+    a.openToOpportunities && "Open",
+    a.skills?.length > 0 && `${a.skills.length} skills`,
+  ].filter(Boolean);
 
   return (
-    <div className="card bg-base-100 border border-base-300/50 shadow-sm hover:shadow-md transition-all">
+    <div className="overflow-hidden rounded-xl border border-base-300/60 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md">
       {/* Compact Header */}
-      <div className="p-5">
-        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+      <div className="p-4 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           {/* Avatar & Basic Info */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <UserAvatar user={a} size={56} />
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <div className="relative shrink-0">
+              <UserAvatar user={a} size={58} ringClass="ring-2 ring-base-200" />
+              {a.openToOpportunities && (
+                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-base-100 bg-success text-success-content">
+                  <Sparkles className="h-3 w-3" />
+                </span>
+              )}
+            </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Link
-                  to={`/profile/${a?._id}`}
-                  className="font-semibold text-base hover:text-primary transition-colors"
-                >
-                  {a?.name || "Unknown"}
-                </Link>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <Link
+                    to={`/profile/${a?._id}`}
+                    className="block truncate text-base font-bold text-base-content transition-colors hover:text-primary"
+                  >
+                    {a?.name || "Unknown"}
+                  </Link>
+                  <p className="mt-0.5 truncate text-sm text-base-content/55">
+                    {currentRole || a.educationLevel || "Applicant profile"}
+                  </p>
+                </div>
                 <span
                   className={`badge badge-sm ${
                     statusColors[app.status] || "badge-ghost"
-                  } font-medium`}
+                  } font-semibold capitalize`}
                 >
-                  {app.status}
+                  {statusLabels[app.status] || app.status}
                 </span>
               </div>
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap text-sm text-base-content/50">
+
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {a?.email && (
+                  <InfoPill icon={Mail} tone="primary">
+                    {a.email}
+                  </InfoPill>
+                )}
+                {a?.phone && <InfoPill icon={Phone}>{a.phone}</InfoPill>}
+                {location && <InfoPill icon={MapPin}>{location}</InfoPill>}
+                {a?.experience > 0 && (
+                  <InfoPill icon={Briefcase} tone="accent">
+                    {a.experience} yrs experience
+                  </InfoPill>
+                )}
                 {a?.educationLevel && (
-                  <span className="flex items-center gap-1">
-                    <FontAwesomeIcon
-                      icon={faUserGraduate}
-                      className="w-3.5 h-3.5"
-                      fontSize={24}
-                    />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-base-300/60 bg-base-200/70 px-2.5 py-1 text-xs font-medium text-base-content/65">
+                    <FontAwesomeIcon icon={faUserGraduate} className="h-3.5 w-3.5" />
                     {a.educationLevel}
                   </span>
                 )}
-                {a?.profession && <span>· {a.profession}</span>}
-                {a?.city && a?.state && (
-                  <span>
-                    · {a.city}, {a.state}
-                  </span>
+                {a?.currentCompany && (
+                  <InfoPill icon={Building2}>{a.currentCompany}</InfoPill>
                 )}
               </div>
+
               {a?.bio && (
-                <p className="text-sm text-base-content/60 mt-1.5 line-clamp-2">
+                <p className="mt-3 line-clamp-2 rounded-lg bg-base-200/45 px-3 py-2 text-sm leading-relaxed text-base-content/65">
                   {a.bio}
                 </p>
+              )}
+
+              {profileSignals.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {profileSignals.map((signal) => (
+                    <span
+                      key={signal}
+                      className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success"
+                    >
+                      {signal}
+                    </span>
+                  ))}
+                  <span className="rounded-full bg-base-200 px-2 py-0.5 text-[11px] text-base-content/45">
+                    Applied {formatDate(app.createdAt)}
+                  </span>
+                </div>
               )}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 flex-shrink-0">
+          <div className="flex flex-row items-center justify-between gap-2 border-t border-base-200 pt-3 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
             {/* Status update buttons */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 rounded-full bg-base-200/60 p-1">
               {statusSteps.map((step) => {
                 const currentIdx = statusSteps.indexOf(app.status);
                 const stepIdx = statusSteps.indexOf(step);
@@ -135,7 +291,7 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
 
             <button
               onClick={() => setExpanded(!expanded)}
-              className="btn btn-xs btn-ghost gap-1"
+              className="btn btn-xs btn-outline gap-1 rounded-full"
             >
               {expanded ? (
                 <>
@@ -312,6 +468,8 @@ const JobApplicants = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
   const [viewMode, setViewMode] = useState("list"); // "list" or "kanban"
 
   useEffect(() => {
@@ -319,11 +477,7 @@ const JobApplicants = () => {
       try {
         const [jobRes, appRes] = await Promise.all([
           API.get(`/jobs/${id}`),
-          API.get(
-            `/jobs/${id}/applicants${
-              filterStatus ? `?status=${filterStatus}` : ""
-            }`
-          ),
+          API.get(`/jobs/${id}/applicants`),
         ]);
         setJob(jobRes.data.job);
         setApplications(appRes.data.applications);
@@ -334,7 +488,46 @@ const JobApplicants = () => {
       }
     };
     fetchData();
-  }, [id, filterStatus]);
+  }, [id]);
+
+  const statusCounts = applications.reduce(
+    (counts, app) => ({
+      ...counts,
+      [app.status]: (counts[app.status] || 0) + 1,
+    }),
+    {},
+  );
+
+  const filteredApplications = applications
+    .filter((app) => !filterStatus || app.status === filterStatus)
+    .filter((app) => {
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return true;
+      const a = app.applicant || {};
+      return [
+        a.name,
+        a.email,
+        a.city,
+        a.state,
+        a.profession,
+        a.subject,
+        a.educationLevel,
+        ...(a.skills || []),
+        ...(a.qualifications || []),
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term));
+    })
+    .sort((a, b) => {
+      if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sortBy === "experience") {
+        return (b.applicant?.experience || 0) - (a.applicant?.experience || 0);
+      }
+      if (sortBy === "name") {
+        return (a.applicant?.name || "").localeCompare(b.applicant?.name || "");
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
 
   const handleStatusUpdate = async (applicationId, status) => {
     try {
@@ -348,6 +541,138 @@ const JobApplicants = () => {
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update status");
     }
+  };
+
+  const handleKanbanStatusChange = (updatedApplication) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app._id === updatedApplication._id
+          ? { ...app, ...updatedApplication }
+          : app
+      )
+    );
+  };
+
+  const getExportName = (extension) => {
+    const safeTitle = (job?.title || "job-applicants")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const suffix = filterStatus ? `-${filterStatus}` : "";
+    return `${safeTitle || "job-applicants"}${suffix}-${new Date()
+      .toISOString()
+      .slice(0, 10)}.${extension}`;
+  };
+
+  const handleExportExcel = (scope = "filtered") => {
+    const source = scope === "all" ? applications : filteredApplications;
+    if (!source.length) {
+      toast.error("No applicants to export");
+      return;
+    }
+
+    const rows = getApplicantRows(source);
+    const html = `
+      <html>
+        <head><meta charset="UTF-8" /></head>
+        <body>
+          <h2>${escapeHtml(job.title)} - Applicants</h2>
+          <p>${escapeHtml(job.institutionName || "")} ${escapeHtml(job.location || "")}</p>
+          ${buildApplicantTable(rows)}
+        </body>
+      </html>
+    `;
+    downloadFile(
+      html,
+      getExportName("xls"),
+      "application/vnd.ms-excel;charset=utf-8",
+    );
+    toast.success("Excel record generated");
+  };
+
+  const handleExportPdf = (scope = "filtered") => {
+    const source = scope === "all" ? applications : filteredApplications;
+    if (!source.length) {
+      toast.error("No applicants to export");
+      return;
+    }
+
+    const rows = getApplicantRows(source);
+    const reportWindow = window.open("", "_blank", "width=1100,height=800");
+    if (!reportWindow) {
+      toast.error("Allow popups to generate PDF");
+      return;
+    }
+
+    reportWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>${escapeHtml(job.title)} Applicants</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #26332f; margin: 28px; }
+            h1 { margin: 0 0 6px; font-size: 24px; }
+            .meta { color: #66736f; margin-bottom: 18px; }
+            .summary { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
+            .box { border: 1px solid #d5ebe8; border-radius: 8px; padding: 10px 12px; }
+            .box strong { display: block; font-size: 18px; color: #147f83; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th { background: #edf7f6; text-align: left; }
+            th, td { border: 1px solid #d5ebe8; padding: 7px; vertical-align: top; }
+            @media print { button { display: none; } body { margin: 12px; } }
+          </style>
+        </head>
+        <body>
+          <button onclick="window.print()" style="float:right;padding:8px 12px;">Print / Save PDF</button>
+          <h1>${escapeHtml(job.title)} - Applicant Report</h1>
+          <div class="meta">
+            ${escapeHtml(job.institutionName || "")} · ${escapeHtml(job.location || "")}
+            · Generated ${escapeHtml(formatDate(new Date()))}
+          </div>
+          <div class="summary">
+            <div class="box"><strong>${applications.length}</strong>Total</div>
+            <div class="box"><strong>${statusCounts.shortlisted || 0}</strong>Shortlisted</div>
+            <div class="box"><strong>${statusCounts.selected || 0}</strong>Selected</div>
+            <div class="box"><strong>${statusCounts.rejected || 0}</strong>Rejected</div>
+          </div>
+          ${buildApplicantTable(rows)}
+        </body>
+      </html>
+    `);
+    reportWindow.document.close();
+    reportWindow.focus();
+    setTimeout(() => reportWindow.print(), 300);
+    toast.success("PDF report opened");
+  };
+
+  const getVisibleEmails = () =>
+    filteredApplications
+      .map((app) => app.applicant?.email)
+      .filter(Boolean);
+
+  const handleCopyEmails = async () => {
+    const emails = getVisibleEmails();
+    if (!emails.length) {
+      toast.error("No emails in current list");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(emails.join(", "));
+      toast.success(`Copied ${emails.length} email${emails.length !== 1 ? "s" : ""}`);
+    } catch {
+      toast.error("Clipboard access blocked by browser");
+    }
+  };
+
+  const handleEmailApplicants = () => {
+    const emails = getVisibleEmails();
+    if (!emails.length) {
+      toast.error("No emails in current list");
+      return;
+    }
+    window.location.href = `mailto:?bcc=${encodeURIComponent(
+      emails.join(","),
+    )}&subject=${encodeURIComponent(`Update for ${job.title}`)}`;
   };
 
   if (loading) {
@@ -410,6 +735,102 @@ const JobApplicants = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+        {[
+          { label: "Total", value: applications.length, icon: Users },
+          { label: "Reviewed", value: statusCounts.reviewed || 0, icon: Eye },
+          { label: "Shortlisted", value: statusCounts.shortlisted || 0, icon: Clock },
+          { label: "Selected", value: statusCounts.selected || 0, icon: CheckCircle },
+          { label: "Rejected", value: statusCounts.rejected || 0, icon: XCircle },
+        ].map((stat) => (
+          <button
+            key={stat.label}
+            type="button"
+            onClick={() =>
+              setFilterStatus(stat.label === "Total" ? "" : stat.label.toLowerCase())
+            }
+            className={`rounded-xl border p-3 text-left transition-all hover:border-primary/40 hover:bg-primary/5 ${
+              (stat.label === "Total" && !filterStatus) ||
+              filterStatus === stat.label.toLowerCase()
+                ? "border-primary/40 bg-primary/5"
+                : "border-base-300/60 bg-base-100"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-base-content/45">{stat.label}</span>
+              <stat.icon className="w-4 h-4 text-primary" />
+            </div>
+            <p className="text-xl font-bold mt-1">{stat.value}</p>
+          </button>
+        ))}
+      </div>
+
+      <div className="card bg-base-100 border border-base-300/60 p-4 mb-5">
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/35" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input input-bordered w-full pl-9 h-10"
+              placeholder="Search applicants, skills, location..."
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="select select-bordered select-sm h-10"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="experience">Most experience</option>
+              <option value="name">Name A-Z</option>
+            </select>
+            <button onClick={handleCopyEmails} className="btn btn-outline btn-sm gap-1.5">
+              <Mail className="w-4 h-4" /> Copy emails
+            </button>
+            <button onClick={handleEmailApplicants} className="btn btn-outline btn-sm gap-1.5">
+              <Send className="w-4 h-4" /> Email list
+            </button>
+            <div className="dropdown dropdown-end">
+              <button tabIndex={0} className="btn btn-primary btn-sm gap-1.5">
+                <Download className="w-4 h-4" /> Export
+              </button>
+              <ul
+                tabIndex={0}
+                className="dropdown-content menu bg-base-100 rounded-box z-10 w-56 p-2 shadow-xl border border-base-300"
+              >
+                <li>
+                  <button onClick={() => handleExportExcel("filtered")}>
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Current list Excel
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => handleExportPdf("filtered")}>
+                    <Printer className="w-4 h-4" />
+                    Current list PDF
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => handleExportExcel("all")}>
+                    <FileSpreadsheet className="w-4 h-4" />
+                    All applicants Excel
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => handleExportPdf("all")}>
+                    <Printer className="w-4 h-4" />
+                    All applicants PDF
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* View Toggle + Filter */}
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <div className="flex items-center gap-2">
@@ -462,19 +883,19 @@ const JobApplicants = () => {
       {/* Applications */}
       {viewMode === "kanban" ? (
         <ApplicantKanban
-          applications={applications}
-          onStatusChange={() => {}}
+          applications={filteredApplications}
+          onStatusChange={handleKanbanStatusChange}
         />
-      ) : applications.length === 0 ? (
+      ) : filteredApplications.length === 0 ? (
         <div className="text-center py-16">
           <Eye className="w-16 h-16 mx-auto text-base-content/15 mb-4" />
           <p className="text-base-content/40 font-medium">
-            No applications yet
+            No matching applications
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {applications.map((app) => (
+          {filteredApplications.map((app) => (
             <ApplicantCard
               key={app._id}
               app={app}
