@@ -11,6 +11,7 @@ import {
   Shield,
   BriefcaseBusiness,
   Flame,
+  Sparkle,
 } from "lucide-react";
 import API from "../utils/axios";
 import { getUserRoleLabel } from "../utils/badgeUtils";
@@ -31,7 +32,7 @@ import toast from "react-hot-toast";
 const exploreFilters = [
   { value: "", label: "All", icon: Users },
   { value: "popular", label: "Popular", icon: Flame, clientOnly: true },
-  { value: "active", label: "Active", clientOnly: true },
+  { value: "active", label: "Active", icon: Sparkle, clientOnly: true },
   {
     value: "open_to_work",
     label: "Open to Work",
