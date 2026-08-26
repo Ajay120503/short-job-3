@@ -1,20 +1,57 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  BriefcaseBusiness,
+  CheckCircle2,
+  Clock3,
+  GripVertical,
+  Mail,
+  MapPin,
+  Star,
+  UserCheck,
+  XCircle,
+} from "lucide-react";
 import API from "../../utils/axios";
 import UserAvatar from "../common/UserAvatar";
 import toast from "react-hot-toast";
 
 const COLUMNS = [
-  { key: "applied", label: "Applied" },
-  { key: "reviewed", label: "Reviewed" },
-  { key: "shortlisted", label: "Shortlisted" },
-  { key: "rejected", label: "Rejected" },
-  { key: "selected", label: "Selected" },
+  {
+    key: "applied",
+    label: "Applied",
+    icon: Clock3,
+    tone: "border-info/20 bg-info/5 text-info",
+  },
+  {
+    key: "reviewed",
+    label: "Reviewed",
+    icon: UserCheck,
+    tone: "border-primary/20 bg-primary/5 text-primary",
+  },
+  {
+    key: "shortlisted",
+    label: "Shortlisted",
+    icon: Star,
+    tone: "border-warning/25 bg-warning/10 text-warning",
+  },
+  {
+    key: "rejected",
+    label: "Rejected",
+    icon: XCircle,
+    tone: "border-error/20 bg-error/5 text-error",
+  },
+  {
+    key: "selected",
+    label: "Selected",
+    icon: CheckCircle2,
+    tone: "border-success/25 bg-success/10 text-success",
+  },
 ];
 
 const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
   const [apps, setApps] = useState(initialApps || []);
   const [draggedApp, setDraggedApp] = useState(null);
+  const [overColumn, setOverColumn] = useState("");
 
   useEffect(() => {
     setApps(initialApps || []);
@@ -25,16 +62,18 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
     return acc;
   }, {});
 
-  const handleDragStart = (e, appId) => {
-    setDraggedApp(appId);
+  const handleDragStart = (e, app) => {
+    setDraggedApp(app);
     e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", app._id);
   };
 
   const handleDrop = async (e, newStatus) => {
     e.preventDefault();
+    setOverColumn("");
     if (!draggedApp) return;
 
-    const appId = draggedApp;
+    const appId = draggedApp._id;
     const app = apps.find((a) => a._id === appId);
     if (!app || app.status === newStatus) {
       setDraggedApp(null);
@@ -51,7 +90,19 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
       const { data } = await API.put(`/jobs/applications/${appId}/status`, {
         status: newStatus,
       });
-      if (onStatusChange) onStatusChange(data.application);
+      const updatedApplication = data.application || {};
+      if (onStatusChange) {
+        onStatusChange({
+          ...app,
+          ...updatedApplication,
+          status: updatedApplication.status || newStatus,
+          applicant:
+            updatedApplication.applicant &&
+            typeof updatedApplication.applicant === "object"
+              ? updatedApplication.applicant
+              : app.applicant,
+        });
+      }
     } catch {
       // Revert on error
       setApps((prev) =>
@@ -68,69 +119,147 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:grid md:grid-cols-5 md:overflow-visible md:px-0 md:mx-0">
-      {COLUMNS.map((col) => (
-        <div
-          key={col.key}
-          className="flex-shrink-0 w-56 md:w-auto bg-base-200/50 rounded-lg p-3"
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, col.key)}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-              {col.label}
-            </span>
-            <span className="badge badge-xs badge-ghost">
-              {grouped[col.key]?.length || 0}
-            </span>
-          </div>
-          <div className="space-y-2 min-h-[100px]">
-            {grouped[col.key]?.map((app) => (
-              <div
-                key={app._id}
-                className="card bg-base-100 shadow-sm border border-base-300/50 p-2 cursor-grab active:cursor-grabbing"
-                draggable
-                onDragStart={(e) => handleDragStart(e, app._id)}
-              >
-                <div className="flex items-center gap-2">
-                  <UserAvatar user={app.applicant} size={28} />
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      to={`/profile/${app.applicant?._id}`}
-                      className="text-xs font-medium truncate block hover:text-primary"
-                    >
-                      {app.applicant?.name || "Unknown"}
-                    </Link>
-                    {app.applicant?.institutionName && (
-                      <p className="text-[10px] text-base-content/40 truncate">
-                        {app.applicant.institutionName}
-                      </p>
-                    )}
-                  </div>
+      {COLUMNS.map((col) => {
+        const Icon = col.icon;
+        const items = grouped[col.key] || [];
+        const isOver = overColumn === col.key;
+        return (
+          <div
+            key={col.key}
+            className={`flex-shrink-0 w-[18rem] rounded-2xl border p-3 transition-all md:w-auto ${
+              isOver
+                ? "border-primary/45 bg-primary/8 shadow-sm"
+                : "border-base-300/70 bg-base-200/45"
+            }`}
+            onDragEnter={() => setOverColumn(col.key)}
+            onDragLeave={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) setOverColumn("");
+            }}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, col.key)}
+          >
+            <div className={`mb-3 rounded-xl border px-3 py-2 ${col.tone}`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate text-xs font-bold uppercase tracking-wide">
+                    {col.label}
+                  </span>
                 </div>
-                {app.applicant?.skills?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {app.applicant.skills.slice(0, 2).map((s, i) => (
-                      <span key={i} className="badge badge-xs badge-outline">
-                        {s}
-                      </span>
-                    ))}
-                    {app.applicant.skills.length > 2 && (
-                      <span className="text-[10px] text-base-content/40">
-                        +{app.applicant.skills.length - 2}
-                      </span>
-                    )}
-                  </div>
-                )}
+                <span className="rounded-full bg-base-100/80 px-2 py-0.5 text-xs font-bold text-base-content/70">
+                  {items.length}
+                </span>
               </div>
-            ))}
-            {(!grouped[col.key] || grouped[col.key].length === 0) && (
-              <div className="text-center py-4 text-xs text-base-content/30 border border-dashed border-base-300 rounded-lg">
-                Drop here
-              </div>
-            )}
+            </div>
+
+            <div className="space-y-2 min-h-[160px]">
+              {items.map((app) => (
+                <ApplicantCard
+                  key={app._id}
+                  app={app}
+                  isDragging={draggedApp?._id === app._id}
+                  onDragStart={handleDragStart}
+                  onDragEnd={() => {
+                    setDraggedApp(null);
+                    setOverColumn("");
+                  }}
+                />
+              ))}
+              {items.length === 0 && (
+                <div
+                  className={`flex min-h-[120px] items-center justify-center rounded-xl border border-dashed text-xs transition-colors ${
+                    isOver
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-base-300 bg-base-100/45 text-base-content/35"
+                  }`}
+                >
+                  Drop applicants here
+                </div>
+              )}
+            </div>
           </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const ApplicantCard = ({ app, isDragging, onDragStart, onDragEnd }) => {
+  const applicant = app.applicant || {};
+  const location = [applicant.city, applicant.state].filter(Boolean).join(", ");
+  const headline =
+    applicant.currentPosition ||
+    applicant.profession ||
+    applicant.subject ||
+    applicant.institutionName;
+
+  return (
+    <div
+      className={`rounded-2xl border border-base-300/70 bg-base-100 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md ${
+        isDragging ? "opacity-60 ring-2 ring-primary/20" : ""
+      }`}
+      draggable
+      onDragStart={(e) => onDragStart(e, app)}
+      onDragEnd={onDragEnd}
+    >
+      <div className="flex items-start gap-2.5">
+        <UserAvatar user={applicant} size={36} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <Link
+              to={applicant._id ? `/profile/${applicant._id}` : "#"}
+              className="block truncate text-sm font-semibold hover:text-primary"
+            >
+              {applicant.name || "Unknown applicant"}
+            </Link>
+            <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-base-content/25" />
+          </div>
+          {headline && (
+            <p className="mt-0.5 truncate text-xs text-base-content/55">
+              {headline}
+            </p>
+          )}
         </div>
-      ))}
+      </div>
+
+      <div className="mt-3 space-y-1.5 text-[11px] text-base-content/50">
+        {applicant.email && (
+          <p className="flex min-w-0 items-center gap-1.5">
+            <Mail className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{applicant.email}</span>
+          </p>
+        )}
+        {location && (
+          <p className="flex min-w-0 items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{location}</span>
+          </p>
+        )}
+        {Number(applicant.experience) > 0 && (
+          <p className="flex min-w-0 items-center gap-1.5">
+            <BriefcaseBusiness className="h-3.5 w-3.5 shrink-0" />
+            <span>{applicant.experience} year experience</span>
+          </p>
+        )}
+      </div>
+
+      {applicant.skills?.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {applicant.skills.slice(0, 3).map((skill) => (
+            <span
+              key={skill}
+              className="rounded-full bg-base-200 px-2 py-0.5 text-[10px] font-medium text-base-content/60"
+            >
+              {skill}
+            </span>
+          ))}
+          {applicant.skills.length > 3 && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              +{applicant.skills.length - 3}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

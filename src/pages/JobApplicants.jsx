@@ -542,11 +542,20 @@ const JobApplicants = () => {
 
   const handleKanbanStatusChange = (updatedApplication) => {
     setApplications((prev) =>
-      prev.map((app) =>
-        app._id === updatedApplication._id
-          ? { ...app, ...updatedApplication }
-          : app
-      )
+      prev.map((app) => {
+        if (app._id !== updatedApplication._id) return app;
+        const hasPopulatedApplicant =
+          updatedApplication.applicant &&
+          typeof updatedApplication.applicant === "object" &&
+          updatedApplication.applicant.name;
+        return {
+          ...app,
+          ...updatedApplication,
+          applicant: hasPopulatedApplicant
+            ? updatedApplication.applicant
+            : app.applicant,
+        };
+      })
     );
   };
 
