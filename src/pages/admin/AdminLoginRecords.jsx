@@ -159,7 +159,9 @@ const AdminLoginRecords = () => {
                   type="button"
                   onClick={() => setExpanded(isOpen ? null : record._id)}
                   className={`w-full rounded-xl border bg-base-100 p-3 text-left shadow-sm transition-all hover:border-primary/30 hover:bg-primary/5 ${
-                    isOpen ? "border-primary/30 bg-primary/5" : "border-base-300"
+                    isOpen
+                      ? "border-primary/30 bg-primary/5"
+                      : "border-base-300"
                   }`}
                 >
                   <div
@@ -185,7 +187,7 @@ const AdminLoginRecords = () => {
                           {userInfo.name || "Unknown user"}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="badge badge-xs badge-primary badge-soft">
+                          <span className="badge badge-xs badge-primary badge-soft line-clamp-1">
                             {getUserRoleLabel(userInfo)}
                           </span>
                           <UserSignalBadge user={userInfo} />
@@ -219,7 +221,9 @@ const AdminLoginRecords = () => {
                       }`}
                     >
                       <Camera className="w-3.5 h-3.5" />
-                      {record.faceDetection?.detected ? "Face verified" : "Legacy record"}
+                      {record.faceDetection?.detected
+                        ? "Face verified"
+                        : "Legacy record"}
                     </p>
                     {canDeleteRecords && (
                       <span

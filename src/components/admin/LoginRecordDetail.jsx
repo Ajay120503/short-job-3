@@ -63,8 +63,10 @@ const LoginRecordDetail = ({ record }) => {
                   {user.isBlocked ? "Blocked" : "Active"}
                 </span>
               </div>
-              <p className="text-xs text-base-content/50">{user.email}</p>
-              <div className="flex flex-wrap gap-1 mt-1">
+              <p className="text-xs text-base-content/50 line-clamp-1">
+                {user.email}
+              </p>
+              <div className="flex flex-wrap gap-1 mt-1 line-clamp-1">
                 {getActiveBadges(user)
                   .slice(0, 4)
                   .map((badge) => (
@@ -79,13 +81,19 @@ const LoginRecordDetail = ({ record }) => {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info icon={Calendar} label="Login time" value={formatDate(record.loginAt)} />
+            <Info
+              icon={Calendar}
+              label="Login time"
+              value={formatDate(record.loginAt)}
+            />
             <Info
               icon={MapPin}
               label="City / State"
-              value={[record.location?.city, record.location?.state]
-                .filter(Boolean)
-                .join(", ") || "Unknown"}
+              value={
+                [record.location?.city, record.location?.state]
+                  .filter(Boolean)
+                  .join(", ") || "Unknown"
+              }
             />
             <Info
               icon={MapPin}
@@ -105,8 +113,16 @@ const LoginRecordDetail = ({ record }) => {
                   : "Unknown"
               }
             />
-            <Info icon={Laptop} label="Device" value={record.device?.browser || "Unknown"} />
-            <Info icon={ShieldCheck} label="IP address" value={record.device?.ip || "Unknown"} />
+            <Info
+              icon={Laptop}
+              label="Device"
+              value={record.device?.browser || "Unknown"}
+            />
+            <Info
+              icon={ShieldCheck}
+              label="IP address"
+              value={record.device?.ip || "Unknown"}
+            />
             <Info
               icon={Camera}
               label="Face verification"
@@ -138,9 +154,13 @@ const LoginRecordDetail = ({ record }) => {
 
           <div className="rounded-xl bg-base-200/60 border border-base-300 p-3 text-xs text-base-content/60">
             <p>
-              <span className="font-semibold text-base-content/75">Profile:</span>{" "}
+              <span className="font-semibold text-base-content/75">
+                Profile:
+              </span>{" "}
               {user.phone || user.address || user.city || user.state
-                ? [user.phone, user.address, user.city, user.state].filter(Boolean).join(" · ")
+                ? [user.phone, user.address, user.city, user.state]
+                    .filter(Boolean)
+                    .join(" · ")
                 : "No phone/address on profile"}
             </p>
             <p className="mt-1">
