@@ -1,15 +1,24 @@
-import { Fragment, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Upload } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  Check,
+  Link as LinkIcon,
+  MapPin,
+  Sparkles,
+  Upload,
+  UserRound,
+} from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
+import AuthLayout from "../components/auth/AuthLayout";
 import toast from "react-hot-toast";
 
 const steps = [
   { key: "details", label: "Your details" },
-  { key: "background", label: "Background & skills" },
+  { key: "background", label: "Experience & skills" },
   { key: "organization", label: "Your organization" },
 ];
 
@@ -143,6 +152,10 @@ const CompleteProfile = () => {
     setStep((prev) => Math.min(prev + 1, steps.length - 1));
   };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
+  const handleSkip = () => {
+    toast.success("You can complete your profile later from Settings.");
+    navigate("/feed");
+  };
 
   // ── Submit ──
   const handleSubmit = async (e) => {
@@ -164,6 +177,7 @@ const CompleteProfile = () => {
       profileFormData.append("city", formData.city);
       profileFormData.append("state", formData.state);
       profileFormData.append("institutionName", formData.institutionName);
+      profileFormData.append("institutionType", formData.institutionType);
       profileFormData.append("skills", formData.skills);
       profileFormData.append("qualifications", formData.qualifications);
       profileFormData.append("educationLevel", formData.educationLevel);
@@ -203,35 +217,39 @@ const CompleteProfile = () => {
   };
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
+    <div className="mb-6 grid grid-cols-3 gap-2">
       {steps.map((s, idx) => (
-        <Fragment key={s.key}>
-          <div className="flex flex-col items-center">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                idx === step
-                  ? "bg-primary border-primary text-white"
-                  : idx < step
-                    ? "bg-primary border-primary text-white"
-                    : "border-base-300 text-base-content/50"
+        <button
+          key={s.key}
+          type="button"
+          onClick={() => {
+            if (idx <= step || validateStep()) setStep(idx);
+          }}
+          className={`rounded-xl border p-3 text-left transition-all ${
+            idx === step
+              ? "border-primary bg-primary/10 text-primary"
+              : idx < step
+                ? "border-success/25 bg-success/10 text-success"
+                : "border-base-300 bg-base-100 text-base-content/55"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                idx <= step ? "bg-current/10" : "bg-base-200"
               }`}
             >
               {idx < step ? (
-                <Check className="w-5 h-5" />
+                <Check className="w-4 h-4" />
               ) : (
-                <span className="text-sm font-bold">{idx + 1}</span>
+                idx + 1
               )}
-            </div>
-            <span className="text-xs mt-1.5 text-center">{s.label}</span>
+            </span>
+            <span className="min-w-0 text-xs font-semibold leading-tight">
+              {s.label}
+            </span>
           </div>
-          {idx < steps.length - 1 && (
-            <div
-              className={`flex-1 h-0.5 mx-2 transition-colors ${
-                idx < step ? "bg-primary" : "bg-base-300"
-              }`}
-            />
-          )}
-        </Fragment>
+        </button>
       ))}
     </div>
   );
@@ -239,12 +257,16 @@ const CompleteProfile = () => {
   // ── Step 1: Details ──
   const renderDetailsStep = () => (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold mb-4">Your details</h2>
+      <SectionTitle
+        icon={UserRound}
+        title="Your details"
+        description="Add the basics people will see on your profile."
+      />
 
       {/* Profile picture */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 rounded-2xl border border-base-300/70 bg-base-200/35 p-4">
         <div className="relative">
-          <div className="w-20 h-20 rounded-full overflow-hidden bg-base-200">
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-base-100 ring-4 ring-base-300/45">
             {profilePicPreview ? (
               <img
                 src={profilePicPreview}
@@ -252,12 +274,12 @@ const CompleteProfile = () => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-base-content/20">
-                <FontAwesomeIcon icon={faUserGraduate} className="w-8 h-8" />
+              <div className="w-full h-full flex items-center justify-center text-base-content/25">
+                <UserRound className="w-8 h-8" />
               </div>
             )}
           </div>
-          <label className="absolute bottom-0 right-0 btn btn-xs btn-circle btn-ghost">
+          <label className="absolute bottom-0 right-0 btn btn-xs btn-circle btn-primary">
             <Upload className="w-3 h-3" />
             <input
               type="file"
@@ -267,7 +289,13 @@ const CompleteProfile = () => {
             />
           </label>
         </div>
-        {errors.profilePic && <FieldError>{errors.profilePic}</FieldError>}
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">Profile photo</p>
+          <p className="text-xs text-base-content/50">
+            Upload a clear image under 5MB.
+          </p>
+          {errors.profilePic && <FieldError>{errors.profilePic}</FieldError>}
+        </div>
       </div>
 
       <div className="form-control">
@@ -318,7 +346,10 @@ const CompleteProfile = () => {
 
       <div className="form-control">
         <label className="label pb-1">
-          <span className="label-text font-medium text-sm">Address</span>
+          <span className="label-text font-medium text-sm flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5" />
+            Address
+          </span>
         </label>
         <input
           type="text"
@@ -358,7 +389,10 @@ const CompleteProfile = () => {
 
       <div className="form-control">
         <label className="label pb-1">
-          <span className="label-text font-medium text-sm">LinkedIn URL</span>
+          <span className="label-text font-medium text-sm flex items-center gap-1.5">
+            <LinkIcon className="w-3.5 h-3.5" />
+            LinkedIn URL
+          </span>
         </label>
         <input
           type="url"
@@ -375,12 +409,16 @@ const CompleteProfile = () => {
   // ── Step 2: Background & Skills ──
   const renderEducationStep = () => (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold mb-4">Background & skills</h2>
+      <SectionTitle
+        icon={Sparkles}
+        title="Experience & skills"
+        description="Show what you do, what you know, and how people can evaluate you."
+      />
 
       <div className="form-control">
         <label className="label pb-1">
           <span className="label-text font-medium text-sm">
-            Background Level
+            Learning level
           </span>
         </label>
         <select
@@ -389,22 +427,22 @@ const CompleteProfile = () => {
           onChange={(e) => updateField("educationLevel", e.target.value)}
         >
           <option value="">Select</option>
-          <option value="10th">10th</option>
-          <option value="12th">12th</option>
+          <option value="10th">Secondary</option>
+          <option value="12th">Higher secondary</option>
           <option value="undergraduate">Undergraduate</option>
           <option value="postgraduate">Postgraduate</option>
-          <option value="phd">PhD</option>
+          <option value="phd">Doctorate</option>
         </select>
       </div>
 
       <div className="form-control">
         <label className="label pb-1">
-          <span className="label-text font-medium text-sm">Subject</span>
+          <span className="label-text font-medium text-sm">Focus area</span>
         </label>
         <input
           type="text"
           className="input input-bordered w-full input-sm"
-          placeholder="e.g. Computer Science"
+          placeholder="e.g. Design, Operations, Marketing"
           value={formData.subject}
           onChange={(e) => updateField("subject", e.target.value)}
         />
@@ -461,12 +499,12 @@ const CompleteProfile = () => {
 
       <div className="form-control">
         <label className="label pb-1">
-          <span className="label-text font-medium text-sm">Profession</span>
+          <span className="label-text font-medium text-sm">Current role headline</span>
         </label>
         <input
           type="text"
           className="input input-bordered w-full input-sm"
-          placeholder="e.g. Part-time Tutor"
+          placeholder="e.g. Product designer, Operations intern"
           value={formData.profession}
           onChange={(e) => updateField("profession", e.target.value)}
         />
@@ -513,7 +551,7 @@ const CompleteProfile = () => {
               <input
                 type="text"
                 className={`input input-bordered w-full input-sm ${errors.currentCompany ? "input-error" : ""}`}
-                placeholder="e.g. Delhi Public School"
+                placeholder="e.g. Acme Studio"
                 value={formData.currentCompany}
                 onChange={(e) => updateField("currentCompany", e.target.value)}
               />
@@ -543,10 +581,11 @@ const CompleteProfile = () => {
   // ── Step 3: Organization ──
   const renderInstitutionStep = () => (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold mb-2">Your organization (optional)</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        This helps others understand your professional background.
-      </p>
+      <SectionTitle
+        icon={Building2}
+        title="Organization"
+        description="Optional details that help others understand your professional context."
+      />
 
       <div className="form-control">
         <label className="label pb-1">
@@ -560,7 +599,7 @@ const CompleteProfile = () => {
           onChange={(e) => updateField("institutionType", e.target.value)}
         >
           <option value="">Select organization type</option>
-          <option value="school">Organization</option>
+          <option value="school">Company / Organization</option>
           <option value="college">Network</option>
           <option value="university">Community</option>
           <option value="coaching">Program</option>
@@ -576,7 +615,7 @@ const CompleteProfile = () => {
         <input
           type="text"
           className="input input-bordered w-full input-sm"
-          placeholder="e.g. Example University"
+          placeholder="e.g. Acme Studio"
           value={formData.institutionName}
           onChange={(e) => updateField("institutionName", e.target.value)}
         />
@@ -585,73 +624,94 @@ const CompleteProfile = () => {
   );
 
   return (
-    <div className="min-h-screen bg-base-100 flex">
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-lg">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-primary rounded-xl mb-3">
-              <FontAwesomeIcon
-                icon={faUserGraduate}
-                className="w-8 h-8 text-white"
-                fontSize={24}
-              />
-            </div>
-            <h1 className="text-2xl font-bold font-heading mb-1">
-              Complete Your Profile
-            </h1>
-            <p className="text-sm text-base-content/50">
-              Step {step + 1} of {steps.length}
-            </p>
-          </div>
+    <AuthLayout
+      title="Complete your profile"
+      subtitle={`Step ${step + 1} of ${steps.length}. Add the profile details that help others trust and understand your work.`}
+      badge="Profile setup"
+      panelClassName="max-w-2xl"
+    >
+      {renderStepIndicator()}
 
-          {/* Progress indicator */}
-          {renderStepIndicator()}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {step === 0 && renderDetailsStep()}
+        {step === 1 && renderEducationStep()}
+        {step === 2 && renderInstitutionStep()}
 
-          {/* Step content */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {step === 0 && renderDetailsStep()}
-            {step === 1 && renderEducationStep()}
-            {step === 2 && renderInstitutionStep()}
-
-            <div className="flex gap-3 mt-6">
+        <div className="border-t border-base-200 pt-5">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              onClick={handleSkip}
+              className="btn btn-ghost flex-1 sm:flex-none"
+              disabled={loading}
+            >
+              Skip for now
+            </button>
+            <div className="flex flex-1 gap-3">
               {step > 0 && (
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="btn btn-ghost btn-outline flex-1"
+                  className="btn btn-outline flex-1 gap-2"
+                  disabled={loading}
                 >
-                  ← Previous
+                  <ArrowLeft className="h-4 w-4" />
+                  Previous
                 </button>
               )}
               {step === steps.length - 1 ? (
                 <button
                   type="submit"
-                  className="btn btn-primary flex-1"
+                  className="btn btn-primary flex-1 gap-2"
                   disabled={loading}
                 >
                   {loading ? (
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
-                    "Complete Profile →"
+                    <>
+                      Complete Profile
+                      <Check className="h-4 w-4" />
+                    </>
                   )}
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="btn btn-primary flex-1"
+                  className="btn btn-primary flex-1 gap-2"
+                  disabled={loading}
                 >
-                  Next →
+                  Next
+                  <ArrowRight className="h-4 w-4" />
                 </button>
               )}
             </div>
-          </form>
+          </div>
+          <p className="mt-3 text-center text-xs text-base-content/45 sm:text-left">
+            Skipping will not remove your account. You can finish these details
+            later from profile settings.
+          </p>
         </div>
-      </div>
-    </div>
+      </form>
+    </AuthLayout>
   );
 };
+
+const SectionTitle = ({ icon: Icon, title, description }) => (
+  <div className="rounded-2xl border border-base-300/70 bg-base-200/35 p-4">
+    <div className="flex items-start gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div>
+        <h2 className="font-bold font-heading">{title}</h2>
+        <p className="mt-1 text-xs leading-5 text-base-content/55">
+          {description}
+        </p>
+      </div>
+    </div>
+  </div>
+);
 
 const FieldError = ({ children }) => (
   <p className="mt-1 text-xs font-medium text-error">{children}</p>

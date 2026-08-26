@@ -24,6 +24,7 @@ const AuthLayout = ({
   badge = "ShortJob account",
   children,
   footer,
+  panelClassName = "max-w-md",
 }) => {
   return (
     <div className="min-h-screen bg-base-100 lg:grid lg:grid-cols-[minmax(420px,0.95fr)_1.05fr]">
@@ -88,7 +89,7 @@ const AuthLayout = ({
       </aside>
 
       <main className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6">
-        <div className="w-full max-w-md">
+        <div className={`w-full ${panelClassName}`}>
           <div className="mb-7 text-center lg:text-left">
             <Link
               to="/"
