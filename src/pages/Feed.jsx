@@ -50,7 +50,7 @@ const CommentItem = ({
       <div className="flex gap-3 group">
         <UserAvatar user={comment.author} size={32} />
         <div className="flex-1 min-w-0">
-          <div className="bg-base-200/80 rounded-2xl px-4 py-2.5">
+          <div className="bg-base-200/70 border border-base-300/50 rounded-2xl rounded-tl-sm px-4 py-2.5">
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-semibold text-base-content/80">
                 {comment.author?.name || "Unknown"}
@@ -59,7 +59,9 @@ const CommentItem = ({
                 {timeAgo(comment.createdAt)}
               </span>
             </div>
-            <p className="text-sm mt-0.5 leading-relaxed">{comment.text}</p>
+            <p className="text-sm mt-0.5 leading-relaxed break-words whitespace-pre-wrap">
+              {comment.text}
+            </p>
           </div>
           <div className="flex items-center gap-4 mt-1.5 px-1">
             <button
@@ -95,7 +97,7 @@ const CommentItem = ({
 
       {/* Replies */}
       {comment.replies?.length > 0 && (
-        <div className="ml-6 pl-4 border-l-2 border-primary/10 space-y-3">
+        <div className="ml-2 sm:ml-6 pl-4 border-l-2 border-primary/15 space-y-3">
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply._id}
@@ -513,22 +515,29 @@ const Feed = () => {
       {/* Comment Modal */}
       {commentPost && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-0 md:p-4"
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm p-0 md:items-center md:p-4"
           onClick={() => setCommentPost(null)}
         >
           <div
-            className="bg-base-100 md:rounded-2xl w-full h-full md:h-auto md:max-h-[85vh] max-w-lg flex flex-col shadow-2xl"
+            className="bg-base-100 rounded-t-2xl md:rounded-2xl w-full h-[92dvh] md:h-auto md:max-h-[86vh] md:max-w-2xl flex flex-col shadow-2xl border border-base-300/70"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-base-200 shrink-0">
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold font-heading text-lg">Comments</h3>
-                {comments.length > 0 && (
-                  <span className="badge badge-sm badge-ghost">
-                    {comments.length}
-                  </span>
-                )}
+            <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-base-200 shrink-0">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold font-heading text-lg leading-tight">
+                    Comments
+                  </h3>
+                  {comments.length > 0 && (
+                    <span className="badge badge-sm badge-ghost">
+                      {comments.length}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-base-content/45 mt-0.5">
+                  Join the conversation on this post
+                </p>
               </div>
               <button
                 onClick={() => setCommentPost(null)}
@@ -539,7 +548,7 @@ const Feed = () => {
             </div>
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-5">
               {loadingComments ? (
                 <div className="text-center py-12">
                   <span className="loading loading-spinner loading-md text-primary"></span>
@@ -577,7 +586,7 @@ const Feed = () => {
             </div>
 
             {/* Comment Input */}
-            <div className="p-4 border-t border-base-200 bg-base-100 shrink-0">
+            <div className="p-3 sm:p-4 border-t border-base-200 bg-base-100 shrink-0">
               {replyTo && (
                 <div className="flex items-center justify-between mb-2.5 text-xs bg-primary/5 rounded-lg px-3 py-1.5">
                   <span className="text-primary flex items-center gap-1.5">
@@ -600,17 +609,23 @@ const Feed = () => {
                   e.preventDefault();
                   handleAddComment();
                 }}
-                className="flex items-center gap-2"
+                className="flex items-end gap-2 rounded-2xl border border-base-300/60 bg-base-200/40 p-2"
               >
                 <UserAvatar user={user} size={32} />
-                <input
-                  type="text"
-                  className="input input-bordered flex-1 input-sm text-sm rounded-full"
+                <textarea
+                  rows={1}
+                  className="textarea textarea-bordered min-h-10 flex-1 resize-none rounded-2xl text-sm leading-relaxed"
                   placeholder={
                     replyTo ? "Write a reply..." : "Write a comment..."
                   }
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddComment();
+                    }
+                  }}
                   autoFocus
                 />
                 <button

@@ -130,12 +130,19 @@ const PostDetail = () => {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-4">
+      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-4 md:py-6 space-y-4">
         <div className="h-8 w-32 skeleton rounded mb-6"></div>
-        <div className="card border p-5 space-y-4">
-          <div className="h-5 w-3/4 skeleton rounded"></div>
-          <div className="h-4 w-full skeleton rounded"></div>
-          <div className="h-4 w-1/2 skeleton rounded"></div>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_430px]">
+          <div className="card border p-5 space-y-4">
+            <div className="h-5 w-3/4 skeleton rounded"></div>
+            <div className="h-4 w-full skeleton rounded"></div>
+            <div className="h-4 w-1/2 skeleton rounded"></div>
+          </div>
+          <div className="card border p-5 space-y-4">
+            <div className="h-5 w-32 skeleton rounded"></div>
+            <div className="h-14 w-full skeleton rounded-xl"></div>
+            <div className="h-20 w-full skeleton rounded-xl"></div>
+          </div>
         </div>
       </div>
     );
@@ -151,24 +158,25 @@ const PostDetail = () => {
   const specialStyle = getSpecialUserStyle(postAuthor);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 md:p-6">
+    <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-3 md:py-6">
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}
-        className="btn btn-ghost btn-sm mb-4 gap-2"
+        className="btn btn-ghost btn-sm mb-3 sm:mb-4 gap-2"
       >
         <ArrowLeft className="w-4 h-4" />
         Back
       </button>
 
-      {/* Post Card */}
-      <div
-        className={`card border shadow-sm p-5 mb-6 ${
-          isSpecialPost
-            ? specialStyle.shell
-            : "bg-base-100 border-base-300/50"
-        }`}
-      >
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_430px] lg:items-start">
+        {/* Post Card */}
+        <div
+          className={`card border shadow-sm p-4 sm:p-5 lg:sticky lg:top-4 ${
+            isSpecialPost
+              ? specialStyle.shell
+              : "bg-base-100 border-base-300/50"
+          }`}
+        >
         {/* Author */}
         <div className="flex items-center justify-between mb-4">
           <div
@@ -305,132 +313,151 @@ const PostDetail = () => {
       </div>
 
       {/* Comments Section */}
-      <div className="mt-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <MessageCircle className="w-4 h-4 text-primary" />
+      <div className="overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-base-200 px-4 py-3 sm:px-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base leading-tight">Comments</h3>
+              <p className="text-xs text-base-content/45">
+                {comments.length} {comments.length === 1 ? "response" : "responses"}
+              </p>
+            </div>
           </div>
-          <h3 className="font-bold text-base">
-            Comments
-            <span className="ml-2 text-sm font-normal text-base-content/40">
-              ({comments.length})
-            </span>
-          </h3>
+          <span className="badge badge-primary badge-soft">{comments.length}</span>
         </div>
 
         {/* Add comment */}
-        <div className="flex gap-3 mb-6 bg-base-200/50 rounded-2xl p-3">
-          <UserAvatar user={user} size={36} />
-          <div className="flex-1">
-            {replyTo && (
-              <div className="text-xs text-base-content/50 mb-2 flex items-center gap-1 bg-base-200 rounded-lg px-2 py-1">
-                Replying to a comment
+        <div className="border-b border-base-200 bg-base-100 p-3 sm:p-4">
+          <div className="flex gap-3 rounded-2xl border border-base-300/60 bg-base-200/40 p-3">
+            <UserAvatar user={user} size={36} />
+            <div className="flex-1 min-w-0">
+              {replyTo && (
+                <div className="text-xs text-base-content/60 mb-2 flex items-center gap-1 bg-primary/10 rounded-lg px-2 py-1">
+                  Replying to a comment
+                  <button
+                    onClick={() => setReplyTo(null)}
+                    className="text-error hover:underline ml-auto"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+              <div className="flex items-end gap-2">
+                <textarea
+                  rows={1}
+                  className="textarea textarea-bordered min-h-10 flex-1 resize-none rounded-2xl text-sm leading-relaxed focus:outline-none focus:border-primary/50"
+                  placeholder="Write a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddComment();
+                    }
+                  }}
+                />
                 <button
-                  onClick={() => setReplyTo(null)}
-                  className="text-error hover:underline ml-auto"
+                  onClick={handleAddComment}
+                  className="btn btn-primary btn-sm btn-circle shrink-0"
+                  disabled={!commentText.trim() || addingComment}
                 >
-                  Cancel
+                  {addingComment ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </div>
-            )}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                className="input input-bordered input-sm flex-1 text-sm rounded-full focus:outline-none focus:border-primary/50"
-                placeholder="Write a comment..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
-              />
-              <button
-                onClick={handleAddComment}
-                className="btn btn-primary btn-sm btn-circle"
-                disabled={!commentText.trim() || addingComment}
-              >
-                <Send className="w-3.5 h-3.5" />
-              </button>
             </div>
           </div>
         </div>
 
         {/* Comments List */}
-        {comments.length === 0 ? (
-          <div className="text-center py-10 bg-base-200/30 rounded-2xl">
-            <div className="w-14 h-14 rounded-2xl bg-base-300/50 flex items-center justify-center mx-auto mb-3">
-              <MessageCircle className="w-6 h-6 text-base-content/20" />
+        <div className="max-h-none space-y-4 overflow-y-visible p-3 sm:p-4 lg:max-h-[calc(100vh-210px)] lg:overflow-y-auto">
+          {comments.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-14 h-14 rounded-2xl bg-base-300/50 flex items-center justify-center mx-auto mb-3">
+                <MessageCircle className="w-6 h-6 text-base-content/20" />
+              </div>
+              <p className="text-sm text-base-content/40 font-medium">
+                No comments yet
+              </p>
+              <p className="text-xs text-base-content/30 mt-1">
+                Be the first to share your thoughts!
+              </p>
             </div>
-            <p className="text-sm text-base-content/40 font-medium">
-              No comments yet
-            </p>
-            <p className="text-xs text-base-content/30 mt-1">
-              Be the first to share your thoughts!
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {comments.map((comment) => {
-              const commentAuthor = comment.author || comment.user || {};
-              return (
-                <div key={comment._id} className="group">
-                  <div className="flex gap-3">
-                    <UserAvatar user={commentAuthor} size={32} />
-                    <div className="flex-1 min-w-0">
-                      <div className="bg-base-200/60 rounded-2xl rounded-tl-sm px-4 py-2.5">
-                        <p className="text-xs font-semibold mb-0.5">
-                          {commentAuthor.name || "Unknown"}
-                        </p>
-                        <p className="text-sm leading-relaxed">
-                          {comment.text}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-4 mt-1.5 px-1">
-                        <span className="text-[10px] text-base-content/40">
-                          {new Date(comment.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                            }
-                          )}
-                        </span>
-                        <button
-                          onClick={() => {
-                            setReplyTo(comment._id);
-                            setCommentText(`@${commentAuthor.name} `);
-                          }}
-                          className="text-[11px] text-base-content/40 hover:text-primary font-medium transition-colors"
-                        >
-                          Reply
-                        </button>
-                      </div>
-
-                      {/* Replies */}
-                      {comment.replies?.length > 0 && (
-                        <div className="ml-6 mt-2 pl-4 border-l-2 border-primary/10 space-y-2">
-                          {comment.replies.map((reply) => {
-                            const replyAuthor =
-                              reply.author || reply.user || {};
-                            return (
-                              <div key={reply._id} className="flex gap-2">
-                                <UserAvatar user={replyAuthor} size={24} />
-                                <div className="bg-base-200/40 rounded-xl px-3 py-1.5 flex-1 min-w-0">
-                                  <p className="text-[11px] font-semibold mb-0.5">
-                                    {replyAuthor.name || "Unknown"}
-                                  </p>
-                                  <p className="text-xs">{reply.text}</p>
-                                </div>
-                              </div>
-                            );
-                          })}
+          ) : (
+            <div className="space-y-4">
+              {comments.map((comment) => {
+                const commentAuthor = comment.author || comment.user || {};
+                return (
+                  <div key={comment._id} className="group">
+                    <div className="flex gap-3">
+                      <UserAvatar user={commentAuthor} size={32} />
+                      <div className="flex-1 min-w-0">
+                        <div className="rounded-2xl rounded-tl-sm border border-base-300/60 bg-base-200/50 px-4 py-3">
+                          <p className="text-xs font-semibold text-base-content/80 mb-1">
+                            {commentAuthor.name || "Unknown"}
+                          </p>
+                          <p className="text-sm leading-relaxed text-base-content/85 whitespace-pre-wrap break-words">
+                            {comment.text}
+                          </p>
                         </div>
-                      )}
+                        <div className="flex items-center gap-4 mt-1.5 px-1">
+                          <span className="text-[10px] text-base-content/40">
+                            {new Date(comment.createdAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setReplyTo(comment._id);
+                              setCommentText(`@${commentAuthor.name} `);
+                            }}
+                            className="text-[11px] text-base-content/40 hover:text-primary font-medium transition-colors"
+                          >
+                            Reply
+                          </button>
+                        </div>
+
+                        {/* Replies */}
+                        {comment.replies?.length > 0 && (
+                          <div className="ml-2 sm:ml-6 mt-3 pl-4 border-l-2 border-primary/15 space-y-3">
+                            {comment.replies.map((reply) => {
+                              const replyAuthor =
+                                reply.author || reply.user || {};
+                              return (
+                                <div key={reply._id} className="flex gap-2">
+                                  <UserAvatar user={replyAuthor} size={24} />
+                                  <div className="bg-base-200/40 border border-base-300/50 rounded-xl px-3 py-2 flex-1 min-w-0">
+                                    <p className="text-[11px] font-semibold mb-0.5">
+                                      {replyAuthor.name || "Unknown"}
+                                    </p>
+                                    <p className="text-xs leading-relaxed break-words whitespace-pre-wrap">
+                                      {reply.text}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
       </div>
 
       {/* Delete Post Confirm Modal */}
