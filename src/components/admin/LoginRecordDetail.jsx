@@ -125,6 +125,15 @@ const LoginRecordDetail = ({ record }) => {
               label="Detector"
               value={record.faceDetection?.detector || "Not recorded"}
             />
+            <Info
+              icon={ShieldCheck}
+              label="Face rule"
+              value={
+                record.faceDetection?.validation
+                  ? record.faceDetection.validation.replace(/-/g, " ")
+                  : "Not recorded"
+              }
+            />
           </div>
 
           <div className="rounded-xl bg-base-200/60 border border-base-300 p-3 text-xs text-base-content/60">

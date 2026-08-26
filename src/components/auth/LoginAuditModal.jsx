@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   Camera,
   CheckCircle2,
+  CircleAlert,
+  Lightbulb,
   LocateFixed,
   RotateCcw,
   ShieldCheck,
@@ -17,7 +19,20 @@ import {
 } from "./CameraCapture";
 
 const REQUIRED_PERMISSION_MESSAGE =
-  "Location, camera access, and a clear face capture are required to sign in while this security feature is enabled.";
+  "Location, camera access, and a full visible face capture are required to sign in while this security feature is enabled.";
+
+const getFaceErrorMessage = (face) => {
+  if (face?.validation === "poor-lighting") {
+    return "The photo is too dark or too bright. Face the light and keep your full face inside the guide.";
+  }
+  if (face?.validation === "no-centered-face") {
+    return "No centered face was found. Move closer, face the camera directly, and keep your full face visible.";
+  }
+  if (face?.validation === "no-face-detail") {
+    return "The face is not clear enough. Clean the camera, improve lighting, and try again.";
+  }
+  return "Full face was not detected. Please keep your complete face centered in the camera frame and try again.";
+};
 
 const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel }) => {
   const videoRef = useRef(null);
@@ -68,7 +83,7 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
 
       setLocationReady(true);
       setCameraReady(true);
-      setStatus("Camera is ready. Keep your face centered and capture.");
+      setStatus("Camera is ready. Center your full face inside the guide before capture.");
     } catch (err) {
       stopCamera();
       setLocationReady(false);
@@ -88,7 +103,7 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
       const canvas = captureCanvasFromVideo(videoRef.current);
       const face = await detectFaceFromCanvas(canvas);
       if (!face.faceDetected) {
-        throw new Error("Face was not detected. Please face the camera clearly and try again.");
+        throw new Error(getFaceErrorMessage(face));
       }
 
       const photo = await canvasToLoginPhoto(canvas);
@@ -137,7 +152,7 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="relative overflow-hidden rounded-2xl border border-base-300 bg-black aspect-video">
             <video
               ref={videoRef}
@@ -150,6 +165,17 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
                 <Video className="h-12 w-12" />
                 <p className="mt-3 text-sm font-medium">Camera preview required</p>
               </div>
+            )}
+            {cameraReady && (
+              <>
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="h-[72%] w-[46%] rounded-[48%] border-2 border-white/80 shadow-[0_0_0_999px_rgba(0,0,0,0.22)]" />
+                </div>
+                <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-xl bg-black/55 px-3 py-2 text-center text-xs font-medium text-white">
+                  Keep your full face inside the oval. Do not cut forehead,
+                  chin, or either side of the face.
+                </div>
+              </>
             )}
           </div>
 
@@ -170,8 +196,35 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
               icon={ShieldCheck}
               active={false}
               title="Face capture"
-              description="Keep your face visible and centered before pressing capture."
+              description="Your complete face must be clear, centered, and visible from forehead to chin."
             />
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-success/20 bg-success/10 p-3">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-success">
+              <Lightbulb className="h-4 w-4" />
+              Good capture
+            </div>
+            <ul className="space-y-1.5 text-xs leading-5 text-base-content/65">
+              <li>Face the camera directly.</li>
+              <li>Show forehead, eyes, nose, mouth, and chin.</li>
+              <li>Use bright light from the front.</li>
+              <li>Keep the camera steady and avoid backlight.</li>
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-error/20 bg-error/10 p-3">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-error">
+              <CircleAlert className="h-4 w-4" />
+              Will be rejected
+            </div>
+            <ul className="space-y-1.5 text-xs leading-5 text-base-content/65">
+              <li>Half face or face cut by the frame.</li>
+              <li>Looking away, covered face, or very dark photo.</li>
+              <li>Too close to the camera.</li>
+              <li>Blurred photo or blocked camera view.</li>
+            </ul>
           </div>
         </div>
 

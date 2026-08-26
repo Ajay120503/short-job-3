@@ -47,6 +47,7 @@ const Login = () => {
     faceCount,
     detector,
     confidence,
+    validation,
   }) => {
     setAuditError("");
     try {
@@ -59,6 +60,7 @@ const Login = () => {
       formData.append("faceCount", String(faceCount || 0));
       formData.append("faceDetector", detector || "");
       formData.append("faceConfidence", String(confidence || 0));
+      formData.append("faceValidation", validation || "");
       await completeLoginAudit(auditToken, formData);
       toast.success("Welcome back!");
       navigate("/feed");

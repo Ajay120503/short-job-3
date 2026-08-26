@@ -38,56 +38,211 @@ export const captureCanvasFromVideo = (video) => {
   return canvas;
 };
 
-const estimateLiveFaceFrame = (canvas) => {
+const FACE_CAPTURE_ERROR =
+  "Full face was not detected. Please keep your complete face centered in the camera frame and try again.";
+
+const isFullFaceBoundingBox = (box, canvas) => {
+  if (!box) return false;
+  const width = canvas.width;
+  const height = canvas.height;
+  const left = box.x;
+  const top = box.y;
+  const right = box.x + box.width;
+  const bottom = box.y + box.height;
+  const faceWidthRatio = box.width / width;
+  const faceHeightRatio = box.height / height;
+  const centerX = left + box.width / 2;
+  const centerY = top + box.height / 2;
+  const marginX = width * 0.025;
+  const marginY = height * 0.025;
+
+  return (
+    left > marginX &&
+    right < width - marginX &&
+    top > marginY &&
+    bottom < height - marginY &&
+    faceWidthRatio >= 0.12 &&
+    faceWidthRatio <= 0.82 &&
+    faceHeightRatio >= 0.16 &&
+    faceHeightRatio <= 0.92 &&
+    centerX > width * 0.2 &&
+    centerX < width * 0.8 &&
+    centerY > height * 0.18 &&
+    centerY < height * 0.82
+  );
+};
+
+const estimateCanvasFacePresence = (canvas) => {
   const context = canvas.getContext("2d", { willReadFrequently: true });
   const width = canvas.width;
   const height = canvas.height;
-  const xStart = Math.floor(width * 0.18);
-  const xEnd = Math.floor(width * 0.82);
-  const yStart = Math.floor(height * 0.12);
-  const yEnd = Math.floor(height * 0.9);
-  const imageData = context.getImageData(xStart, yStart, xEnd - xStart, yEnd - yStart);
+  const imageData = context.getImageData(0, 0, width, height);
   const data = imageData.data;
-  let sampled = 0;
-  let bright = 0;
-  let dark = 0;
-  let luminanceTotal = 0;
-  let contrastTotal = 0;
-  let edgeHits = 0;
-  let previousLum = null;
+  const step = Math.max(4, Math.floor(Math.min(width, height) / 120));
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radiusX = width * 0.26;
+  const radiusY = height * 0.38;
+  const background = { count: 0, lum: 0 };
+  let globalCount = 0;
+  let globalLum = 0;
 
-  for (let i = 0; i < data.length; i += 16) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    const contrast = Math.max(r, g, b) - Math.min(r, g, b);
+  for (let y = 0; y < height; y += step) {
+    for (let x = 0; x < width; x += step) {
+      const index = (y * width + x) * 4;
+      const r = data[index];
+      const g = data[index + 1];
+      const b = data[index + 2];
+      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      globalCount += 1;
+      globalLum += luminance;
 
-    sampled += 1;
-    luminanceTotal += luminance;
-    contrastTotal += contrast;
-    if (luminance > 70) bright += 1;
-    if (luminance < 35) dark += 1;
-    if (previousLum !== null && Math.abs(luminance - previousLum) > 18) {
-      edgeHits += 1;
+      if (
+        (x < width * 0.18 || x > width * 0.82) &&
+        (y < height * 0.26 || y > height * 0.78)
+      ) {
+        background.count += 1;
+        background.lum += luminance;
+      }
     }
-    previousLum = luminance;
   }
 
-  if (!sampled) return 0;
+  const backgroundLum = background.count
+    ? background.lum / background.count
+    : globalCount
+      ? globalLum / globalCount
+      : 128;
+  const averageLum = globalCount ? globalLum / globalCount : 0;
+  const stats = {
+    count: 0,
+    object: 0,
+    detail: 0,
+    warm: 0,
+    leftLum: 0,
+    rightLum: 0,
+    leftCount: 0,
+    rightCount: 0,
+    bands: {
+      top: { count: 0, object: 0, detail: 0 },
+      middle: { count: 0, object: 0, detail: 0 },
+      bottom: { count: 0, object: 0, detail: 0 },
+    },
+  };
 
-  const avgLum = luminanceTotal / sampled;
-  const avgContrast = contrastTotal / sampled;
-  const brightRatio = bright / sampled;
-  const darkRatio = dark / sampled;
-  const edgeRatio = edgeHits / sampled;
+  for (let y = Math.floor(height * 0.12); y < height * 0.9; y += step) {
+    let previousLum = null;
+    for (let x = Math.floor(width * 0.18); x < width * 0.82; x += step) {
+      const normalizedX = (x - centerX) / radiusX;
+      const normalizedY = (y - centerY) / radiusY;
+      if (normalizedX * normalizedX + normalizedY * normalizedY > 1) continue;
 
-  const exposureScore = avgLum > 45 && avgLum < 225 ? 0.35 : 0;
-  const detailScore = Math.min(avgContrast / 70, 1) * 0.3;
-  const centerScore = brightRatio > 0.08 && darkRatio < 0.7 ? 0.2 : 0;
-  const edgeScore = Math.min(edgeRatio / 0.22, 1) * 0.15;
+      const index = (y * width + x) * 4;
+      const r = data[index];
+      const g = data[index + 1];
+      const b = data[index + 2];
+      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const channelContrast = Math.max(r, g, b) - Math.min(r, g, b);
+      const backgroundDiff = Math.abs(luminance - backgroundLum);
+      const cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
+      const cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+      const warmFaceTone =
+        luminance > 45 &&
+        luminance < 235 &&
+        cr > 132 &&
+        cr < 185 &&
+        cb > 70 &&
+        cb < 145 &&
+        r > b * 0.82;
+      const detailed =
+        channelContrast > 24 ||
+        backgroundDiff > 28 ||
+        (previousLum !== null && Math.abs(luminance - previousLum) > 18);
+      const foreground =
+        backgroundDiff > 24 ||
+        channelContrast > 34 ||
+        luminance < backgroundLum - 28 ||
+        warmFaceTone;
+      const relativeY = y / height;
+      const band =
+        relativeY < 0.4
+          ? stats.bands.top
+          : relativeY < 0.68
+            ? stats.bands.middle
+            : stats.bands.bottom;
 
-  return Number((exposureScore + detailScore + centerScore + edgeScore).toFixed(2));
+      stats.count += 1;
+      band.count += 1;
+      if (foreground) {
+        stats.object += 1;
+        band.object += 1;
+      }
+      if (detailed) {
+        stats.detail += 1;
+        band.detail += 1;
+      }
+      if (warmFaceTone) stats.warm += 1;
+      if (x < centerX) {
+        stats.leftLum += luminance;
+        stats.leftCount += 1;
+      } else {
+        stats.rightLum += luminance;
+        stats.rightCount += 1;
+      }
+      previousLum = luminance;
+    }
+  }
+
+  if (!stats.count) {
+    return { passed: false, confidence: 0, reason: "no-face-detail" };
+  }
+
+  const ratios = Object.fromEntries(
+    Object.entries(stats.bands).map(([key, value]) => [
+      key,
+      {
+        object: value.count ? value.object / value.count : 0,
+        detail: value.count ? value.detail / value.count : 0,
+      },
+    ]),
+  );
+  const objectRatio = stats.object / stats.count;
+  const detailRatio = stats.detail / stats.count;
+  const warmRatio = stats.warm / stats.count;
+  const leftAverage = stats.leftCount ? stats.leftLum / stats.leftCount : 0;
+  const rightAverage = stats.rightCount ? stats.rightLum / stats.rightCount : 0;
+  const symmetryScore = 1 - Math.min(Math.abs(leftAverage - rightAverage) / 95, 1);
+  const balancedFace =
+    ratios.top.object > 0.055 &&
+    ratios.middle.object > 0.09 &&
+    ratios.bottom.object > 0.045 &&
+    ratios.top.detail > 0.025 &&
+    ratios.middle.detail > 0.035;
+
+  if (averageLum < 35 || averageLum > 235) {
+    return { passed: false, confidence: 0.12, reason: "poor-lighting" };
+  }
+  if (objectRatio < 0.12 && warmRatio < 0.05) {
+    return { passed: false, confidence: 0.2, reason: "no-centered-face" };
+  }
+  if (detailRatio < 0.05) {
+    return { passed: false, confidence: 0.25, reason: "no-face-detail" };
+  }
+  if (!balancedFace) {
+    return { passed: false, confidence: 0.38, reason: "cropped-or-off-center" };
+  }
+
+  const confidence =
+    Math.min(objectRatio / 0.34, 1) * 0.34 +
+    Math.min(detailRatio / 0.16, 1) * 0.28 +
+    Math.min(warmRatio / 0.16, 1) * 0.16 +
+    symmetryScore * 0.14 +
+    0.08;
+
+  return {
+    passed: confidence >= 0.52,
+    confidence: Number(confidence.toFixed(2)),
+    reason: confidence >= 0.52 ? "fallback-full-face" : "no-centered-face",
+  };
 };
 
 export const detectFaceFromCanvas = async (canvas) => {
@@ -97,23 +252,35 @@ export const detectFaceFromCanvas = async (canvas) => {
     try {
       const detector = new BrowserFaceDetector({ fastMode: true, maxDetectedFaces: 3 });
       const faces = await detector.detect(canvas);
+      const validFaces = faces.filter((face) =>
+        isFullFaceBoundingBox(face.boundingBox, canvas),
+      );
       return {
-        faceDetected: faces.length > 0,
+        faceDetected: validFaces.length > 0,
         faceCount: faces.length,
         detector: "browser-face-detector",
-        confidence: faces.length > 0 ? 1 : 0,
+        confidence: validFaces.length > 0 ? 1 : 0,
+        validation: validFaces.length > 0 ? "full-face" : "cropped-or-off-center",
       };
     } catch {
-      // Fall through to the live-frame gate if the browser detector fails.
+      const fallback = estimateCanvasFacePresence(canvas);
+      return {
+        faceDetected: fallback.passed,
+        faceCount: fallback.passed ? 1 : 0,
+        detector: "canvas-face-presence-gate",
+        confidence: fallback.confidence,
+        validation: fallback.passed ? "fallback-full-face" : fallback.reason,
+      };
     }
   }
 
-  const confidence = estimateLiveFaceFrame(canvas);
+  const fallback = estimateCanvasFacePresence(canvas);
   return {
-    faceDetected: confidence >= 0.62,
-    faceCount: confidence >= 0.62 ? 1 : 0,
-    detector: "live-camera-frame-gate",
-    confidence,
+    faceDetected: fallback.passed,
+    faceCount: fallback.passed ? 1 : 0,
+    detector: "canvas-face-presence-gate",
+    confidence: fallback.confidence,
+    validation: fallback.passed ? "fallback-full-face" : fallback.reason,
   };
 };
 
@@ -147,7 +314,7 @@ const captureFrame = async (stream) => {
   const canvas = captureCanvasFromVideo(video);
   const face = await detectFaceFromCanvas(canvas);
   if (!face.faceDetected) {
-    throw new Error("Face was not detected. Please face the camera clearly and try again.");
+    throw new Error(FACE_CAPTURE_ERROR);
   }
   const photo = await canvasToLoginPhoto(canvas);
   return { photo, face };
