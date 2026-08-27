@@ -417,23 +417,33 @@ const Feed = () => {
                   {/* Images */}
                   {post.images?.length > 0 && (
                     <div
-                      className={`grid gap-1.5 mb-4 rounded-2xl overflow-hidden ${
+                      className={`grid gap-2 mb-4 ${
                         post.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
                       }`}
                     >
-                      {post.images.map((img, i) => (
-                        <img
-                          key={i}
-                          src={img.url}
-                          alt=""
-                          className={`w-full object-cover ${
-                            post.images.length === 1
-                              ? "max-h-96 rounded-2xl"
-                              : "max-h-64 first:rounded-l-2xl last:rounded-r-2xl"
-                          }`}
-                          loading="lazy"
-                        />
-                      ))}
+                      {post.images.map((img, i) => {
+                        const imageUrl = img?.url || img;
+                        return (
+                          <a
+                            key={i}
+                            href={imageUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`group flex w-full items-center justify-center overflow-hidden rounded-2xl border border-base-300/60 bg-base-200/60 ${
+                              post.images.length === 1
+                                ? "min-h-56 max-h-[520px] sm:min-h-72"
+                                : "aspect-square"
+                            }`}
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`Post attachment ${i + 1}`}
+                              className="h-full max-h-[520px] w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]"
+                              loading="lazy"
+                            />
+                          </a>
+                        );
+                      })}
                     </div>
                   )}
 
