@@ -1,16 +1,42 @@
-# React + Vite
+# ShortJob Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for the ShortJob professional community platform.
 
-Currently, two official plugins are available:
+## Frontend Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Area | Technology |
+| --- | --- |
+| App | React 19, Vite |
+| Styling | Tailwind CSS 4, DaisyUI 5 |
+| State | Zustand |
+| Icons | FontAwesome, Lucide |
+| Realtime | Socket.io client |
+| PWA | vite-plugin-pwa |
 
-## React Compiler
+## UI Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Warm teal/coral design system shared across feed, jobs, explore, profile, admin, chat, settings, and auth pages.
+- Responsive mobile layout with fuller screen width, compact spacing, bottom navigation, and user avatar profile icon.
+- Smooth collapsible sidebar behavior for larger screens.
+- Feed post cards with preserved full-image previews, special user styling, linked job cards, tags, likes, saves, sharing, and comments.
+- Comment modal and post detail conversation layout with multiline input, replies, empty states, and desktop/mobile optimized spacing.
+- Job pages with advanced applicant UI, kanban workflow, quick apply, Q&A, skill gap, reach stats, and formatted Excel/PDF applicant exports.
+- Profile pages with timeline, current and previous work details, special theme variants, opportunities status, and scoped avatar badges.
+- Explore page with active/popular/admin discovery, followed-user search, and special profile presentation.
+- Login audit modal with location permission, camera capture, full-face guidance, and face-quality validation.
+- Admin dashboards and related admin pages tuned for small and large screens.
 
-## Expanding the ESLint configuration
+## Commands
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+npm run build
+npm run preview
+```
+
+Default local URL:
+
+```text
+http://localhost:5173
+```
