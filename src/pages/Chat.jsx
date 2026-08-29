@@ -690,7 +690,7 @@ const Chat = () => {
         onClose={() => setShowClearChatModal(false)}
         onConfirm={() => handleClearChat(activeConversation?._id)}
         title="Clear all messages?"
-        message="This will delete all messages in this conversation. This action cannot be undone."
+        message="This will clear the chat only for you. The other person will still keep their messages."
         confirmText="Clear"
         cancelText="Cancel"
         variant="danger"
@@ -702,7 +702,7 @@ const Chat = () => {
         onClose={() => setShowDeleteChatModal(false)}
         onConfirm={() => handleDeleteChat(activeConversation?._id)}
         title="Delete this conversation?"
-        message="This will permanently delete the entire conversation and all its messages. This action cannot be undone."
+        message="This will remove the conversation only from your chat list. The other person will still keep their copy."
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"

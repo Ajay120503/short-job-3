@@ -13,6 +13,12 @@ const formatDate = (value) =>
       })
     : "Unknown";
 
+const formatExpiry = (value) => {
+  if (!value) return "Will expire 24 hours after you view it.";
+  const expiresAt = new Date(new Date(value).getTime() + 24 * 60 * 60 * 1000);
+  return `Auto deletes after ${formatDate(expiresAt)}.`;
+};
+
 const LoginHistory = () => {
   const { user } = useAuthStore();
   const [records, setRecords] = useState([]);
@@ -119,6 +125,14 @@ const LoginHistory = () => {
                   <Laptop className="w-3.5 h-3.5" />
                   {record.device?.browser || "Unknown device"}
                 </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="badge badge-success badge-soft badge-sm">
+                    Seen
+                  </span>
+                  <span className="text-[11px] text-base-content/40">
+                    {formatExpiry(record.userSeenAt)}
+                  </span>
+                </div>
               </div>
               <button
                 type="button"
