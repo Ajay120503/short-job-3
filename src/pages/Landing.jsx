@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
-  Bell,
   Briefcase,
   CheckCircle2,
   MessageCircle,
@@ -57,10 +56,22 @@ const featureCards = [
 ];
 
 const flowSteps = [
-  "Build a profile",
-  "Post or discover",
-  "Apply and chat",
-  "Grow with signals",
+  {
+    title: "Build a profile",
+    detail: "Add your program, skills, and what you're looking for.",
+  },
+  {
+    title: "Post or discover",
+    detail: "Share updates, or scan the feed for relevant opportunities.",
+  },
+  {
+    title: "Apply and chat",
+    detail: "Apply in a click, then message directly to sort out details.",
+  },
+  {
+    title: "Grow with signals",
+    detail: "Track responses, follows, and match strength over time.",
+  },
 ];
 
 const stats = [
@@ -96,9 +107,9 @@ const Landing = () => {
       </nav>
 
       <main>
-        <section className="relative isolate overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-36">
+        <section className="relative isolate overflow-hidden px-4 pb-20 pt-32 sm:px-6 lg:pb-28 lg:pt-40">
           <div className="absolute inset-0 -z-10 bg-base-100" />
-          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+          <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div
               initial="hidden"
               animate="show"
@@ -107,21 +118,21 @@ const Landing = () => {
             >
               <motion.div
                 variants={fadeUp}
-                className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary"
               >
-                Professional community, jobs, chat, and moderation
+                Professional community, jobs, chat & moderation
               </motion.div>
 
               <motion.h1
                 variants={fadeUp}
-                className="font-heading text-4xl font-extrabold leading-tight text-base-content sm:text-5xl lg:text-6xl"
+                className="font-heading text-4xl font-extrabold leading-[1.08] tracking-tight text-base-content sm:text-5xl lg:text-6xl"
               >
                 Where careers begin and trusted networks grow.
               </motion.h1>
 
               <motion.p
                 variants={fadeUp}
-                className="mt-5 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg"
+                className="mt-6 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg"
               >
                 ShortJob brings posts, stories, opportunities, applications,
                 realtime chat, and admin review into one focused platform.
@@ -129,7 +140,7 @@ const Landing = () => {
 
               <motion.div
                 variants={fadeUp}
-                className="mt-8 flex flex-col gap-3 sm:flex-row"
+                className="mt-9 flex flex-col gap-3 sm:flex-row"
               >
                 <Link to="/register" className="btn btn-primary btn-lg gap-2">
                   Create Account
@@ -142,7 +153,7 @@ const Landing = () => {
 
               <motion.div
                 variants={fadeUp}
-                className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/55"
+                className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-sm text-base-content/55"
               >
                 {[
                   "Free to start",
@@ -157,133 +168,121 @@ const Landing = () => {
               </motion.div>
             </motion.div>
 
+            {/* Signature hero visual: a fanned stack of real product moments,
+               instead of a generic browser-chrome dashboard mockup */}
             <motion.div
-              initial={{ opacity: 0, y: 28, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7, ease: "easeOut", delay: 0.08 }}
-              className="relative"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.75, ease: "easeOut", delay: 0.1 }}
+              className="relative mx-auto h-[440px] w-full max-w-md lg:mx-0 lg:ml-auto"
             >
-              <div className="rounded-lg border border-base-300 bg-base-100 p-3 shadow-xl shadow-primary/10">
-                <div className="rounded-lg border border-base-300 bg-base-200/55 p-3">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-error" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-warning" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-success" />
-                    </div>
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
-                      Live workspace
-                    </span>
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute left-0 top-4 w-[76%] -rotate-3 rounded-xl border border-info/20 bg-base-100 p-4 shadow-lg"
+              >
+                <div className="mb-3 flex items-center gap-2 text-info">
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide">
+                    Chat
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <div className="ml-auto w-3/4 rounded-lg rounded-tr-sm bg-info/15 px-3 py-2 text-xs">
+                    Are you free for a quick call about the role?
                   </div>
-
-                  <div className="grid gap-3 md:grid-cols-[1fr_0.78fr]">
-                    <div className="space-y-3">
-                      <motion.div
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{ duration: 4, repeat: Infinity }}
-                        className="rounded-lg border border-primary/20 bg-base-100 p-4"
-                      >
-                        <div className="mb-3 flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/15" />
-                          <div className="min-w-0 flex-1">
-                            <div className="h-3 w-28 rounded bg-neutral/15" />
-                            <div className="mt-2 h-2 w-20 rounded bg-primary/20" />
-                          </div>
-                          <BadgeCheck className="h-5 w-5 text-success" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="h-3 rounded bg-base-300" />
-                          <div className="h-3 w-4/5 rounded bg-base-300" />
-                        </div>
-                        <div className="mt-4 grid grid-cols-3 gap-2">
-                          <span className="h-16 rounded bg-primary/10" />
-                          <span className="h-16 rounded bg-accent/10" />
-                          <span className="h-16 rounded bg-success/10" />
-                        </div>
-                      </motion.div>
-
-                      <div className="rounded-lg border border-base-300 bg-base-100 p-4">
-                        <div className="mb-3 flex items-center justify-between">
-                          <span className="text-sm font-bold">
-                            Opportunity match
-                          </span>
-                          <span className="badge badge-success badge-soft badge-sm">
-                            86%
-                          </span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-base-300">
-                          <motion.div
-                            initial={{ width: "18%" }}
-                            animate={{ width: "86%" }}
-                            transition={{ duration: 1.2, delay: 0.4 }}
-                            className="h-full rounded-full bg-success"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <motion.div
-                        animate={{ y: [0, 5, 0] }}
-                        transition={{ duration: 4.5, repeat: Infinity }}
-                        className="rounded-lg border border-accent/20 bg-base-100 p-4"
-                      >
-                        <div className="mb-3 flex items-center gap-2">
-                          <Briefcase className="h-4 w-4 text-accent" />
-                          <span className="text-sm font-bold">Jobs</span>
-                        </div>
-                        {[
-                          "Product Trainer",
-                          "Support Lead",
-                          "Content Creator",
-                        ].map((role) => (
-                          <div
-                            key={role}
-                            className="mb-2 rounded border border-base-300 bg-base-200/60 px-3 py-2 text-xs font-medium"
-                          >
-                            {role}
-                          </div>
-                        ))}
-                      </motion.div>
-
-                      <div className="rounded-lg border border-info/20 bg-base-100 p-4">
-                        <div className="mb-3 flex items-center gap-2">
-                          <Bell className="h-4 w-4 text-info" />
-                          <span className="text-sm font-bold">Moderation</span>
-                        </div>
-                        <div className="space-y-2 text-xs">
-                          <div className="flex items-center justify-between rounded bg-success/10 px-3 py-2 text-success">
-                            <span>Approved</span>
-                            <span>42</span>
-                          </div>
-                          <div className="flex items-center justify-between rounded bg-warning/10 px-3 py-2 text-warning">
-                            <span>Review</span>
-                            <span>8</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="w-2/3 rounded-lg rounded-tl-sm bg-base-200 px-3 py-2 text-xs">
+                    Yes — 4pm works for me.
                   </div>
                 </div>
-              </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, 7, 0] }}
+                transition={{
+                  duration: 5.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.3,
+                }}
+                className="absolute right-0 top-32 w-[80%] rotate-2 rounded-xl border border-accent/20 bg-base-100 p-4 shadow-lg"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-accent">
+                    <Briefcase className="h-4 w-4" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wide">
+                      Opportunity
+                    </span>
+                  </div>
+                  <span className="badge badge-success badge-soft badge-sm">
+                    86% match
+                  </span>
+                </div>
+                <p className="text-sm font-bold">Campus Content Lead</p>
+                <p className="mt-1 text-xs text-base-content/55">
+                  Student Affairs Office · Part-time
+                </p>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-base-300">
+                  <motion.div
+                    initial={{ width: "12%" }}
+                    animate={{ width: "86%" }}
+                    transition={{ duration: 1.2, delay: 0.5 }}
+                    className="h-full rounded-full bg-success"
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{
+                  duration: 4.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.6,
+                }}
+                className="absolute left-6 top-[19rem] w-[82%] -rotate-1 rounded-xl border border-primary/20 bg-base-100 p-4 shadow-xl"
+              >
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-primary/15" />
+                  <div className="min-w-0 flex-1">
+                    <div className="h-3 w-24 rounded bg-neutral/15" />
+                    <div className="mt-1.5 h-2 w-16 rounded bg-primary/20" />
+                  </div>
+                  <BadgeCheck className="h-5 w-5 shrink-0 text-success" />
+                </div>
+                <span className="inline-flex items-center gap-1.5 text-xs text-base-content/55">
+                  <Users className="h-3.5 w-3.5" />
+                  248 connections · 12 mutual
+                </span>
+              </motion.div>
+
+              <div className="pointer-events-none absolute -bottom-6 left-1/2 h-16 w-40 -translate-x-1/2 rounded-full bg-primary/10 blur-2xl" />
             </motion.div>
           </div>
         </section>
 
-        <section className="border-y border-base-300 bg-primary px-4 py-8 text-primary-content sm:px-6">
+        <section className="border-y border-base-300 bg-primary px-4 py-10 text-primary-content sm:px-6">
           <motion.div
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.4 }}
             variants={stagger}
-            className="mx-auto grid max-w-5xl text-white gap-6 text-center sm:grid-cols-3"
+            className="mx-auto grid max-w-4xl divide-y divide-white/15 text-center text-white sm:grid-cols-3 sm:divide-x sm:divide-y-0"
           >
             {stats.map((stat) => (
-              <motion.div key={stat.label} variants={fadeUp}>
+              <motion.div
+                key={stat.label}
+                variants={fadeUp}
+                className="px-6 py-3 sm:py-0"
+              >
                 <div className="font-heading text-3xl font-extrabold">
                   {stat.value}
                 </div>
-                <div className="mt-1 text-sm font-medium text-white">
+                <div className="mt-1 text-sm font-medium text-white/80">
                   {stat.label}
                 </div>
               </motion.div>
@@ -298,18 +297,18 @@ const Landing = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.35 }}
               variants={stagger}
-              className="mx-auto mb-12 max-w-2xl text-center"
+              className="mx-auto mb-14 max-w-2xl text-center"
             >
               <motion.div
                 variants={fadeUp}
-                className="mb-3 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent"
+                className="mb-3 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-accent"
               >
                 <Zap className="h-3.5 w-3.5" />
                 One connected flow
               </motion.div>
               <motion.h2
                 variants={fadeUp}
-                className="font-heading text-3xl font-bold sm:text-4xl"
+                className="font-heading text-3xl font-bold tracking-tight sm:text-4xl"
               >
                 From profile to opportunity without friction.
               </motion.h2>
@@ -320,29 +319,28 @@ const Landing = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.25 }}
               variants={stagger}
-              className="grid gap-3 md:grid-cols-4"
+              className="relative"
             >
-              {flowSteps.map((step, index) => (
-                <motion.div
-                  key={step}
-                  variants={fadeUp}
-                  className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm"
-                >
-                  <div className="mb-4 flex h-9 w-9 items-center justify-center rounded bg-primary/10 text-sm font-bold text-primary">
-                    {index + 1}
-                  </div>
-                  <h3 className="font-heading text-base font-bold">{step}</h3>
-                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-base-300">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${(index + 1) * 25}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.7, delay: index * 0.08 }}
-                      className="h-full rounded-full bg-primary"
-                    />
-                  </div>
-                </motion.div>
-              ))}
+              <div className="absolute left-0 right-0 top-[1.15rem] hidden h-px bg-base-300 md:block" />
+              <div className="grid gap-3 md:grid-cols-4">
+                {flowSteps.map((step, index) => (
+                  <motion.div
+                    key={step.title}
+                    variants={fadeUp}
+                    className="relative"
+                  >
+                    <div className="relative z-10 mb-4 flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary bg-base-100 text-sm font-bold text-primary">
+                      {index + 1}
+                    </div>
+                    <h3 className="font-heading text-base font-bold">
+                      {step.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-6 text-base-content/55">
+                      {step.detail}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           </div>
         </section>
@@ -358,7 +356,7 @@ const Landing = () => {
             >
               <motion.h2
                 variants={fadeUp}
-                className="font-heading text-3xl font-bold sm:text-4xl"
+                className="font-heading text-3xl font-bold tracking-tight sm:text-4xl"
               >
                 Built for active communities.
               </motion.h2>
@@ -381,8 +379,11 @@ const Landing = () => {
                   <motion.div
                     key={feature.title}
                     variants={fadeUp}
-                    className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md"
+                    className="group relative overflow-hidden rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md"
                   >
+                    <span
+                      className={`absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 ${feature.tone.split(" ")[0].replace("text-", "bg-")}`}
+                    />
                     <div
                       className={`mb-4 flex h-11 w-11 items-center justify-center rounded border ${feature.tone}`}
                     >
@@ -412,7 +413,7 @@ const Landing = () => {
             <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-content/12 ring-1 ring-primary-content/18">
               <FontAwesomeIcon icon={faUserGraduate} className="h-6 w-6" />
             </div>
-            <h2 className="font-heading text-3xl font-bold sm:text-4xl">
+            <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               Start building your network today.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-white">
