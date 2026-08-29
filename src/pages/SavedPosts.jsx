@@ -186,15 +186,14 @@ const SavedPosts = () => {
                         {post.author?.name}
                       </p>
                       <div className="flex items-center gap-2 text-xs text-base-content/40">
-                        <span>
-                          {getUserRoleLabel(post.author)}
-                        </span>
+                        <span>{getUserRoleLabel(post.author)}</span>
                         <UserSignalBadge user={post.author} />
                         <span>·</span>
                         <span>
-                          Saved from {new Date(post.createdAt).toLocaleDateString(
+                          Saved from{" "}
+                          {new Date(post.createdAt).toLocaleDateString(
                             "en-US",
-                            { month: "short", day: "numeric" }
+                            { month: "short", day: "numeric" },
                           )}
                         </span>
                       </div>
@@ -263,7 +262,7 @@ const SavedPosts = () => {
                       <MessageCircle className="w-4 h-4" />{" "}
                       {post.comments?.length || 0}
                     </button>
-                    <div className="dropdown dropdown-end ml-auto">
+                    <div className="dropdown dropdown-left ml-auto">
                       <button
                         tabIndex={0}
                         type="button"
