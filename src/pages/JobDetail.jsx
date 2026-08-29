@@ -146,9 +146,7 @@ const JobDetail = () => {
 
       <div
         className={`card shadow-sm border p-6 ${
-          isSpecialJob
-            ? specialStyle.shell
-            : "bg-base-100 border-base-300/50"
+          isSpecialJob ? specialStyle.shell : "bg-base-100 border-base-300/50"
         }`}
       >
         {/* Job Image */}
@@ -169,10 +167,14 @@ const JobDetail = () => {
               isSpecialJob ? specialStyle.soft : "bg-primary/10"
             }`}
           >
-            <Briefcase className={`w-7 h-7 ${isSpecialJob ? specialStyle.icon : "text-primary"}`} />
+            <Briefcase
+              className={`w-7 h-7 ${isSpecialJob ? specialStyle.icon : "text-primary"}`}
+            />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className={`text-2xl font-bold font-heading mb-1 ${isSpecialJob ? specialStyle.muted : ""}`}>
+            <h1
+              className={`text-2xl font-bold font-heading mb-1 ${isSpecialJob ? specialStyle.muted : ""}`}
+            >
               {job.title}
             </h1>
             <div
@@ -327,17 +329,17 @@ const JobDetail = () => {
 
         {/* Owner actions */}
         {isJobPoster && (
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 flex justify-end gap-2 items-center w-full">
             <Link
               to={`/jobs/${job._id}/edit`}
-              className="btn btn-ghost w-full gap-2 border border-base-300"
+              className="btn btn-primary gap-2"
             >
               <Pencil className="w-4 h-4" />
               Edit Job
             </Link>
             <Link
               to={`/jobs/${job._id}/applicants`}
-              className="btn btn-primary w-full gap-2"
+              className="btn btn-primary gap-2"
             >
               <Users className="w-4 h-4" />
               View Applicants ({job.applicants?.length || 0})
