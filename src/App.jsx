@@ -10,6 +10,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "./store/authStore";
 import { SocketProvider } from "./context/SocketContext";
+import {
+  APP_THEME_CHANGE_EVENT,
+  applyAppTheme,
+  getStoredThemeMode,
+} from "./utils/theme";
 
 // Layout Components
 import Sidebar from "./components/common/Sidebar";
@@ -63,6 +68,34 @@ function App() {
 
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    const syncTheme = () => applyAppTheme(getStoredThemeMode());
+    syncTheme();
+    const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+    window.addEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+    window.addEventListener("storage", syncTheme);
+    if (!mediaQuery) {
+      return () => {
+        window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+        window.removeEventListener("storage", syncTheme);
+      };
+    }
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", syncTheme);
+      return () => {
+        mediaQuery.removeEventListener("change", syncTheme);
+        window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+        window.removeEventListener("storage", syncTheme);
+      };
+    }
+    mediaQuery.addListener?.(syncTheme);
+    return () => {
+      mediaQuery.removeListener?.(syncTheme);
+      window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+      window.removeEventListener("storage", syncTheme);
+    };
   }, []);
 
   useEffect(() => {

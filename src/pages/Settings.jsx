@@ -7,7 +7,10 @@ import {
   Eye,
   EyeOff,
   History,
+  Monitor,
+  Moon,
   Palette,
+  Sun,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
@@ -22,6 +25,28 @@ import {
   SPECIAL_STYLE_VARIANTS,
 } from "../utils/specialUserStyles";
 import { isPlatformAdmin } from "../utils/userSignals";
+import { getStoredThemeMode, setStoredThemeMode } from "../utils/theme";
+
+const APP_THEME_OPTIONS = [
+  {
+    value: "light",
+    label: "Light",
+    description: "Clean bright interface",
+    icon: Sun,
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    description: "Low-light teal workspace",
+    icon: Moon,
+  },
+  {
+    value: "system",
+    label: "System",
+    description: "Follow device setting",
+    icon: Monitor,
+  },
+];
 
 const Settings = () => {
   const { user, logout, deleteAccount, isLoading, updateProfile, setUser } =
@@ -32,6 +57,7 @@ const Settings = () => {
   const [presenceLoading, setPresenceLoading] = useState(false);
   const [loginAuditLoading, setLoginAuditLoading] = useState(false);
   const [themeLoading, setThemeLoading] = useState(false);
+  const [appThemeMode, setAppThemeMode] = useState(getStoredThemeMode);
   const specialStyle = getSpecialUserStyle(user);
   const canStyleProfile = canUseSpecialStyle(user);
 
@@ -119,6 +145,16 @@ const Settings = () => {
     }
   };
 
+  const handleAppThemeChange = (mode) => {
+    const nextMode = setStoredThemeMode(mode);
+    setAppThemeMode(nextMode);
+    toast.success(
+      nextMode === "system"
+        ? "Theme will follow your device"
+        : `${nextMode === "dark" ? "Dark" : "Light"} theme enabled`,
+    );
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold font-heading mb-6">Settings</h1>
@@ -141,6 +177,59 @@ const Settings = () => {
               {getUserRoleLabel(user)}
             </span>
           </div>
+        </div>
+      </div>
+
+      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
+        <div className="flex items-start gap-4 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+            {appThemeMode === "dark" ? (
+              <Moon className="w-5 h-5" />
+            ) : appThemeMode === "light" ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Monitor className="w-5 h-5" />
+            )}
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">App Theme</h3>
+            <p className="text-xs text-base-content/50 mt-1 max-w-md">
+              Choose light, dark, or let ShortJob follow your device setting.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {APP_THEME_OPTIONS.map((option) => {
+            const Icon = option.icon;
+            const selected = appThemeMode === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleAppThemeChange(option.value)}
+                className={`rounded-xl border p-3 text-left transition-all ${
+                  selected
+                    ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                    : "border-base-300 hover:border-primary/25 hover:bg-base-200/50"
+                }`}
+              >
+                <span
+                  className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg ${
+                    selected ? "bg-primary text-primary-content" : "bg-base-200"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="block text-sm font-semibold">
+                  {option.label}
+                </span>
+                <span className="mt-0.5 block text-xs text-base-content/45">
+                  {option.description}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

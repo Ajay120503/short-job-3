@@ -95,7 +95,7 @@ const Landing = () => {
 
       <main>
         <section className="relative isolate overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-36">
-          <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,#fbfefd_0%,#edf7f6_70%,#fbfefd_100%)]" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-base-100 via-base-200 to-base-100" />
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
             <motion.div
               initial="hidden"

@@ -15,7 +15,7 @@ React + Vite frontend for the ShortJob professional community platform.
 
 ## UI Features
 
-- Warm teal/coral design system shared across feed, jobs, explore, profile, admin, chat, settings, and auth pages.
+- Warm teal/coral design system with light, dark, and system theme modes shared across feed, jobs, explore, profile, admin, chat, settings, and auth pages.
 - Responsive mobile layout with fuller screen width, compact spacing, bottom navigation, and user avatar profile icon.
 - Smooth collapsible sidebar behavior for larger screens.
 - Feed post cards with preserved full-image previews, special user styling, linked job cards, tags, likes, saves, sharing, and comments.

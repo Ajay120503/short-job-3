@@ -40,6 +40,9 @@ const hasAppliedToJob = (job, userId) =>
       })
   );
 
+const getUserId = (value) => (typeof value === "string" ? value : value?._id);
+const isOwnJob = (job, userId) => Boolean(userId && getUserId(job?.postedBy) === userId);
+
 const Jobs = () => {
   const { user } = useAuthStore();
   const [jobs, setJobs] = useState([]);
@@ -77,7 +80,9 @@ const Jobs = () => {
     );
   }
 
-  const filtered = jobs
+  const visibleJobs = jobs.filter((job) => !isOwnJob(job, user?._id));
+
+  const filtered = visibleJobs
     .filter((j) => (filter === "all" ? true : j.isPaid === (filter === "paid")))
     .filter((j) => {
       const term = searchTerm.trim().toLowerCase();
@@ -168,9 +173,9 @@ const Jobs = () => {
           <SlidersHorizontal className="h-3.5 w-3.5" />
           <span>{filtered.length} showing</span>
           <span className="h-1 w-1 rounded-full bg-base-content/25" />
-          <span>{jobs.filter((j) => j.isPaid).length} paid</span>
+          <span>{visibleJobs.filter((j) => j.isPaid).length} paid</span>
           <span className="h-1 w-1 rounded-full bg-base-content/25" />
-          <span>{jobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0)} total applicants</span>
+          <span>{visibleJobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0)} total applicants</span>
         </div>
       </div>
 

@@ -23,6 +23,25 @@
       rel="stylesheet"
     />
     <title>ShortJob — Academic Social Network</title>
+    <script>
+      (function () {
+        var mode = localStorage.getItem("shortjob-theme-mode") || "system";
+        var dark =
+          mode === "dark" ||
+          (mode === "system" &&
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.setAttribute(
+          "data-theme",
+          dark ? "ShortJobDark" : "ShortJob"
+        );
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) {
+          themeMeta.setAttribute("content", dark ? "#071615" : "#147f83");
+        }
+      })();
+    </script>
     <!-- Open Graph / Social Meta -->
     <meta property="og:title" content="ShortJob — Academic Social Network"/>
     <meta property="og:description" content="Connect jon seeker with job creaters and institutions. Find academic roles, post jobs, and build your academic network."/>
