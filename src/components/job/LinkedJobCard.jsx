@@ -13,6 +13,7 @@ import {
   canUseSpecialStyle,
   getSpecialUserStyle,
 } from "../../utils/specialUserStyles";
+import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../../utils/jobLocation";
 
 const LinkedJobCard = ({ job }) => {
   if (!job) return null;
@@ -107,7 +108,12 @@ const LinkedJobCard = ({ job }) => {
             </span>
             <span className="flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
-              <span className="capitalize">{job.location}</span>
+              <span className="line-clamp-1">
+                {getJobWorkplaceLabel(job)}
+              </span>
+              <span className="text-base-content/35">
+                ({getJobWorkModeLabel(job.location)})
+              </span>
             </span>
             <span className="flex items-center gap-1">
               <StipendIcon className="w-3.5 h-3.5" />

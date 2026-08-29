@@ -21,6 +21,7 @@ import {
   sortDiscoverableUsers,
 } from "../../utils/userSignals";
 import { getSpecialUserStyle } from "../../utils/specialUserStyles";
+import { getJobWorkplaceLabel } from "../../utils/jobLocation";
 
 const visibleSkillsLimit = 2;
 
@@ -296,8 +297,8 @@ const RightSidebar = () => {
                           <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                             <span className="flex min-w-0 items-center gap-1 text-[10px] text-base-content/40">
                               <MapPin className="w-3 h-3 shrink-0" />
-                              <span className="truncate capitalize">
-                                {job.location}
+                              <span className="truncate">
+                                {getJobWorkplaceLabel(job)}
                               </span>
                             </span>
                             <span

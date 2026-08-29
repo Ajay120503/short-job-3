@@ -33,6 +33,7 @@ import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import API from "../utils/axios";
 import ApplicantKanban from "../components/job/ApplicantKanban";
 import UserAvatar from "../components/common/UserAvatar";
+import { getJobWorkplaceLabel } from "../utils/jobLocation";
 import toast from "react-hot-toast";
 
 const statusColors = {
@@ -578,12 +579,13 @@ const JobApplicants = () => {
     }
 
     const rows = getApplicantRows(source);
+    const workplaceLabel = getJobWorkplaceLabel(job);
     const html = `
       <html>
         <head><meta charset="UTF-8" /></head>
         <body>
           <h2>${escapeHtml(job.title)} - Applicants</h2>
-          <p>${escapeHtml(job.institutionName || "")} ${escapeHtml(job.location || "")}</p>
+          <p>${escapeHtml(job.institutionName || "")} ${escapeHtml(workplaceLabel)}</p>
           ${buildApplicantTable(rows)}
         </body>
       </html>
@@ -604,6 +606,7 @@ const JobApplicants = () => {
     }
 
     const rows = getApplicantRows(source);
+    const workplaceLabel = getJobWorkplaceLabel(job);
     const reportWindow = window.open("", "_blank", "width=1100,height=800");
     if (!reportWindow) {
       toast.error("Allow popups to generate PDF");
@@ -632,7 +635,7 @@ const JobApplicants = () => {
           <button onclick="window.print()" style="float:right;padding:8px 12px;">Print / Save PDF</button>
           <h1>${escapeHtml(job.title)} - Applicant Report</h1>
           <div class="meta">
-            ${escapeHtml(job.institutionName || "")} · ${escapeHtml(job.location || "")}
+            ${escapeHtml(job.institutionName || "")} · ${escapeHtml(workplaceLabel)}
             · Generated ${escapeHtml(formatDate(new Date()))}
           </div>
           <div class="summary">
@@ -729,7 +732,7 @@ const JobApplicants = () => {
             <h1 className="text-xl font-bold font-heading">{job.title}</h1>
             <p className="text-sm text-base-content/60 mt-0.5 flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5" />
-              {job.institutionName} · {job.location}
+              {job.institutionName} · {getJobWorkplaceLabel(job)}
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm">

@@ -55,13 +55,13 @@ const MatchedJobsRow = () => {
         Matched for You
       </h3>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
-        {matched.map(({ job, score }) => (
+        {matched.map(({ job, score, matchedSkills = [], scoreBreakdown }) => (
           <Link
             key={job._id}
             to={`/jobs/${job._id}`}
-            className="card bg-base-100 border border-base-300/50 shadow-sm hover:shadow-md hover:border-primary/30 transition-all p-3 min-w-[180px] max-w-[200px] flex-shrink-0 snap-start"
+            className="card bg-base-100 border border-base-300/50 shadow-sm hover:shadow-md hover:border-primary/30 transition-all p-3 min-w-[210px] max-w-[230px] flex-shrink-0 snap-start"
           >
-            <div className="flex items-center gap-1.5 mb-1">
+            <div className="flex items-center justify-between gap-2 mb-2">
               <span
                 className={`badge badge-xs font-bold ${
                   score >= 70
@@ -79,6 +79,29 @@ const MatchedJobsRow = () => {
             <p className="text-xs text-base-content/50 truncate">
               {job.institutionName}
             </p>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {matchedSkills.length > 0 ? (
+                matchedSkills.slice(0, 2).map((skill) => (
+                  <span
+                    key={skill}
+                    className="badge badge-primary badge-soft badge-xs max-w-full truncate"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <span className="badge badge-ghost badge-xs">
+                  profile fit
+                </span>
+              )}
+            </div>
+            {scoreBreakdown && (
+              <p className="mt-2 text-[11px] text-base-content/40">
+                Skills {scoreBreakdown.skills || 0} · Profile{" "}
+                {(scoreBreakdown.qualifications || 0) +
+                  (scoreBreakdown.content || 0)}
+              </p>
+            )}
           </Link>
         ))}
       </div>

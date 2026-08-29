@@ -9,6 +9,7 @@ import QuickApplyBtn from "../components/job/QuickApplyBtn";
 import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getUserSignal } from "../utils/userSignals";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
+import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../utils/jobLocation";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -85,6 +86,10 @@ const Jobs = () => {
         j.title,
         j.institutionName,
         j.location,
+        j.workplaceName,
+        j.workplaceAddress,
+        j.workplaceCity,
+        j.workplaceState,
         j.roleType,
         j.description,
         ...(j.skillsRequired || []),
@@ -239,11 +244,12 @@ const Jobs = () => {
                             className={`flex items-center gap-1 ${isSpecialJob ? "text-base-content/60" : "text-base-content/50"}`}
                           >
                             <MapPin className="w-3.5 h-3.5" />
-                            {job.location === "remote"
-                              ? "Remote"
-                              : job.location === "hybrid"
-                                ? "Hybrid"
-                                : "On-site"}
+                            <span className="line-clamp-1">
+                              {getJobWorkplaceLabel(job)}
+                            </span>
+                            <span className="text-base-content/35">
+                              ({getJobWorkModeLabel(job.location)})
+                            </span>
                           </span>
                           <span
                             className={`flex items-center gap-1 font-medium ${

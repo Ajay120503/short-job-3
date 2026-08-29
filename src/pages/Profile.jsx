@@ -31,6 +31,7 @@ import UserAvatar from "../components/common/UserAvatar";
 import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getUserSignal } from "../utils/userSignals";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
+import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../utils/jobLocation";
 
 const Profile = () => {
   const { id } = useParams();
@@ -780,7 +781,10 @@ const Profile = () => {
                               </span>
                             )}
                             <span className="badge badge-xs badge-outline capitalize">
-                              {job.location}
+                              {getJobWorkplaceLabel(job)}
+                            </span>
+                            <span className="badge badge-xs badge-ghost">
+                              {getJobWorkModeLabel(job.location)}
                             </span>
                             <span className="badge badge-xs badge-outline capitalize">
                               {job.roleType}

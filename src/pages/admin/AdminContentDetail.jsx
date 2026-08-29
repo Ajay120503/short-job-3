@@ -13,6 +13,7 @@ import useAuthStore from "../../store/authStore";
 import { isAdminUser } from "../../utils/badgeUtils";
 import BadgeChip from "../../components/common/BadgeChip";
 import API from "../../utils/axios";
+import { getJobMapLink, getJobWorkModeLabel, getJobWorkplaceLabel } from "../../utils/jobLocation";
 import toast from "react-hot-toast";
 
 const splitQualifications = (value = "") =>
@@ -348,8 +349,31 @@ const AdminContentDetail = () => {
             )}
             {content.location && (
               <div>
-                <span className="text-xs text-base-content/50">Location</span>
-                <p className="font-medium">{content.location}</p>
+                <span className="text-xs text-base-content/50">Work Mode</span>
+                <p className="font-medium">{getJobWorkModeLabel(content.location)}</p>
+              </div>
+            )}
+            {(content.workplaceName ||
+              content.workplaceAddress ||
+              content.workplaceCity ||
+              content.workplaceState ||
+              content.workplaceCountry) && (
+              <div>
+                <span className="text-xs text-base-content/50">Workplace</span>
+                <p className="font-medium">{getJobWorkplaceLabel(content)}</p>
+              </div>
+            )}
+            {content.coordinates?.lat && content.coordinates?.lng && (
+              <div>
+                <span className="text-xs text-base-content/50">Map</span>
+                <a
+                  href={getJobMapLink(content)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Open location
+                </a>
               </div>
             )}
             {content.isPaid !== undefined && (

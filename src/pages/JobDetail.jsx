@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Eye,
   Pencil,
+  ExternalLink,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
@@ -24,6 +25,12 @@ import {
   canUseSpecialStyle,
   getSpecialUserStyle,
 } from "../utils/specialUserStyles";
+import {
+  getJobMapEmbedUrl,
+  getJobMapLink,
+  getJobWorkModeLabel,
+  getJobWorkplaceLabel,
+} from "../utils/jobLocation";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -122,6 +129,7 @@ const JobDetail = () => {
 
   const isSpecialJob = canUseSpecialStyle(job.postedBy);
   const specialStyle = getSpecialUserStyle(job.postedBy);
+  const mapEmbedUrl = getJobMapEmbedUrl(job);
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
@@ -182,13 +190,9 @@ const JobDetail = () => {
           <div className="bg-base-200/50 rounded-xl p-3 text-center">
             <MapPin className="w-4 h-4 text-primary mx-auto mb-1" />
             <p className="text-xs font-medium capitalize">
-              {job.location === "remote"
-                ? "Remote"
-                : job.location === "hybrid"
-                  ? "Hybrid"
-                  : "On-site"}
+              {getJobWorkModeLabel(job.location)}
             </p>
-            <p className="text-[10px] text-base-content/40">Location</p>
+            <p className="text-[10px] text-base-content/40">Work mode</p>
           </div>
           <div className="bg-base-200/50 rounded-xl p-3 text-center">
             <p
@@ -217,6 +221,43 @@ const JobDetail = () => {
             <p className="text-xs font-medium">{job.viewCount || 0}</p>
             <p className="text-[10px] text-base-content/40">Views</p>
           </div>
+        </div>
+
+        {/* Workplace Location */}
+        <div className="mb-5 rounded-2xl border border-base-300/60 bg-base-200/35 p-4">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-sm flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-primary" />
+                Workplace
+              </h3>
+              <p className="mt-1 text-sm text-base-content/70 leading-relaxed">
+                {getJobWorkplaceLabel(job)}
+              </p>
+            </div>
+            <a
+              href={getJobMapLink(job)}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-ghost btn-xs gap-1.5 self-start"
+            >
+              Open map
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+          {mapEmbedUrl ? (
+            <iframe
+              title="Workplace map"
+              src={mapEmbedUrl}
+              className="h-56 w-full rounded-xl border border-base-300 bg-base-100"
+              loading="lazy"
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-4 text-xs text-base-content/45">
+              Exact map coordinates were not added. Use the map link to search
+              this workplace address.
+            </div>
+          )}
         </div>
 
         {/* Opportunity Type Badge */}

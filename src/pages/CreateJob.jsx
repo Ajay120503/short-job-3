@@ -11,9 +11,16 @@ import {
   Upload,
   X,
   ArrowLeft,
+  LocateFixed,
+  ExternalLink,
 } from "lucide-react";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
+import {
+  getJobMapEmbedUrl,
+  getJobMapLink,
+  getJobWorkplaceLabel,
+} from "../utils/jobLocation";
 
 const ROLE_TYPES = [
   { value: "teacher", label: "Creator" },
@@ -49,6 +56,13 @@ const CreateJob = () => {
     currency: "INR",
     stipend: "",
     location: "onsite",
+    workplaceName: "",
+    workplaceAddress: "",
+    workplaceCity: "",
+    workplaceState: "",
+    workplaceCountry: "India",
+    coordinateLat: "",
+    coordinateLng: "",
     requiredQualifications: "",
     skillsRequired: "",
     deadline: "",
@@ -116,8 +130,49 @@ const CreateJob = () => {
     if (form.maxApplicants && Number(form.maxApplicants) < 1) {
       nextErrors.maxApplicants = "Applicant limit must be at least 1.";
     }
+    const hasLat = String(form.coordinateLat).trim() !== "";
+    const hasLng = String(form.coordinateLng).trim() !== "";
+    if (hasLat !== hasLng) {
+      nextErrors.coordinates = "Add both latitude and longitude, or leave both empty.";
+    }
+    if (hasLat && hasLng) {
+      const lat = Number(form.coordinateLat);
+      const lng = Number(form.coordinateLng);
+      if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+        nextErrors.coordinateLat = "Latitude must be between -90 and 90.";
+      }
+      if (!Number.isFinite(lng) || lng < -180 || lng > 180) {
+        nextErrors.coordinateLng = "Longitude must be between -180 and 180.";
+      }
+    }
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Location is not supported in this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setForm((prev) => ({
+          ...prev,
+          coordinateLat: position.coords.latitude.toFixed(6),
+          coordinateLng: position.coords.longitude.toFixed(6),
+        }));
+        setErrors((prev) => ({
+          ...prev,
+          coordinateLat: "",
+          coordinateLng: "",
+          coordinates: "",
+        }));
+        toast.success("Workplace map location added.");
+      },
+      () => toast.error("Unable to access your current location."),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -134,6 +189,11 @@ const CreateJob = () => {
     formData.append("roleType", form.roleType);
     formData.append("isPaid", form.isPaid);
     formData.append("location", form.location);
+    formData.append("workplaceName", form.workplaceName);
+    formData.append("workplaceAddress", form.workplaceAddress);
+    formData.append("workplaceCity", form.workplaceCity);
+    formData.append("workplaceState", form.workplaceState);
+    formData.append("workplaceCountry", form.workplaceCountry);
     formData.append("deadline", form.deadline);
     formData.append("contactEmail", form.contactEmail);
     formData.append("institutionName", form.institutionName);
@@ -146,6 +206,10 @@ const CreateJob = () => {
     }
     if (form.maxApplicants) {
       formData.append("maxApplicants", form.maxApplicants);
+    }
+    if (String(form.coordinateLat).trim() && String(form.coordinateLng).trim()) {
+      formData.append("coordinateLat", form.coordinateLat);
+      formData.append("coordinateLng", form.coordinateLng);
     }
     if (image) {
       formData.append("image", image);
@@ -165,6 +229,20 @@ const CreateJob = () => {
       setIsSubmitting(false);
     }
   };
+
+  const previewJob = {
+    workplaceName: form.workplaceName,
+    workplaceAddress: form.workplaceAddress,
+    workplaceCity: form.workplaceCity,
+    workplaceState: form.workplaceState,
+    workplaceCountry: form.workplaceCountry,
+    location: form.location,
+    coordinates:
+      String(form.coordinateLat).trim() && String(form.coordinateLng).trim()
+        ? { lat: Number(form.coordinateLat), lng: Number(form.coordinateLng) }
+        : undefined,
+  };
+  const mapEmbedUrl = getJobMapEmbedUrl(previewJob);
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
@@ -300,6 +378,120 @@ const CreateJob = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="rounded-2xl border border-base-300/70 bg-base-200/35 p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    Workplace Location
+                  </h3>
+                  <p className="text-xs text-base-content/45 mt-1">
+                    Add the exact work place so applicants can check distance and directions.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs gap-1.5"
+                  onClick={handleUseCurrentLocation}
+                >
+                  <LocateFixed className="w-3.5 h-3.5" />
+                  Use current
+                </button>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <input
+                  type="text"
+                  name="workplaceName"
+                  className="input input-bordered h-11 text-sm sm:col-span-2"
+                  placeholder="Workplace name / branch"
+                  value={form.workplaceName}
+                  onChange={handleChange}
+                />
+                <input
+                  type="text"
+                  name="workplaceAddress"
+                  className="input input-bordered h-11 text-sm sm:col-span-2"
+                  placeholder="Full street address"
+                  value={form.workplaceAddress}
+                  onChange={handleChange}
+                />
+                <input
+                  type="text"
+                  name="workplaceCity"
+                  className="input input-bordered h-11 text-sm"
+                  placeholder="City"
+                  value={form.workplaceCity}
+                  onChange={handleChange}
+                />
+                <input
+                  type="text"
+                  name="workplaceState"
+                  className="input input-bordered h-11 text-sm"
+                  placeholder="State"
+                  value={form.workplaceState}
+                  onChange={handleChange}
+                />
+                <input
+                  type="text"
+                  name="workplaceCountry"
+                  className="input input-bordered h-11 text-sm"
+                  placeholder="Country"
+                  value={form.workplaceCountry}
+                  onChange={handleChange}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    step="any"
+                    name="coordinateLat"
+                    className={`input input-bordered h-11 text-sm ${errors.coordinateLat ? "input-error" : ""}`}
+                    placeholder="Latitude"
+                    value={form.coordinateLat}
+                    onChange={handleChange}
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    name="coordinateLng"
+                    className={`input input-bordered h-11 text-sm ${errors.coordinateLng ? "input-error" : ""}`}
+                    placeholder="Longitude"
+                    value={form.coordinateLng}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              {(errors.coordinates || errors.coordinateLat || errors.coordinateLng) && (
+                <FieldError>
+                  {errors.coordinates || errors.coordinateLat || errors.coordinateLng}
+                </FieldError>
+              )}
+              <div className="mt-3 overflow-hidden rounded-xl border border-base-300 bg-base-100">
+                {mapEmbedUrl ? (
+                  <iframe
+                    title="Workplace map preview"
+                    src={mapEmbedUrl}
+                    className="h-48 w-full"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-28 flex-col items-center justify-center gap-1 text-center text-xs text-base-content/45">
+                    <MapPin className="h-5 w-5 text-primary/50" />
+                    Add coordinates or use current location to preview the map.
+                  </div>
+                )}
+              </div>
+              <a
+                href={getJobMapLink(previewJob)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                Open {getJobWorkplaceLabel(previewJob)} in map
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
 
             {/* Paid / Unpaid */}
