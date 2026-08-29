@@ -435,7 +435,7 @@ const Landing = () => {
       <footer className="border-t border-base-300 px-4 py-8 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-sm text-base-content/45 sm:flex-row">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded bg-primary text-primary-content">
+            <span className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white">
               <FontAwesomeIcon icon={faUserGraduate} className="h-4 w-4" />
             </span>
             <span className="font-heading font-bold text-base-content">
