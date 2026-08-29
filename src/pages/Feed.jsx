@@ -9,6 +9,9 @@ import {
   Image as ImageIcon,
   Send,
   X,
+  MoreHorizontal,
+  Edit3,
+  Trash2,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
@@ -483,25 +486,59 @@ const Feed = () => {
                       <MessageCircle className="w-4 h-4" />
                       {post.comments?.length || 0}
                     </button>
-                    <button
-                      onClick={() => handleShare(post._id)}
-                      className="btn btn-ghost btn-sm btn-circle"
-                      title="Copy link"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleSave(post._id)}
-                      className={`btn btn-ghost btn-sm ml-auto gap-2 font-medium text-xs hover:bg-primary/10 ${
-                        isSaved ? "text-primary" : ""
-                      }`}
-                    >
-                      <Bookmark
-                        className={`w-4 h-4 transition-transform ${
-                          isSaved ? "fill-current scale-110" : ""
-                        }`}
-                      />
-                    </button>
+                    <div className="dropdown dropdown-end ml-auto">
+                      <button
+                        tabIndex={0}
+                        type="button"
+                        className="btn btn-ghost btn-sm btn-circle"
+                        aria-label="Post actions"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                      <ul
+                        tabIndex={0}
+                        className="dropdown-content menu z-20 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
+                      >
+                        <li>
+                          <button onClick={() => handleShare(post._id)}>
+                            <Share2 className="w-3.5 h-3.5" />
+                            Copy Link
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => handleSave(post._id)}
+                            className={isSaved ? "text-primary" : ""}
+                          >
+                            <Bookmark
+                              className={`w-3.5 h-3.5 ${
+                                isSaved ? "fill-current" : ""
+                              }`}
+                            />
+                            {isSaved ? "Unsave" : "Save"}
+                          </button>
+                        </li>
+                        {post.author?._id === user?._id && (
+                          <>
+                            <li>
+                              <Link to={`/post/${post._id}/edit`}>
+                                <Edit3 className="w-3.5 h-3.5" />
+                                Edit
+                              </Link>
+                            </li>
+                            <li>
+                              <button
+                                onClick={() => setPostToDelete(post)}
+                                className="text-error"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Delete
+                              </button>
+                            </li>
+                          </>
+                        )}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>

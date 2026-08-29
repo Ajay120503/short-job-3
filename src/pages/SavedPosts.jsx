@@ -5,6 +5,7 @@ import {
   Share2,
   Bookmark,
   BookmarkCheck,
+  MoreHorizontal,
   Search,
   Filter,
   X,
@@ -262,13 +263,30 @@ const SavedPosts = () => {
                       <MessageCircle className="w-4 h-4" />{" "}
                       {post.comments?.length || 0}
                     </button>
-                    <button
-                      onClick={() => handleUnsave(post._id)}
-                      className="btn btn-ghost btn-sm ml-auto gap-2 font-medium text-xs text-primary"
-                      title="Unsave"
-                    >
-                      <BookmarkCheck className="w-4 h-4" /> Saved
-                    </button>
+                    <div className="dropdown dropdown-end ml-auto">
+                      <button
+                        tabIndex={0}
+                        type="button"
+                        className="btn btn-ghost btn-sm btn-circle"
+                        aria-label="Saved post actions"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                      <ul
+                        tabIndex={0}
+                        className="dropdown-content menu z-20 mt-1 w-40 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
+                      >
+                        <li>
+                          <button
+                            onClick={() => handleUnsave(post._id)}
+                            className="text-primary"
+                          >
+                            <BookmarkCheck className="w-3.5 h-3.5" />
+                            Unsave
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>

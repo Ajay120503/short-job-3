@@ -22,6 +22,7 @@ const BadgeChip = ({ badgeType, size = "md", className = "" }) => {
       style={{
         backgroundColor: config.bg,
         color: config.text,
+        border: "1px solid color-mix(in srgb, currentColor 20%, transparent)",
       }}
       title={config.label}
     >

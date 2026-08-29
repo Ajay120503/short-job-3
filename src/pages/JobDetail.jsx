@@ -31,6 +31,7 @@ import {
   getJobWorkModeLabel,
   getJobWorkplaceLabel,
 } from "../utils/jobLocation";
+import { normalizeJobSkills } from "../utils/jobSkills";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -130,6 +131,7 @@ const JobDetail = () => {
   const isSpecialJob = canUseSpecialStyle(job.postedBy);
   const specialStyle = getSpecialUserStyle(job.postedBy);
   const mapEmbedUrl = getJobMapEmbedUrl(job);
+  const skillsRequired = normalizeJobSkills(job.skillsRequired);
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
@@ -284,11 +286,11 @@ const JobDetail = () => {
         </div>
 
         {/* Skills */}
-        {job.skillsRequired?.length > 0 && (
+        {skillsRequired.length > 0 && (
           <div className="mb-5">
             <h3 className="font-semibold text-sm mb-2">Skills Required</h3>
             <div className="flex gap-1.5 flex-wrap">
-              {job.skillsRequired.map((s, i) => (
+              {skillsRequired.map((s, i) => (
                 <span
                   key={i}
                   className="badge badge-sm line-clamp-1 badge-ghost text-xs"

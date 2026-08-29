@@ -1,11 +1,13 @@
 import useAuthStore from "../../store/authStore";
+import { normalizeJobSkills } from "../../utils/jobSkills";
 
 const SkillGapBar = ({ job }) => {
   const { user } = useAuthStore();
-  if (!user || !job?.skillsRequired?.length) return null;
+  const cleanSkillsRequired = normalizeJobSkills(job?.skillsRequired);
+  if (!user || !cleanSkillsRequired.length) return null;
 
-  const studentSkills = (user.skills || []).map((s) => s.toLowerCase().trim());
-  const jobSkills = job.skillsRequired.map((s) => s.toLowerCase().trim());
+  const studentSkills = normalizeJobSkills(user.skills).map((s) => s.toLowerCase());
+  const jobSkills = cleanSkillsRequired.map((s) => s.toLowerCase());
 
   const matchedSkills = jobSkills.filter((s) => studentSkills.includes(s));
   const missingSkills = jobSkills.filter((s) => !studentSkills.includes(s));

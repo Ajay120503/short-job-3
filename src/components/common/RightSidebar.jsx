@@ -22,6 +22,7 @@ import {
 } from "../../utils/userSignals";
 import { getSpecialUserStyle } from "../../utils/specialUserStyles";
 import { getJobWorkplaceLabel } from "../../utils/jobLocation";
+import { normalizeJobSkills } from "../../utils/jobSkills";
 
 const visibleSkillsLimit = 2;
 
@@ -317,9 +318,9 @@ const RightSidebar = () => {
                               </span>
                             </span>
                           </div>
-                          {job.skillsRequired?.length > 0 && (
+                          {normalizeJobSkills(job.skillsRequired).length > 0 && (
                             <div className="mt-2 flex max-w-full items-center gap-1 overflow-hidden">
-                              {job.skillsRequired
+                              {normalizeJobSkills(job.skillsRequired)
                                 .slice(0, visibleSkillsLimit)
                                 .map((skill, i) => (
                                   <span
@@ -330,11 +331,11 @@ const RightSidebar = () => {
                                     {skill}
                                   </span>
                                 ))}
-                              {job.skillsRequired.length >
+                              {normalizeJobSkills(job.skillsRequired).length >
                                 visibleSkillsLimit && (
                                 <span className="shrink-0 rounded-full bg-base-300/70 px-1.5 py-0.5 text-[9px] font-medium text-base-content/40">
                                   +
-                                  {job.skillsRequired.length -
+                                  {normalizeJobSkills(job.skillsRequired).length -
                                     visibleSkillsLimit}
                                 </span>
                               )}

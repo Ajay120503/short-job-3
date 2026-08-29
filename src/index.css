@@ -440,6 +440,14 @@ h6 {
   box-shadow: 0 10px 28px -22px var(--special-ring);
 }
 
+.card.special-shell,
+.modal-box.special-shell,
+.dropdown-content.special-shell {
+  background: var(--special-bg);
+  border-color: var(--special-border);
+  box-shadow: 0 10px 28px -22px var(--special-ring);
+}
+
 .special-shell-hover:hover {
   border-color: var(--special-border-hover);
   box-shadow: 0 16px 34px -24px var(--special-ring);
@@ -472,6 +480,281 @@ h6 {
 
 .special-icon {
   color: var(--special-text);
+}
+
+/* App-wide component polish for both light and dark themes */
+.card,
+.modal-box,
+.dropdown-content,
+.menu,
+.navbar,
+.app-surface {
+  color: var(--color-base-content);
+}
+
+.card,
+.modal-box,
+.dropdown-content {
+  background-color: var(--color-base-100);
+  border-color: color-mix(in srgb, var(--color-base-content) 12%, transparent);
+}
+
+.btn {
+  border-radius: var(--radius-btn);
+  font-weight: 700;
+  letter-spacing: 0;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.btn:not(.btn-disabled):not(:disabled):active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn-primary {
+  border-color: color-mix(in srgb, var(--color-primary) 88%, var(--color-base-content));
+  background-color: var(--color-primary);
+  color: var(--color-primary-content);
+  box-shadow: 0 12px 26px -18px var(--color-primary);
+}
+
+.btn-primary:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 75%, var(--color-base-content));
+  background-color: color-mix(in srgb, var(--color-primary) 88%, var(--color-base-content));
+  box-shadow: 0 16px 32px -20px var(--color-primary);
+}
+
+.btn-secondary,
+.btn-accent,
+.btn-success,
+.btn-warning,
+.btn-error,
+.btn-info {
+  box-shadow: 0 12px 26px -20px currentColor;
+}
+
+.btn-ghost {
+  color: color-mix(in srgb, var(--color-base-content) 78%, transparent);
+}
+
+.btn-ghost:hover,
+.btn-ghost.btn-active {
+  background-color: color-mix(in srgb, var(--color-primary) 10%, var(--color-base-100));
+  color: var(--color-primary);
+}
+
+.btn-outline {
+  border-color: color-mix(in srgb, var(--color-base-content) 18%, transparent);
+  color: color-mix(in srgb, var(--color-base-content) 82%, transparent);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary) 12%, var(--color-base-100));
+  color: var(--color-primary);
+}
+
+.badge {
+  border-width: 1px;
+  border-color: color-mix(in srgb, currentColor 20%, transparent);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.badge-ghost {
+  background-color: color-mix(in srgb, var(--color-base-content) 8%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-base-content) 14%, transparent);
+  color: color-mix(in srgb, var(--color-base-content) 70%, transparent);
+}
+
+.badge-outline {
+  border-color: color-mix(in srgb, currentColor 34%, transparent);
+  background-color: transparent;
+}
+
+.badge-primary.badge-soft {
+  background-color: color-mix(in srgb, var(--color-primary) 13%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-primary) 24%, transparent);
+  color: var(--color-primary);
+}
+
+.badge-secondary.badge-soft {
+  background-color: color-mix(in srgb, var(--color-secondary) 13%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-secondary) 24%, transparent);
+  color: var(--color-secondary);
+}
+
+.badge-accent.badge-soft {
+  background-color: color-mix(in srgb, var(--color-accent) 13%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-accent) 24%, transparent);
+  color: var(--color-accent);
+}
+
+.badge-info.badge-soft {
+  background-color: color-mix(in srgb, var(--color-info) 14%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-info) 25%, transparent);
+  color: var(--color-info);
+}
+
+.badge-success.badge-soft {
+  background-color: color-mix(in srgb, var(--color-success) 14%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+  color: var(--color-success);
+}
+
+.badge-warning.badge-soft {
+  background-color: color-mix(in srgb, var(--color-warning) 16%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-warning) 28%, transparent);
+  color: var(--color-warning);
+}
+
+.badge-error.badge-soft {
+  background-color: color-mix(in srgb, var(--color-error) 14%, var(--color-base-100));
+  border-color: color-mix(in srgb, var(--color-error) 26%, transparent);
+  color: var(--color-error);
+}
+
+.input,
+.textarea,
+.select,
+.file-input {
+  background-color: color-mix(in srgb, var(--color-base-100) 88%, var(--color-base-200));
+  border-color: color-mix(in srgb, var(--color-base-content) 14%, transparent);
+  color: var(--color-base-content);
+}
+
+.input:focus,
+.input:focus-within,
+.textarea:focus,
+.select:focus,
+.file-input:focus {
+  border-color: color-mix(in srgb, var(--color-primary) 62%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 14%, transparent);
+  outline: none;
+}
+
+.tabs-boxed,
+.join {
+  background-color: color-mix(in srgb, var(--color-base-200) 74%, transparent);
+}
+
+.tab-active,
+.join .btn-primary {
+  box-shadow: 0 10px 24px -18px var(--color-primary);
+}
+
+.table :where(th) {
+  background-color: color-mix(in srgb, var(--color-base-200) 82%, transparent);
+  color: color-mix(in srgb, var(--color-base-content) 70%, transparent);
+}
+
+[data-theme="ShortJobDark"] .card,
+[data-theme="ShortJobDark"] .modal-box,
+[data-theme="ShortJobDark"] .dropdown-content {
+  background-color: color-mix(in srgb, var(--color-base-100) 86%, var(--color-base-200));
+  border-color: color-mix(in srgb, var(--color-base-content) 14%, transparent);
+  box-shadow: 0 18px 46px -34px rgba(0, 0, 0, 0.86);
+}
+
+[data-theme="ShortJobDark"] .card.special-shell,
+[data-theme="ShortJobDark"] .modal-box.special-shell,
+[data-theme="ShortJobDark"] .dropdown-content.special-shell {
+  background: var(--special-bg);
+  border-color: var(--special-border);
+  box-shadow: 0 18px 44px -32px var(--special-ring);
+}
+
+[data-theme="ShortJobDark"] .btn-outline:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-base-100));
+}
+
+[data-theme="ShortJobDark"] .btn-primary {
+  border-color: #2aa6a3;
+  background: #188b88;
+  color: #f1fffb;
+  box-shadow: 0 14px 30px -22px rgba(54, 184, 181, 0.9);
+}
+
+[data-theme="ShortJobDark"] .btn-primary:hover {
+  border-color: #4ed4cf;
+  background: #1e9d99;
+  color: #ffffff;
+}
+
+[data-theme="ShortJobDark"] .badge-ghost {
+  background-color: color-mix(in srgb, var(--color-base-content) 9%, var(--color-base-100));
+  color: color-mix(in srgb, var(--color-base-content) 74%, transparent);
+}
+
+[data-theme="ShortJobDark"] .input,
+[data-theme="ShortJobDark"] .textarea,
+[data-theme="ShortJobDark"] .select,
+[data-theme="ShortJobDark"] .file-input {
+  background-color: color-mix(in srgb, var(--color-base-100) 72%, var(--color-base-200));
+}
+
+.public-brand-panel {
+  background: #147f83;
+  color: #ffffff;
+}
+
+[data-theme="ShortJobDark"] .public-brand-panel {
+  background: #102c2a;
+  color: #f3fffc;
+}
+
+.landing-cta-panel {
+  background: #147f83;
+  color: #ffffff;
+}
+
+[data-theme="ShortJobDark"] .landing-cta-panel {
+  background: #102c2a;
+  color: #eefcf8;
+}
+
+.landing-cta-primary {
+  background-color: #ffffff;
+  color: #0f767a;
+}
+
+.landing-cta-primary:hover {
+  background-color: rgba(255, 255, 255, 0.92);
+  color: #0a5c60;
+}
+
+.landing-cta-secondary {
+  color: #ffffff;
+}
+
+.landing-cta-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+[data-theme="ShortJobDark"] .landing-cta-primary {
+  background-color: #f08a6c;
+  color: #1b0905;
+  box-shadow: 0 16px 34px -24px rgba(240, 138, 108, 0.9);
+}
+
+[data-theme="ShortJobDark"] .landing-cta-primary:hover {
+  background-color: #ff9f83;
+  color: #160704;
+}
+
+[data-theme="ShortJobDark"] .landing-cta-secondary {
+  border-color: rgba(238, 252, 248, 0.22);
+  color: #d8f8f3;
+}
+
+[data-theme="ShortJobDark"] .landing-cta-secondary:hover {
+  background-color: rgba(54, 184, 181, 0.14);
+  color: #ffffff;
 }
 
 /* Utility classes */

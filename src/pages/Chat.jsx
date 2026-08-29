@@ -19,6 +19,10 @@ import { useSocket } from "../context/SocketContext";
 import API from "../utils/axios";
 import ConfirmModal from "../components/common/ConfirmModal";
 import UserAvatar from "../components/common/UserAvatar";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../utils/specialUserStyles";
 import toast from "react-hot-toast";
 
 const getOtherParticipantFromConversation = (conversation, currentUserId) =>
@@ -362,12 +366,22 @@ const Chat = () => {
           ) : (
             conversations.map((conv) => {
               const other = getOtherParticipant(conv);
+              const isSpecialOther = canUseSpecialStyle(other);
+              const specialStyle = getSpecialUserStyle(other);
               return (
                 <button
                   key={conv._id}
                   onClick={() => setActiveConversation(conv)}
-                  className={`w-full flex items-center gap-3 p-4 hover:bg-base-200 transition-colors ${
-                    activeConversation?._id === conv._id ? "bg-base-200" : ""
+                  className={`w-full flex items-center gap-3 p-4 border-l-4 text-left transition-colors ${
+                    isSpecialOther
+                      ? `${specialStyle.shell} ${specialStyle.shellHover}`
+                      : "hover:bg-base-200 border-l-transparent"
+                  } ${
+                    activeConversation?._id === conv._id
+                      ? isSpecialOther
+                        ? "border-l-[var(--special-ring)]"
+                        : "bg-base-200 border-l-primary"
+                      : ""
                   }`}
                 >
                   <div className="relative">
@@ -378,7 +392,11 @@ const Chat = () => {
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-sm truncate">
+                      <p
+                        className={`font-semibold text-sm truncate ${
+                          isSpecialOther ? specialStyle.muted : ""
+                        }`}
+                      >
                         {other?.name || "Unknown"}
                       </p>
                       {conv.lastMessageTime && (
@@ -407,7 +425,19 @@ const Chat = () => {
       {activeConversation ? (
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
-          <div className="flex items-center justify-between p-4 border-b border-base-300 bg-base-100">
+          {(() => {
+            const activeOther = getOtherParticipant(activeConversation);
+            const isSpecialOther = canUseSpecialStyle(activeOther);
+            const specialStyle = getSpecialUserStyle(activeOther);
+
+            return (
+          <div
+            className={`flex items-center justify-between p-4 border-b ${
+              isSpecialOther
+                ? `${specialStyle.shell} border-base-300/60`
+                : "bg-base-100 border-base-300"
+            }`}
+          >
             <div className="flex items-center gap-3">
               <button
                 className="btn btn-ghost btn-circle btn-sm md:hidden"
@@ -424,12 +454,16 @@ const Chat = () => {
                   size={40}
                 />
                 <div>
-                  <p className="font-semibold text-sm">
-                    {getOtherParticipant(activeConversation)?.name}
+                  <p
+                    className={`font-semibold text-sm ${
+                      isSpecialOther ? specialStyle.muted : ""
+                    }`}
+                  >
+                    {activeOther?.name}
                   </p>
                   <p className="text-xs text-base-content/50">
                     {isUserOnline(
-                      getOtherParticipant(activeConversation)?._id
+                      activeOther?._id
                     ) ? (
                       <span className="text-success">Online</span>
                     ) : (
@@ -467,6 +501,8 @@ const Chat = () => {
               </ul>
             </div>
           </div>
+            );
+          })()}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -480,6 +516,8 @@ const Chat = () => {
                   msg.sender?._id === user._id || msg.sender === user._id;
                 const isDeleted = msg.type === "deleted";
                 const isEditing = editingMessage === msg._id;
+                const isSpecialSender = !isMine && canUseSpecialStyle(msg.sender);
+                const specialStyle = getSpecialUserStyle(msg.sender);
                 return (
                   <div
                     key={msg._id}
@@ -491,7 +529,9 @@ const Chat = () => {
                       <UserAvatar user={msg.sender} size={32} />
                     </div>
                     <div className="chat-header text-xs opacity-50 mb-0.5 flex items-center gap-2">
-                      <span>{msg.sender?.name || "User"}</span>
+                      <span className={isSpecialSender ? specialStyle.muted : ""}>
+                        {msg.sender?.name || "User"}
+                      </span>
                       <time className="text-[10px]">
                         {new Date(msg.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -504,7 +544,11 @@ const Chat = () => {
                     </div>
                     <div
                       className={`chat-bubble text-sm relative ${
-                        isMine ? "chat-bubble-primary" : ""
+                        isMine
+                          ? "chat-bubble-primary"
+                          : isSpecialSender
+                            ? `${specialStyle.soft} border`
+                            : ""
                       } ${isDeleted ? "opacity-50 italic" : ""}`}
                     >
                       {isDeleted ? (

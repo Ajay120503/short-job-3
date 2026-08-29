@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageCircleQuestion, Send, Trash2 } from "lucide-react";
+import { MessageCircleQuestion, MoreHorizontal, Send, Trash2 } from "lucide-react";
 import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
 import ConfirmModal from "../common/ConfirmModal";
@@ -121,12 +121,30 @@ const JobQnA = ({ jobId, isJobPoster }) => {
                   </p>
                 </div>
                 {(q.askedBy?._id === user?._id || isJobPoster) && (
-                  <button
-                    onClick={() => setQnaToDelete(q)}
-                    className="btn btn-ghost btn-xs text-error"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
+                  <div className="dropdown dropdown-end">
+                    <button
+                      tabIndex={0}
+                      type="button"
+                      className="btn btn-ghost btn-xs btn-circle"
+                      aria-label="Question actions"
+                    >
+                      <MoreHorizontal className="w-3.5 h-3.5" />
+                    </button>
+                    <ul
+                      tabIndex={0}
+                      className="dropdown-content menu z-20 w-36 rounded-box border border-base-300 bg-base-100 p-1 text-xs shadow-xl"
+                    >
+                      <li>
+                        <button
+                          onClick={() => setQnaToDelete(q)}
+                          className="text-error"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
                 )}
               </div>
 

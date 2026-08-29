@@ -24,7 +24,7 @@ export const getUserSignal = (user) => {
     return {
       key: "admin",
       label: user?.isSuperAdmin ? "Super Admin" : "Admin",
-      className: "bg-[#e4e7ff] text-[#3847ad] border-[#b7bef6] truncate",
+      className: "special-style special-indigo special-label truncate",
     };
   }
 

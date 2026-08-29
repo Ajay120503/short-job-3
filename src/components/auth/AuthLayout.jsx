@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Briefcase, CheckCircle2, ShieldCheck, Users } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
+import ThemeToggle from "../common/ThemeToggle";
 
 const highlights = [
   {
@@ -27,10 +28,12 @@ const AuthLayout = ({
   panelClassName = "max-w-md",
 }) => {
   return (
-    <div className="min-h-screen bg-base-100 lg:grid lg:grid-cols-[minmax(420px,0.95fr)_1.05fr]">
-      <aside className="hidden overflow-hidden bg-primary text-primary-content lg:flex">
+    <div className="relative min-h-screen overflow-hidden bg-base-100 lg:grid lg:grid-cols-[minmax(420px,0.95fr)_1.05fr]">
+      <div className="absolute right-4 top-4 z-20 sm:right-6">
+        <ThemeToggle />
+      </div>
+      <aside className="public-brand-panel hidden overflow-hidden lg:flex">
         <div className="relative flex min-h-screen w-full flex-col justify-between p-10 xl:p-14">
-          <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.28)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.28)_1px,transparent_1px)] [background-size:44px_44px]" />
           <div className="relative">
             <Link to="/" className="inline-flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20">
@@ -88,7 +91,7 @@ const AuthLayout = ({
         </div>
       </aside>
 
-      <main className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6">
+      <main className="relative flex min-h-screen items-center justify-center px-4 py-16 sm:px-6">
         <div className={`w-full ${panelClassName}`}>
           <div className="mb-7 text-center lg:text-left">
             <Link
@@ -98,7 +101,7 @@ const AuthLayout = ({
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-content shadow-lg shadow-primary/20">
                 <FontAwesomeIcon icon={faUserGraduate} className="h-5 w-5" />
               </span>
-              <span className="text-lg font-bold font-heading text-neutral">
+              <span className="text-lg font-bold font-heading text-base-content">
                 ShortJob
               </span>
             </Link>
@@ -106,7 +109,7 @@ const AuthLayout = ({
               <CheckCircle2 className="h-3.5 w-3.5" />
               {badge}
             </div>
-            <h1 className="text-3xl font-bold font-heading text-neutral">
+            <h1 className="text-3xl font-bold font-heading text-base-content">
               {title}
             </h1>
             <p className="mt-2 text-sm leading-6 text-base-content/55">
@@ -114,7 +117,7 @@ const AuthLayout = ({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-base-300/70 bg-base-100 p-5 shadow-sm sm:p-6">
+          <div className="rounded-2xl border border-base-300/70 bg-base-100/92 p-5 shadow-xl shadow-primary/5 backdrop-blur sm:p-6">
             {children}
           </div>
 

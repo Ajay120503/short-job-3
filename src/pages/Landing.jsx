@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
+import ThemeToggle from "../components/common/ThemeToggle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
@@ -74,7 +75,7 @@ const Landing = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-content shadow-sm">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
               <FontAwesomeIcon icon={faUserGraduate} className="h-5 w-5" />
             </span>
             <span className="font-heading text-lg font-bold text-primary">
@@ -82,6 +83,7 @@ const Landing = () => {
             </span>
           </Link>
           <div className="flex items-center gap-2">
+            <ThemeToggle compact />
             <Link to="/login" className="btn btn-ghost btn-sm">
               Sign In
             </Link>
@@ -95,7 +97,7 @@ const Landing = () => {
 
       <main>
         <section className="relative isolate overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-36">
-          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-base-100 via-base-200 to-base-100" />
+          <div className="absolute inset-0 -z-10 bg-base-100" />
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
             <motion.div
               initial="hidden"
@@ -112,7 +114,7 @@ const Landing = () => {
 
               <motion.h1
                 variants={fadeUp}
-                className="font-heading text-4xl font-extrabold leading-tight text-neutral sm:text-5xl lg:text-6xl"
+                className="font-heading text-4xl font-extrabold leading-tight text-base-content sm:text-5xl lg:text-6xl"
               >
                 Where careers begin and trusted networks grow.
               </motion.h1>
@@ -274,14 +276,14 @@ const Landing = () => {
             whileInView="show"
             viewport={{ once: true, amount: 0.4 }}
             variants={stagger}
-            className="mx-auto grid max-w-5xl gap-6 text-center sm:grid-cols-3"
+            className="mx-auto grid max-w-5xl text-white gap-6 text-center sm:grid-cols-3"
           >
             {stats.map((stat) => (
               <motion.div key={stat.label} variants={fadeUp}>
                 <div className="font-heading text-3xl font-extrabold">
                   {stat.value}
                 </div>
-                <div className="mt-1 text-sm font-medium text-primary-content/70">
+                <div className="mt-1 text-sm font-medium text-white">
                   {stat.label}
                 </div>
               </motion.div>
@@ -405,28 +407,24 @@ const Landing = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.55 }}
-            className="mx-auto max-w-4xl rounded-lg border border-primary/20 bg-primary p-8 text-center text-primary-content shadow-xl shadow-primary/15 sm:p-12"
+            className="landing-cta-panel mx-auto max-w-4xl rounded-lg border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
           >
-            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-white/12"></div>
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-content/12 ring-1 ring-primary-content/18">
+              <FontAwesomeIcon icon={faUserGraduate} className="h-6 w-6" />
+            </div>
             <h2 className="font-heading text-3xl font-bold sm:text-4xl">
               Start building your network today.
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-primary-content/75">
+            <p className="mx-auto mt-3 max-w-xl text-white">
               Create your profile, share your work, discover opportunities, and
               manage everything from one focused place.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                to="/register"
-                className="btn border-0 bg-white text-primary hover:bg-white/90"
-              >
+              <Link to="/register" className="btn landing-cta-primary border-0">
                 Get Started Free
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                to="/login"
-                className="btn btn-ghost text-white hover:bg-white/10"
-              >
+              <Link to="/login" className="btn btn-ghost landing-cta-secondary">
                 Sign In
               </Link>
             </div>

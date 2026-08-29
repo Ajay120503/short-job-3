@@ -7,12 +7,17 @@ import {
   Briefcase,
   Check,
   Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
 import ConfirmModal from "../components/common/ConfirmModal";
 import { useSocket } from "../context/SocketContext";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../utils/specialUserStyles";
 
 const iconMap = {
   post_like: { icon: Heart, color: "text-error", bg: "bg-error/10" },
@@ -185,14 +190,18 @@ const Notifications = () => {
               bg: "bg-primary/10",
             };
             const Icon = item.icon;
+            const isSpecialSender = canUseSpecialStyle(notif.sender);
+            const specialStyle = getSpecialUserStyle(notif.sender);
 
             return (
               <div
                 key={notif._id}
-                className={`relative flex items-start gap-4 bg-base-100 border rounded-xl p-4 transition-all hover:shadow-sm group ${
-                  !notif.isRead
-                    ? "border-l-4 border-l-primary border-base-300/50 bg-primary/[0.02] shadow-sm"
-                    : "border-base-300/50"
+                className={`relative flex items-start gap-4 border rounded-xl p-4 transition-all hover:shadow-sm group ${
+                  isSpecialSender
+                    ? `${specialStyle.shell} ${specialStyle.shellHover}`
+                    : !notif.isRead
+                      ? "border-l-4 border-l-primary border-base-300/50 bg-primary/[0.02] shadow-sm"
+                      : "bg-base-100 border-base-300/50"
                 }`}
               >
                 {!notif.isRead && (
@@ -200,9 +209,15 @@ const Notifications = () => {
                 )}
 
                 <div
-                  className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}
+                  className={`w-10 h-10 rounded-xl ${
+                    isSpecialSender ? specialStyle.soft : item.bg
+                  } flex items-center justify-center flex-shrink-0 mt-0.5`}
                 >
-                  <Icon className={`w-5 h-5 ${item.color}`} />
+                  <Icon
+                    className={`w-5 h-5 ${
+                      isSpecialSender ? specialStyle.icon : item.color
+                    }`}
+                  />
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -214,7 +229,11 @@ const Notifications = () => {
                     {notif.link ? (
                       <Link
                         to={notif.link}
-                        className="hover:text-primary transition-colors"
+                        className={`transition-colors ${
+                          isSpecialSender
+                            ? specialStyle.muted
+                            : "hover:text-primary"
+                        }`}
                       >
                         {notif.message}
                       </Link>
@@ -236,7 +255,9 @@ const Notifications = () => {
                         <span className="text-xs text-base-content/20">·</span>
                         <Link
                           to={`/profile/${notif.sender._id}`}
-                          className="text-xs text-primary hover:underline truncate max-w-[120px]"
+                          className={`text-xs hover:underline truncate max-w-[120px] ${
+                            isSpecialSender ? specialStyle.muted : "text-primary"
+                          }`}
                         >
                           {notif.sender.name}
                         </Link>
@@ -245,13 +266,30 @@ const Notifications = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleDelete(notif._id)}
-                  className="btn btn-ghost btn-xs btn-square text-base-content/20 hover:text-error opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
-                  title="Delete"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="dropdown dropdown-end flex-shrink-0 opacity-0 transition-all group-hover:opacity-100">
+                  <button
+                    tabIndex={0}
+                    type="button"
+                    className="btn btn-ghost btn-xs btn-circle text-base-content/35"
+                    aria-label="Notification actions"
+                  >
+                    <MoreHorizontal className="w-3.5 h-3.5" />
+                  </button>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content menu z-20 w-36 rounded-box border border-base-300 bg-base-100 p-1 text-xs shadow-xl"
+                  >
+                    <li>
+                      <button
+                        onClick={() => handleDelete(notif._id)}
+                        className="text-error"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Delete
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
             );
           })}

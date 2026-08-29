@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Camera, Clock, Laptop, MapPin, ShieldCheck, Trash2 } from "lucide-react";
+import { Camera, Clock, Laptop, MapPin, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
 import useAuthStore from "../store/authStore";
@@ -134,14 +134,31 @@ const LoginHistory = () => {
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => handleDelete(record._id)}
-                className="btn btn-ghost btn-sm btn-square text-error shrink-0"
-                title="Delete login record"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="dropdown dropdown-end shrink-0">
+                <button
+                  tabIndex={0}
+                  type="button"
+                  className="btn btn-ghost btn-sm btn-circle"
+                  aria-label="Login record actions"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content menu z-20 w-40 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
+                >
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(record._id)}
+                      className="text-error"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
           ))}
         </div>

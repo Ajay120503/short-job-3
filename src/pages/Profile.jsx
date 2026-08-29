@@ -654,15 +654,35 @@ const Profile = () => {
                         />
                       </button>
                       {isOwnProfile && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPostToDelete(post);
-                          }}
-                          className="text-error"
+                        <div
+                          className="dropdown dropdown-end"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          <button
+                            tabIndex={0}
+                            type="button"
+                            className="btn btn-ghost btn-xs btn-circle"
+                            aria-label="Post actions"
+                          >
+                            <MoreHorizontal className="w-3.5 h-3.5" />
+                          </button>
+                          <ul
+                            tabIndex={0}
+                            className="dropdown-content menu z-20 w-36 rounded-box border border-base-300 bg-base-100 p-1 text-xs shadow-xl"
+                          >
+                            <li>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPostToDelete(post);
+                                }}
+                                className="text-error"
+                              >
+                                <Trash2 className="w-3 h-3" /> Delete
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
                       )}
                     </div>
 
