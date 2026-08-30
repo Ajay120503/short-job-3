@@ -28,6 +28,8 @@ const AdminLoginRecords = () => {
   const queryParams = new URLSearchParams(location.search);
   const [records, setRecords] = useState([]);
   const [expanded, setExpanded] = useState(null);
+  const [expandedDetails, setExpandedDetails] = useState({});
+  const [detailLoading, setDetailLoading] = useState("");
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: "",
@@ -68,6 +70,34 @@ const AdminLoginRecords = () => {
       toast.success("Login record deleted");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete record");
+    }
+  };
+
+  const handleToggleRecord = async (recordId) => {
+    if (expanded === recordId) {
+      setExpanded(null);
+      return;
+    }
+
+    setExpanded(recordId);
+    if (expandedDetails[recordId]) return;
+
+    setDetailLoading(recordId);
+    try {
+      const { data } = await API.get(`/admin/login-records/${recordId}`);
+      if (data.record) {
+        setExpandedDetails((prev) => ({ ...prev, [recordId]: data.record }));
+        setRecords((prev) =>
+          prev.map((record) =>
+            record._id === recordId ? { ...record, ...data.record } : record,
+          ),
+        );
+      }
+    } catch (err) {
+      setExpanded(null);
+      toast.error(err.response?.data?.message || "Failed to open login record");
+    } finally {
+      setDetailLoading("");
     }
   };
 
@@ -154,11 +184,25 @@ const AdminLoginRecords = () => {
             const userInfo = record.user || {};
             const isOpen = expanded === record._id;
             return (
-              <div key={record._id} className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setExpanded(isOpen ? null : record._id)}
-                  className={`w-full rounded-xl border bg-base-100 p-3 text-left shadow-sm transition-all hover:border-primary/30 hover:bg-primary/5 ${
+              <div
+                key={record._id}
+                className={`overflow-hidden rounded-xl border bg-base-100 shadow-sm transition-all ${
+                  isOpen
+                    ? "border-primary/30 bg-primary/5"
+                    : "border-base-300 hover:border-primary/30"
+                }`}
+              >
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleToggleRecord(record._id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleToggleRecord(record._id);
+                    }
+                  }}
+                  className={`w-full cursor-pointer p-3 text-left transition-all hover:bg-primary/5 ${
                     isOpen
                       ? "border-primary/30 bg-primary/5"
                       : "border-base-300"
@@ -226,9 +270,8 @@ const AdminLoginRecords = () => {
                         : "Legacy record"}
                     </p>
                     {canDeleteRecords && (
-                      <span
-                        role="button"
-                        tabIndex={0}
+                      <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(record._id);
@@ -244,11 +287,36 @@ const AdminLoginRecords = () => {
                         title="Delete login record"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </span>
+                      </button>
                     )}
                   </div>
-                </button>
-                {isOpen && <LoginRecordDetail record={record} />}
+                </div>
+                {isOpen && (
+                  <div className="border-t border-base-300/70 bg-base-100 p-2 sm:p-3">
+                    {detailLoading === record._id ? (
+                      <div className="rounded-2xl border border-base-300 bg-base-100 p-4">
+                        <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
+                          <div className="aspect-[4/5] skeleton rounded-2xl" />
+                          <div className="space-y-3">
+                            <div className="h-12 skeleton rounded-xl" />
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {[1, 2, 3, 4, 5, 6].map((item) => (
+                                <div
+                                  key={item}
+                                  className="h-16 skeleton rounded-xl"
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <LoginRecordDetail
+                        record={expandedDetails[record._id] || record}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
