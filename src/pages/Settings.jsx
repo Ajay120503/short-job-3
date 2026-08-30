@@ -11,6 +11,7 @@ import {
   Moon,
   Palette,
   Sun,
+  Type,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
@@ -26,6 +27,11 @@ import {
 } from "../utils/specialUserStyles";
 import { isPlatformAdmin } from "../utils/userSignals";
 import { getStoredThemeMode, setStoredThemeMode } from "../utils/theme";
+import {
+  APP_FONT_OPTIONS,
+  getStoredFontMode,
+  setStoredFontMode,
+} from "../utils/font";
 
 const APP_THEME_OPTIONS = [
   {
@@ -48,6 +54,19 @@ const APP_THEME_OPTIONS = [
   },
 ];
 
+const FONT_PREVIEW_STYLES = {
+  modern:
+    '"Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif',
+  professional:
+    '"Inter", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+  rounded:
+    '"Nunito", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+  editorial: '"Lora", Georgia, "Times New Roman", serif',
+  compact:
+    '"Roboto Condensed", "Inter", system-ui, -apple-system, sans-serif',
+  system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+};
+
 const Settings = () => {
   const { user, logout, deleteAccount, isLoading, updateProfile, setUser } =
     useAuthStore();
@@ -58,6 +77,7 @@ const Settings = () => {
   const [loginAuditLoading, setLoginAuditLoading] = useState(false);
   const [themeLoading, setThemeLoading] = useState(false);
   const [appThemeMode, setAppThemeMode] = useState(getStoredThemeMode);
+  const [appFontMode, setAppFontMode] = useState(getStoredFontMode);
   const specialStyle = getSpecialUserStyle(user);
   const canStyleProfile = canUseSpecialStyle(user);
 
@@ -155,6 +175,15 @@ const Settings = () => {
     );
   };
 
+  const handleAppFontChange = (mode) => {
+    const nextMode = setStoredFontMode(mode);
+    setAppFontMode(nextMode);
+    const selectedFont = APP_FONT_OPTIONS.find(
+      (option) => option.value === nextMode,
+    );
+    toast.success(`${selectedFont?.label || "Selected"} font applied`);
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold font-heading mb-6">Settings</h1>
@@ -222,6 +251,54 @@ const Settings = () => {
                   <Icon className="h-4 w-4" />
                 </span>
                 <span className="block text-sm font-semibold">
+                  {option.label}
+                </span>
+                <span className="mt-0.5 block text-xs text-base-content/45">
+                  {option.description}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
+        <div className="flex items-start gap-4 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center">
+            <Type className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">App Font</h3>
+            <p className="text-xs text-base-content/50 mt-1 max-w-md">
+              Choose the font style used across feeds, profiles, jobs, chat,
+              admin screens, forms, badges, and menus.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {APP_FONT_OPTIONS.map((option) => {
+            const selected = appFontMode === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleAppFontChange(option.value)}
+                className={`rounded-xl border p-3 text-left transition-all ${
+                  selected
+                    ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                    : "border-base-300 hover:border-primary/25 hover:bg-base-200/50"
+                }`}
+              >
+                <span
+                  className="block text-xl font-bold"
+                  style={{
+                    fontFamily: FONT_PREVIEW_STYLES[option.value],
+                  }}
+                >
+                  {option.preview}
+                </span>
+                <span className="mt-2 block text-sm font-semibold">
                   {option.label}
                 </span>
                 <span className="mt-0.5 block text-xs text-base-content/45">

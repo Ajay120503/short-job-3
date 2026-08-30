@@ -33,7 +33,12 @@ import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import API from "../utils/axios";
 import ApplicantKanban from "../components/job/ApplicantKanban";
 import UserAvatar from "../components/common/UserAvatar";
+import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getJobWorkplaceLabel } from "../utils/jobLocation";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../utils/specialUserStyles";
 import toast from "react-hot-toast";
 
 const statusColors = {
@@ -152,6 +157,8 @@ const InfoPill = ({ icon: Icon, children, tone = "base" }) => {
 const ApplicantCard = ({ app, onStatusUpdate }) => {
   const [expanded, setExpanded] = useState(false);
   const a = app.applicant || {};
+  const isSpecialApplicant = canUseSpecialStyle(a);
+  const specialStyle = getSpecialUserStyle(a);
   const location = [a.city, a.state].filter(Boolean).join(", ");
   const currentRole = [a.currentPosition || a.profession, a.currentCompany]
     .filter(Boolean)
@@ -164,32 +171,53 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
   ].filter(Boolean);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-base-300/60 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md">
+    <div
+      className={`overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+        isSpecialApplicant
+          ? `${specialStyle.shell} ${specialStyle.shellHover}`
+          : "border-base-300/60 bg-base-100 hover:border-primary/25"
+      }`}
+    >
       {/* Compact Header */}
       <div className="p-4 sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           {/* Avatar & Basic Info */}
           <div className="flex min-w-0 flex-1 items-start gap-3">
             <div className="relative shrink-0">
-              <UserAvatar user={a} size={58} ringClass="ring-2 ring-base-200" />
+              <UserAvatar
+                user={a}
+                size={58}
+                ringClass={
+                  isSpecialApplicant
+                    ? specialStyle.ring
+                    : "ring-2 ring-base-200"
+                }
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <Link
-                    to={`/profile/${a?._id}`}
-                    className="block truncate text-base font-bold text-base-content transition-colors hover:text-primary"
-                  >
-                    {a?.name || "Unknown"}
-                  </Link>
+                  <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                    <Link
+                      to={`/profile/${a?._id}`}
+                      className={`block truncate text-base font-bold transition-colors hover:text-primary ${
+                        isSpecialApplicant ? specialStyle.muted : "text-base-content"
+                      }`}
+                    >
+                      {a?.name || "Unknown"}
+                    </Link>
+                    <UserSignalBadge user={a} size="xs" />
+                  </div>
                   <p className="mt-0.5 truncate text-sm text-base-content/55">
                     {currentRole || a.educationLevel || "Applicant profile"}
                   </p>
                 </div>
                 <span
-                  className={`badge badge-sm ${
-                    statusColors[app.status] || "badge-ghost"
-                  } font-semibold capitalize`}
+                  className={`badge badge-sm font-semibold capitalize ${
+                    isSpecialApplicant
+                      ? specialStyle.label
+                      : statusColors[app.status] || "badge-ghost"
+                  }`}
                 >
                   {statusLabels[app.status] || app.status}
                 </span>
@@ -209,7 +237,13 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
                   </InfoPill>
                 )}
                 {a?.educationLevel && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-base-300/60 bg-base-200/70 px-2.5 py-1 text-xs font-medium text-base-content/65">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                      isSpecialApplicant
+                        ? specialStyle.soft
+                        : "border-base-300/60 bg-base-200/70 text-base-content/65"
+                    }`}
+                  >
                     <FontAwesomeIcon
                       icon={faUserGraduate}
                       className="h-3.5 w-3.5"
@@ -223,7 +257,13 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
               </div>
 
               {a?.bio && (
-                <p className="mt-3 line-clamp-2 rounded-lg bg-base-200/45 px-3 py-2 text-sm leading-relaxed text-base-content/65">
+                <p
+                  className={`mt-3 line-clamp-2 rounded-lg px-3 py-2 text-sm leading-relaxed ${
+                    isSpecialApplicant
+                      ? `${specialStyle.soft} border border-current/10`
+                      : "bg-base-200/45 text-base-content/65"
+                  }`}
+                >
                   {a.bio}
                 </p>
               )}
@@ -233,12 +273,22 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
                   {profileSignals.map((signal) => (
                     <span
                       key={signal}
-                      className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success"
+                      className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                        isSpecialApplicant
+                          ? specialStyle.soft
+                          : "bg-success/10 text-success"
+                      }`}
                     >
                       {signal}
                     </span>
                   ))}
-                  <span className="rounded-full bg-base-200 px-2 py-0.5 text-[11px] text-base-content/45">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[11px] ${
+                      isSpecialApplicant
+                        ? specialStyle.muted
+                        : "bg-base-200 text-base-content/45"
+                    }`}
+                  >
                     Applied {formatDate(app.createdAt)}
                   </span>
                 </div>
@@ -249,7 +299,11 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
           {/* Actions */}
           <div className="flex flex-row items-center justify-between gap-2 border-t border-base-200 pt-3 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
             {/* Status update buttons */}
-            <div className="flex items-center gap-1 rounded-full bg-base-200/60 p-1">
+            <div
+              className={`flex items-center gap-1 rounded-full p-1 ${
+                isSpecialApplicant ? specialStyle.soft : "bg-base-200/60"
+              }`}
+            >
               {statusSteps.map((step) => {
                 const currentIdx = statusSteps.indexOf(app.status);
                 const stepIdx = statusSteps.indexOf(step);
@@ -310,7 +364,9 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
             {a.skills.map((skill, i) => (
               <span
                 key={i}
-                className="badge badge-sm badge-soft badge-primary text-xs"
+                className={`badge badge-sm text-xs ${
+                  isSpecialApplicant ? specialStyle.label : "badge-soft badge-primary"
+                }`}
               >
                 {skill}
               </span>
@@ -321,28 +377,28 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="border-t border-base-200 px-5 py-4 space-y-4">
+        <div className="border-t border-base-200/70 px-5 py-4 space-y-4">
           {/* Summary stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {a?.age && (
-              <div className="bg-base-200/50 rounded-lg p-3 text-center">
-                <Calendar className="w-4 h-4 mx-auto text-primary mb-1" />
+              <div className={`rounded-lg p-3 text-center ${isSpecialApplicant ? specialStyle.soft : "bg-base-200/50"}`}>
+                <Calendar className={`w-4 h-4 mx-auto mb-1 ${isSpecialApplicant ? specialStyle.icon : "text-primary"}`} />
                 <p className="text-xs text-base-content/40">Age</p>
                 <p className="text-sm font-semibold">{a.age}</p>
               </div>
             )}
             {a?.experience > 0 && (
-              <div className="bg-base-200/50 rounded-lg p-3 text-center">
-                <Briefcase className="w-4 h-4 mx-auto text-primary mb-1" />
+              <div className={`rounded-lg p-3 text-center ${isSpecialApplicant ? specialStyle.soft : "bg-base-200/50"}`}>
+                <Briefcase className={`w-4 h-4 mx-auto mb-1 ${isSpecialApplicant ? specialStyle.icon : "text-primary"}`} />
                 <p className="text-xs text-base-content/40">Experience</p>
                 <p className="text-sm font-semibold">{a.experience} yrs</p>
               </div>
             )}
             {a?.educationLevel && (
-              <div className="bg-base-200/50 rounded-lg p-3 text-center">
+              <div className={`rounded-lg p-3 text-center ${isSpecialApplicant ? specialStyle.soft : "bg-base-200/50"}`}>
                 <FontAwesomeIcon
                   icon={faUserGraduate}
-                  className="w-4 h-4 mx-auto text-primary mb-1"
+                  className={`w-4 h-4 mx-auto mb-1 ${isSpecialApplicant ? specialStyle.icon : "text-primary"}`}
                   fontSize={24}
                 />
                 <p className="text-xs text-base-content/40">Education</p>
@@ -352,8 +408,8 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
               </div>
             )}
             {a?.subject && (
-              <div className="bg-base-200/50 rounded-lg p-3 text-center">
-                <BookOpen className="w-4 h-4 mx-auto text-primary mb-1" />
+              <div className={`rounded-lg p-3 text-center ${isSpecialApplicant ? specialStyle.soft : "bg-base-200/50"}`}>
+                <BookOpen className={`w-4 h-4 mx-auto mb-1 ${isSpecialApplicant ? specialStyle.icon : "text-primary"}`} />
                 <p className="text-xs text-base-content/40">Subject</p>
                 <p className="text-sm font-semibold">{a.subject}</p>
               </div>
@@ -368,7 +424,12 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {a.qualifications.map((q, i) => (
-                  <span key={i} className="badge badge-sm badge-outline">
+                  <span
+                    key={i}
+                    className={`badge badge-sm ${
+                      isSpecialApplicant ? specialStyle.label : "badge-outline"
+                    }`}
+                  >
                     {q}
                   </span>
                 ))}
@@ -384,7 +445,12 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {a.interests.map((interest, i) => (
-                  <span key={i} className="badge badge-sm badge-ghost">
+                  <span
+                    key={i}
+                    className={`badge badge-sm ${
+                      isSpecialApplicant ? specialStyle.soft : "badge-ghost"
+                    }`}
+                  >
                     {interest}
                   </span>
                 ))}
@@ -398,7 +464,13 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
               <h4 className="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5" /> Cover Letter
               </h4>
-              <p className="text-sm text-base-content/70 bg-base-200/50 rounded-lg p-3 whitespace-pre-wrap">
+              <p
+                className={`text-sm rounded-lg p-3 whitespace-pre-wrap ${
+                  isSpecialApplicant
+                    ? specialStyle.soft
+                    : "bg-base-200/50 text-base-content/70"
+                }`}
+              >
                 {app.coverLetter}
               </p>
             </div>

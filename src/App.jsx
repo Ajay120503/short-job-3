@@ -15,6 +15,11 @@ import {
   applyAppTheme,
   getStoredThemeMode,
 } from "./utils/theme";
+import {
+  APP_FONT_CHANGE_EVENT,
+  applyAppFont,
+  getStoredFontMode,
+} from "./utils/font";
 
 // Layout Components
 import Sidebar from "./components/common/Sidebar";
@@ -72,14 +77,20 @@ function App() {
 
   useEffect(() => {
     const syncTheme = () => applyAppTheme(getStoredThemeMode());
+    const syncFont = () => applyAppFont(getStoredFontMode());
     syncTheme();
+    syncFont();
     const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
     window.addEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+    window.addEventListener(APP_FONT_CHANGE_EVENT, syncFont);
     window.addEventListener("storage", syncTheme);
+    window.addEventListener("storage", syncFont);
     if (!mediaQuery) {
       return () => {
         window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+        window.removeEventListener(APP_FONT_CHANGE_EVENT, syncFont);
         window.removeEventListener("storage", syncTheme);
+        window.removeEventListener("storage", syncFont);
       };
     }
     if (mediaQuery.addEventListener) {
@@ -87,14 +98,18 @@ function App() {
       return () => {
         mediaQuery.removeEventListener("change", syncTheme);
         window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+        window.removeEventListener(APP_FONT_CHANGE_EVENT, syncFont);
         window.removeEventListener("storage", syncTheme);
+        window.removeEventListener("storage", syncFont);
       };
     }
     mediaQuery.addListener?.(syncTheme);
     return () => {
       mediaQuery.removeListener?.(syncTheme);
       window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+      window.removeEventListener(APP_FONT_CHANGE_EVENT, syncFont);
       window.removeEventListener("storage", syncTheme);
+      window.removeEventListener("storage", syncFont);
     };
   }, []);
 

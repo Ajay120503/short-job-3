@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -13,6 +13,11 @@ import {
 } from "lucide-react";
 import API from "../../utils/axios";
 import UserAvatar from "../common/UserAvatar";
+import UserSignalBadge from "../common/UserSignalBadge";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../../utils/specialUserStyles";
 import toast from "react-hot-toast";
 
 const COLUMNS = [
@@ -49,13 +54,14 @@ const COLUMNS = [
 ];
 
 const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
-  const [apps, setApps] = useState(initialApps || []);
+  const [statusOverrides, setStatusOverrides] = useState({});
   const [draggedApp, setDraggedApp] = useState(null);
   const [overColumn, setOverColumn] = useState("");
-
-  useEffect(() => {
-    setApps(initialApps || []);
-  }, [initialApps]);
+  const apps = (initialApps || []).map((app) =>
+    statusOverrides[app._id]
+      ? { ...app, status: statusOverrides[app._id] }
+      : app
+  );
 
   const grouped = COLUMNS.reduce((acc, col) => {
     acc[col.key] = apps.filter((a) => a.status === col.key);
@@ -80,10 +86,7 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
       return;
     }
 
-    // Optimistic update
-    setApps((prev) =>
-      prev.map((a) => (a._id === appId ? { ...a, status: newStatus } : a))
-    );
+    setStatusOverrides((prev) => ({ ...prev, [appId]: newStatus }));
     setDraggedApp(null);
 
     try {
@@ -104,10 +107,11 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
         });
       }
     } catch {
-      // Revert on error
-      setApps((prev) =>
-        prev.map((a) => (a._id === appId ? { ...a, status: app.status } : a))
-      );
+      setStatusOverrides((prev) => {
+        const next = { ...prev };
+        delete next[appId];
+        return next;
+      });
       toast.error("Failed to update status");
     }
   };
@@ -186,6 +190,8 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
 
 const ApplicantCard = ({ app, isDragging, onDragStart, onDragEnd }) => {
   const applicant = app.applicant || {};
+  const isSpecialApplicant = canUseSpecialStyle(applicant);
+  const specialStyle = getSpecialUserStyle(applicant);
   const location = [applicant.city, applicant.state].filter(Boolean).join(", ");
   const headline =
     applicant.currentPosition ||
@@ -195,24 +201,39 @@ const ApplicantCard = ({ app, isDragging, onDragStart, onDragEnd }) => {
 
   return (
     <div
-      className={`rounded-2xl border border-base-300/70 bg-base-100 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md ${
-        isDragging ? "opacity-60 ring-2 ring-primary/20" : ""
-      }`}
+      className={`rounded-2xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+        isSpecialApplicant
+          ? `${specialStyle.shell} ${specialStyle.shellHover}`
+          : "border-base-300/70 bg-base-100 hover:border-primary/25"
+      } ${isDragging ? "opacity-60 ring-2 ring-primary/20" : ""}`}
       draggable
       onDragStart={(e) => onDragStart(e, app)}
       onDragEnd={onDragEnd}
     >
       <div className="flex items-start gap-2.5">
-        <UserAvatar user={applicant} size={36} />
+        <UserAvatar
+          user={applicant}
+          size={36}
+          ringClass={isSpecialApplicant ? specialStyle.ring : undefined}
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <Link
-              to={applicant._id ? `/profile/${applicant._id}` : "#"}
-              className="block truncate text-sm font-semibold hover:text-primary"
-            >
-              {applicant.name || "Unknown applicant"}
-            </Link>
-            <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-base-content/25" />
+            <div className="flex min-w-0 flex-wrap items-center gap-1">
+              <Link
+                to={applicant._id ? `/profile/${applicant._id}` : "#"}
+                className={`block truncate text-sm font-semibold hover:text-primary ${
+                  isSpecialApplicant ? specialStyle.muted : ""
+                }`}
+              >
+                {applicant.name || "Unknown applicant"}
+              </Link>
+              <UserSignalBadge user={applicant} size="xs" />
+            </div>
+            <GripVertical
+              className={`h-4 w-4 shrink-0 cursor-grab ${
+                isSpecialApplicant ? specialStyle.icon : "text-base-content/25"
+              }`}
+            />
           </div>
           {headline && (
             <p className="mt-0.5 truncate text-xs text-base-content/55">
@@ -225,19 +246,31 @@ const ApplicantCard = ({ app, isDragging, onDragStart, onDragEnd }) => {
       <div className="mt-3 space-y-1.5 text-[11px] text-base-content/50">
         {applicant.email && (
           <p className="flex min-w-0 items-center gap-1.5">
-            <Mail className="h-3.5 w-3.5 shrink-0" />
+            <Mail
+              className={`h-3.5 w-3.5 shrink-0 ${
+                isSpecialApplicant ? specialStyle.icon : ""
+              }`}
+            />
             <span className="truncate">{applicant.email}</span>
           </p>
         )}
         {location && (
           <p className="flex min-w-0 items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <MapPin
+              className={`h-3.5 w-3.5 shrink-0 ${
+                isSpecialApplicant ? specialStyle.icon : ""
+              }`}
+            />
             <span className="truncate">{location}</span>
           </p>
         )}
         {Number(applicant.experience) > 0 && (
           <p className="flex min-w-0 items-center gap-1.5">
-            <BriefcaseBusiness className="h-3.5 w-3.5 shrink-0" />
+            <BriefcaseBusiness
+              className={`h-3.5 w-3.5 shrink-0 ${
+                isSpecialApplicant ? specialStyle.icon : ""
+              }`}
+            />
             <span>{applicant.experience} year experience</span>
           </p>
         )}
@@ -248,13 +281,23 @@ const ApplicantCard = ({ app, isDragging, onDragStart, onDragEnd }) => {
           {applicant.skills.slice(0, 3).map((skill) => (
             <span
               key={skill}
-              className="rounded-full bg-base-200 px-2 py-0.5 text-[10px] font-medium text-base-content/60"
+              className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                isSpecialApplicant
+                  ? specialStyle.soft
+                  : "bg-base-200 text-base-content/60"
+              }`}
             >
               {skill}
             </span>
           ))}
           {applicant.skills.length > 3 && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                isSpecialApplicant
+                  ? specialStyle.label
+                  : "bg-primary/10 text-primary"
+              }`}
+            >
               +{applicant.skills.length - 3}
             </span>
           )}

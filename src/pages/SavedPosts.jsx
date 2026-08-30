@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
-  Share2,
   Bookmark,
   BookmarkCheck,
   MoreHorizontal,
@@ -15,6 +14,10 @@ import API from "../utils/axios";
 import { getUserRoleLabel } from "../utils/badgeUtils";
 import UserAvatar from "../components/common/UserAvatar";
 import UserSignalBadge from "../components/common/UserSignalBadge";
+import {
+  canUseSpecialStyle,
+  getSpecialUserStyle,
+} from "../utils/specialUserStyles";
 import toast from "react-hot-toast";
 
 const SavedPosts = () => {
@@ -36,7 +39,20 @@ const SavedPosts = () => {
   };
 
   useEffect(() => {
-    fetchSaved();
+    let isMounted = true;
+
+    API.get("/posts/saved")
+      .then(({ data }) => {
+        if (isMounted) setPosts(data.posts || []);
+      })
+      .catch(() => toast.error("Failed to load saved posts"))
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleUnsave = async (postId) => {
@@ -171,22 +187,40 @@ const SavedPosts = () => {
             const isLiked =
               post.likes?.includes(user?._id) ||
               post.likes?.some((l) => l === user?._id || l?._id === user?._id);
+            const isSpecialAuthor = canUseSpecialStyle(post.author);
+            const specialStyle = getSpecialUserStyle(post.author);
 
             return (
               <div
                 key={post._id}
-                className="overflow-hidden rounded-xl border border-base-300/60 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
+                className={`overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                  isSpecialAuthor
+                    ? `${specialStyle.shell} ${specialStyle.shellHover}`
+                    : "border-base-300/60 bg-base-100 hover:border-primary/25"
+                }`}
               >
                 <div className="p-4 sm:p-5">
                   {/* Author Row */}
                   <div className="flex items-center gap-3 mb-4">
-                    <UserAvatar user={post.author} size={44} />
+                    <UserAvatar
+                      user={post.author}
+                      size={44}
+                      ringClass={isSpecialAuthor ? specialStyle.ring : undefined}
+                    />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">
+                      <p
+                        className={`font-semibold text-sm truncate ${
+                          isSpecialAuthor ? specialStyle.muted : ""
+                        }`}
+                      >
                         {post.author?.name}
                       </p>
                       <div className="flex items-center gap-2 text-xs text-base-content/40">
-                        <span>{getUserRoleLabel(post.author)}</span>
+                        <span
+                          className={isSpecialAuthor ? specialStyle.muted : ""}
+                        >
+                          {getUserRoleLabel(post.author)}
+                        </span>
                         <UserSignalBadge user={post.author} />
                         <span>·</span>
                         <span>
@@ -199,7 +233,13 @@ const SavedPosts = () => {
                       </div>
                     </div>
                     {post.type && post.type !== "general" && (
-                      <span className="badge badge-sm badge-soft badge-primary text-xs font-medium px-2.5 py-1">
+                      <span
+                        className={`badge badge-sm text-xs font-medium px-2.5 py-1 ${
+                          isSpecialAuthor
+                            ? specialStyle.label
+                            : "badge-soft badge-primary"
+                        }`}
+                      >
                         {post.type}
                       </span>
                     )}
@@ -237,7 +277,9 @@ const SavedPosts = () => {
                       {post.tags.map((tag, i) => (
                         <span
                           key={i}
-                          className="badge badge-sm badge-ghost text-xs font-medium"
+                          className={`badge badge-sm text-xs font-medium ${
+                            isSpecialAuthor ? specialStyle.soft : "badge-ghost"
+                          }`}
                         >
                           #{tag}
                         </span>
@@ -246,7 +288,7 @@ const SavedPosts = () => {
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 pt-3 border-t border-base-200">
+                  <div className="flex items-center gap-1 pt-3 border-t border-base-200/70">
                     <button
                       onClick={() => handleLike(post._id)}
                       className={`btn btn-ghost btn-sm gap-2 font-medium text-xs ${
@@ -273,7 +315,11 @@ const SavedPosts = () => {
                       </button>
                       <ul
                         tabIndex={0}
-                        className="dropdown-content menu z-20 mt-1 w-40 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
+                        className={`dropdown-content menu z-20 mt-1 w-40 rounded-box border p-1.5 text-xs shadow-xl ${
+                          isSpecialAuthor
+                            ? specialStyle.shell
+                            : "border-base-300 bg-base-100"
+                        }`}
                       >
                         <li>
                           <button
