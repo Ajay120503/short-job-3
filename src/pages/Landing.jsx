@@ -98,7 +98,10 @@ const Landing = () => {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
-              <FontAwesomeIcon icon={faUserGraduate} className="h-5 w-5" />
+              <FontAwesomeIcon
+                icon={faUserGraduate}
+                className="h-5 w-5 text-white"
+              />
             </span>
             <span className="font-heading text-lg font-bold text-primary">
               ShortJob
@@ -502,8 +505,11 @@ const Landing = () => {
             transition={{ duration: 0.55 }}
             className="landing-cta-panel mx-auto max-w-4xl rounded-xl border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
           >
-            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-content/12 ring-1 ring-primary-content/18">
-              <FontAwesomeIcon icon={faUserGraduate} className="h-6 w-6" />
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
+              <FontAwesomeIcon
+                icon={faUserGraduate}
+                className="h-6 w-6 text-white"
+              />
             </div>
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               Start building your network today.
@@ -529,7 +535,10 @@ const Landing = () => {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-sm text-base-content/45 sm:flex-row">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white">
-              <FontAwesomeIcon icon={faUserGraduate} className="h-4 w-4" />
+              <FontAwesomeIcon
+                icon={faUserGraduate}
+                className="h-4 w-4 text-white"
+              />
             </span>
             <span className="font-heading font-bold text-base-content">
               ShortJob

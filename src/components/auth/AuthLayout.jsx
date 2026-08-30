@@ -44,7 +44,10 @@ const AuthLayout = ({
           <div className="relative">
             <Link to="/" className="inline-flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20">
-                <FontAwesomeIcon icon={faUserGraduate} className="h-6 w-6" />
+                <FontAwesomeIcon
+                  icon={faUserGraduate}
+                  className="h-6 w-6 text-white"
+                />
               </span>
               <span>
                 <span className="block text-xl font-bold font-heading">
@@ -134,14 +137,17 @@ const AuthLayout = ({
               to="/"
               className="mb-4 inline-flex items-center gap-2.5 rounded-2xl border border-base-300 bg-base-100 px-3 py-2 shadow-sm sm:mb-5 lg:hidden"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-content shadow-lg shadow-primary/20 sm:h-11 sm:w-11 sm:rounded-2xl">
-                <FontAwesomeIcon icon={faUserGraduate} className="h-5 w-5" />
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 sm:h-11 sm:w-11 sm:rounded-2xl">
+                <FontAwesomeIcon
+                  icon={faUserGraduate}
+                  className="h-5 w-5 text-white"
+                />
               </span>
               <span className="text-lg font-bold font-heading text-base-content">
                 ShortJob
               </span>
             </Link>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+            <div className="mb-3 ml-2 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
               <CheckCircle2 className="h-3.5 w-3.5" />
               {badge}
             </div>
