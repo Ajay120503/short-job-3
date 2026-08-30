@@ -35,18 +35,6 @@ const PostDetail = () => {
   const [replyTo, setReplyTo] = useState(null);
   const [addingComment, setAddingComment] = useState(false);
 
-  const fetchPost = useCallback(async () => {
-    try {
-      const { data } = await API.get(`/posts/${id}`);
-      setPost(data.post);
-    } catch {
-      toast.error("Post not found.");
-      navigate("/feed", { replace: true });
-    } finally {
-      setLoading(false);
-    }
-  }, [id, navigate]);
-
   const fetchComments = useCallback(async () => {
     try {
       const { data } = await API.get(`/posts/${id}/comments`);
@@ -57,9 +45,33 @@ const PostDetail = () => {
   }, [id]);
 
   useEffect(() => {
-    fetchPost();
-    fetchComments();
-  }, [fetchPost, fetchComments]);
+    let isMounted = true;
+
+    API.get(`/posts/${id}`)
+      .then(({ data }) => {
+        if (isMounted) setPost(data.post);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        toast.error("Post not found.");
+        navigate("/feed", { replace: true });
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    API.get(`/posts/${id}/comments`)
+      .then(({ data }) => {
+        if (isMounted) setComments(data.comments || []);
+      })
+      .catch(() => {
+        // Silently fail - comments section will show empty state
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, navigate]);
 
   const handleLike = async () => {
     if (!user) return;
@@ -205,12 +217,37 @@ const PostDetail = () => {
             </div>
           </div>
 
-          {isOwner && (
-            <div className="dropdown dropdown-end">
-              <button className="btn btn-ghost btn-sm btn-circle">
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-              <ul className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-40 z-10">
+          <div className="dropdown dropdown-end">
+            <button
+              tabIndex={0}
+              type="button"
+              className="btn btn-ghost btn-sm btn-circle"
+              aria-label="Post actions"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            <ul
+              tabIndex={0}
+              className={`dropdown-content menu z-20 mt-1 w-44 rounded-box border p-1.5 text-xs shadow-xl ${
+                isSpecialPost
+                  ? specialStyle.shell
+                  : "border-base-300 bg-base-100"
+              }`}
+            >
+              <li>
+                <button onClick={handleShare}>
+                  <Share2 className="w-3.5 h-3.5" />
+                  Copy Link
+                </button>
+              </li>
+              <li>
+                <button onClick={handleSave} className={isSaved ? "text-primary" : ""}>
+                  <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-current" : ""}`} />
+                  {isSaved ? "Unsave" : "Save"}
+                </button>
+              </li>
+              {isOwner && (
+                <>
                 <li>
                   <Link to={`/post/${id}/edit`} className="text-base-content">
                     <Pencil className="w-4 h-4" />
@@ -226,9 +263,10 @@ const PostDetail = () => {
                     Delete
                   </button>
                 </li>
-              </ul>
-            </div>
-          )}
+                </>
+              )}
+            </ul>
+          </div>
         </div>
 
         {/* Content */}
@@ -295,33 +333,6 @@ const PostDetail = () => {
               {post.commentsCount || comments.length}
             </span>
           </button>
-          <div className="dropdown dropdown-end ml-auto">
-            <button
-              tabIndex={0}
-              type="button"
-              className="btn btn-ghost btn-sm btn-circle"
-              aria-label="Post actions"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-            <ul
-              tabIndex={0}
-              className="dropdown-content menu z-20 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
-            >
-              <li>
-                <button onClick={handleShare}>
-                  <Share2 className="w-3.5 h-3.5" />
-                  Copy Link
-                </button>
-              </li>
-              <li>
-                <button onClick={handleSave} className={isSaved ? "text-primary" : ""}>
-                  <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-current" : ""}`} />
-                  {isSaved ? "Unsave" : "Save"}
-                </button>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
 
