@@ -10,7 +10,6 @@ import {
   MapPin,
   MessageCircle,
   ShieldCheck,
-  Sparkles,
   Users,
   Zap,
 } from "lucide-react";
@@ -134,7 +133,6 @@ const Landing = () => {
                 variants={fadeUp}
                 className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary"
               >
-                <Sparkles className="h-3.5 w-3.5" />
                 Professional network, jobs, chat & review
               </motion.div>
 
@@ -505,7 +503,7 @@ const Landing = () => {
             transition={{ duration: 0.55 }}
             className="landing-cta-panel mx-auto max-w-4xl rounded-xl border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
           >
-            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
+            <div className="landing-cta-mark mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg">
               <FontAwesomeIcon
                 icon={faUserGraduate}
                 className="h-6 w-6 text-white"
@@ -514,7 +512,7 @@ const Landing = () => {
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               Start building your network today.
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-white">
+            <p className="landing-cta-copy mx-auto mt-3 max-w-xl">
               Create your profile, share your work, discover opportunities, and
               manage everything from one focused place.
             </p>

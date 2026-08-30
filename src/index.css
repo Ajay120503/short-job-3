@@ -758,8 +758,33 @@ select,
 }
 
 [data-theme="ShortJobDark"] .landing-cta-panel {
-  background: #102c2a;
+  background: #123734;
+  border-color: rgba(101, 198, 226, 0.24);
   color: #eefcf8;
+  box-shadow:
+    0 24px 70px -46px rgba(54, 184, 181, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.landing-cta-mark {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="ShortJobDark"] .landing-cta-mark {
+  background-color: rgba(54, 184, 181, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(101, 198, 226, 0.24),
+    0 14px 32px -24px rgba(101, 198, 226, 0.9);
+}
+
+.landing-cta-copy {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+[data-theme="ShortJobDark"] .landing-cta-copy {
+  color: rgba(216, 248, 243, 0.78);
 }
 
 .landing-cta-primary {
@@ -782,14 +807,14 @@ select,
 }
 
 [data-theme="ShortJobDark"] .landing-cta-primary {
-  background-color: #f08a6c;
-  color: #1b0905;
-  box-shadow: 0 16px 34px -24px rgba(240, 138, 108, 0.9);
+  background-color: #36b8b5;
+  color: #031312;
+  box-shadow: 0 16px 34px -24px rgba(54, 184, 181, 0.9);
 }
 
 [data-theme="ShortJobDark"] .landing-cta-primary:hover {
-  background-color: #ff9f83;
-  color: #160704;
+  background-color: #65c6e2;
+  color: #041519;
 }
 
 [data-theme="ShortJobDark"] .landing-cta-secondary {
