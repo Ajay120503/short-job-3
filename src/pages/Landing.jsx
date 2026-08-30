@@ -4,9 +4,13 @@ import {
   ArrowRight,
   BadgeCheck,
   Briefcase,
+  CalendarClock,
   CheckCircle2,
+  FileCheck2,
+  MapPin,
   MessageCircle,
   ShieldCheck,
+  Sparkles,
   Users,
   Zap,
 } from "lucide-react";
@@ -75,9 +79,16 @@ const flowSteps = [
 ];
 
 const stats = [
-  { value: "24h", label: "login audit retention" },
-  { value: "3", label: "content queues" },
+  { value: "24h", label: "audit retention" },
+  { value: "3", label: "review queues" },
   { value: "Live", label: "chat and alerts" },
+];
+
+const trustItems = [
+  "Public posts and stories",
+  "Job matching",
+  "Applicant kanban",
+  "Admin review",
 ];
 
 const Landing = () => {
@@ -120,33 +131,40 @@ const Landing = () => {
                 variants={fadeUp}
                 className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary"
               >
-                Professional community, jobs, chat & moderation
+                <Sparkles className="h-3.5 w-3.5" />
+                Professional network, jobs, chat & review
               </motion.div>
 
               <motion.h1
                 variants={fadeUp}
-                className="font-heading text-4xl font-extrabold leading-[1.08] tracking-tight text-base-content sm:text-5xl lg:text-6xl"
+                className="font-heading text-4xl font-extrabold leading-[1.06] tracking-tight text-base-content sm:text-5xl lg:text-6xl"
               >
-                Where careers begin and trusted networks grow.
+                A smarter way to build your network and manage work.
               </motion.h1>
 
               <motion.p
                 variants={fadeUp}
                 className="mt-6 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg"
               >
-                ShortJob brings posts, stories, opportunities, applications,
-                realtime chat, and admin review into one focused platform.
+                ShortJob brings public posts, stories, jobs, applications,
+                realtime chat, and trusted review into one modern workspace.
               </motion.p>
 
               <motion.div
                 variants={fadeUp}
                 className="mt-9 flex flex-col gap-3 sm:flex-row"
               >
-                <Link to="/register" className="btn btn-primary btn-lg gap-2">
+                <Link
+                  to="/register"
+                  className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/20"
+                >
                   Create Account
                   <ArrowRight className="h-5 w-5" />
                 </Link>
-                <Link to="/login" className="btn btn-outline btn-lg gap-2">
+                <Link
+                  to="/login"
+                  className="btn btn-outline btn-lg gap-2 bg-base-100"
+                >
                   Sign In
                 </Link>
               </motion.div>
@@ -166,6 +184,20 @@ const Landing = () => {
                   </span>
                 ))}
               </motion.div>
+
+              <motion.div
+                variants={fadeUp}
+                className="mt-8 flex flex-wrap gap-2"
+              >
+                {trustItems.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-base-300 bg-base-200/70 px-3 py-1 text-xs font-semibold text-base-content/55"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </motion.div>
             </motion.div>
 
             {/* Signature hero visual: a fanned stack of real product moments,
@@ -174,8 +206,48 @@ const Landing = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.75, ease: "easeOut", delay: 0.1 }}
-              className="relative mx-auto h-[440px] w-full max-w-md lg:mx-0 lg:ml-auto"
+              className="relative mx-auto h-[470px] w-full max-w-lg lg:mx-0 lg:ml-auto"
             >
+              <div className="absolute inset-x-8 bottom-2 top-0 rounded-[2rem] border border-base-300 bg-base-200/70 shadow-2xl shadow-primary/10" />
+              <div className="absolute inset-x-14 bottom-9 top-8 rounded-[1.5rem] border border-base-300 bg-base-100 p-4 shadow-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                      Today
+                    </p>
+                    <p className="font-heading text-lg font-bold">
+                      Opportunity Feed
+                    </p>
+                  </div>
+                  <span className="badge badge-primary badge-soft">12 new</span>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    ["Senior Coordinator", "Pune · Hybrid", "92%"],
+                    ["Content Associate", "Remote", "86%"],
+                    ["Operations Lead", "Mumbai", "78%"],
+                  ].map(([title, place, match]) => (
+                    <div
+                      key={title}
+                      className="rounded-xl border border-base-300/70 bg-base-200/45 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold">{title}</p>
+                          <p className="mt-1 flex items-center gap-1 text-xs text-base-content/45">
+                            <MapPin className="h-3 w-3" />
+                            {place}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
+                          {match}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{
@@ -183,7 +255,7 @@ const Landing = () => {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="absolute left-0 top-4 w-[76%] -rotate-3 rounded-xl border border-info/20 bg-base-100 p-4 shadow-lg"
+                className="absolute left-0 top-8 w-[70%] -rotate-3 rounded-xl border border-info/20 bg-base-100 p-4 shadow-lg"
               >
                 <div className="mb-3 flex items-center gap-2 text-info">
                   <MessageCircle className="h-4 w-4" />
@@ -209,7 +281,7 @@ const Landing = () => {
                   ease: "easeInOut",
                   delay: 0.3,
                 }}
-                className="absolute right-0 top-32 w-[80%] rotate-2 rounded-xl border border-accent/20 bg-base-100 p-4 shadow-lg"
+                className="absolute right-0 top-40 w-[74%] rotate-2 rounded-xl border border-accent/20 bg-base-100 p-4 shadow-lg"
               >
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-accent">
@@ -244,7 +316,7 @@ const Landing = () => {
                   ease: "easeInOut",
                   delay: 0.6,
                 }}
-                className="absolute left-6 top-[19rem] w-[82%] -rotate-1 rounded-xl border border-primary/20 bg-base-100 p-4 shadow-xl"
+                className="absolute left-5 top-[21rem] w-[76%] -rotate-1 rounded-xl border border-primary/20 bg-base-100 p-4 shadow-xl"
               >
                 <div className="mb-3 flex items-center gap-3">
                   <div className="h-10 w-10 shrink-0 rounded-full bg-primary/15" />
@@ -260,12 +332,32 @@ const Landing = () => {
                 </span>
               </motion.div>
 
-              <div className="pointer-events-none absolute -bottom-6 left-1/2 h-16 w-40 -translate-x-1/2 rounded-full bg-primary/10 blur-2xl" />
+              <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{
+                  duration: 5.2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.2,
+                }}
+                className="absolute right-4 bottom-5 w-[62%] rounded-xl border border-success/20 bg-base-100 p-3 shadow-lg"
+              >
+                <div className="flex items-center gap-2 text-success">
+                  <FileCheck2 className="h-4 w-4" />
+                  <span className="text-xs font-bold">
+                    Application reviewed
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-xs text-base-content/50">
+                  <CalendarClock className="h-3.5 w-3.5" />
+                  Interview slot shared in chat
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </section>
 
-        <section className="border-y border-base-300 bg-primary px-4 py-10 text-primary-content sm:px-6">
+        <section className="border-y border-base-300 bg-primary px-4 py-9 text-primary-content sm:px-6">
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -297,7 +389,7 @@ const Landing = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.35 }}
               variants={stagger}
-              className="mx-auto mb-14 max-w-2xl text-center"
+              className="mx-auto mb-12 max-w-2xl text-center"
             >
               <motion.div
                 variants={fadeUp}
@@ -327,7 +419,7 @@ const Landing = () => {
                   <motion.div
                     key={step.title}
                     variants={fadeUp}
-                    className="relative"
+                    className="relative rounded-lg border border-transparent p-3 transition-colors hover:border-base-300 hover:bg-base-200/45"
                   >
                     <div className="relative z-10 mb-4 flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary bg-base-100 text-sm font-bold text-primary">
                       {index + 1}
@@ -379,7 +471,7 @@ const Landing = () => {
                   <motion.div
                     key={feature.title}
                     variants={fadeUp}
-                    className="group relative overflow-hidden rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md"
+                    className="group relative overflow-hidden rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-md"
                   >
                     <span
                       className={`absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 ${feature.tone.split(" ")[0].replace("text-", "bg-")}`}
@@ -408,7 +500,7 @@ const Landing = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.55 }}
-            className="landing-cta-panel mx-auto max-w-4xl rounded-lg border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
+            className="landing-cta-panel mx-auto max-w-4xl rounded-xl border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
           >
             <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-content/12 ring-1 ring-primary-content/18">
               <FontAwesomeIcon icon={faUserGraduate} className="h-6 w-6" />

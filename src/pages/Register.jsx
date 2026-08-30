@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   ArrowRight,
+  CheckCircle2,
   Eye,
   EyeOff,
   Lock,
@@ -44,6 +45,13 @@ const Register = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
+  const passwordChecks = [
+    { label: "6+ characters", passed: form.password.length >= 6 },
+    { label: "Has a letter", passed: /[a-z]/i.test(form.password) },
+    { label: "Has a number", passed: /\d/.test(form.password) },
+  ];
+  const passwordScore = passwordChecks.filter((check) => check.passed).length;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -83,7 +91,17 @@ const Register = () => {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+        <div className="rounded-xl border border-primary/15 bg-primary/8 px-3 py-2.5 text-xs leading-5 text-base-content/70 sm:px-3.5 sm:py-3 sm:text-sm">
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <p>
+              Create once, then complete your profile later or start exploring
+              jobs, posts, stories, and people right away.
+            </p>
+          </div>
+        </div>
+
         <AuthInput
           icon={User}
           label="Full name"
@@ -124,6 +142,61 @@ const Register = () => {
           }
         />
 
+        {form.password && (
+          <div className="rounded-xl border border-base-300 bg-base-200/45 p-3">
+            <div className="mb-2 flex items-center justify-between text-xs">
+              <span className="font-semibold text-base-content/60">
+                Password strength
+              </span>
+              <span
+                className={`font-bold ${
+                  passwordScore >= 3
+                    ? "text-success"
+                    : passwordScore >= 2
+                      ? "text-warning"
+                      : "text-error"
+                }`}
+              >
+                {passwordScore >= 3
+                  ? "Strong"
+                  : passwordScore >= 2
+                    ? "Okay"
+                    : "Weak"}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[0, 1, 2].map((index) => (
+                <span
+                  key={index}
+                  className={`h-1.5 rounded-full ${
+                    index < passwordScore
+                      ? passwordScore >= 3
+                        ? "bg-success"
+                        : passwordScore >= 2
+                          ? "bg-warning"
+                          : "bg-error"
+                      : "bg-base-300"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {passwordChecks.map((check) => (
+                <span
+                  key={check.label}
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                    check.passed
+                      ? "bg-success/10 text-success"
+                      : "bg-base-100 text-base-content/45"
+                  }`}
+                >
+                  {check.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {errors.form && (
           <div className="alert alert-error alert-soft py-2 text-sm">
             <AlertCircle className="h-4 w-4" />
@@ -133,7 +206,7 @@ const Register = () => {
 
         <button
           type="submit"
-          className="btn btn-primary h-11 w-full gap-2 text-sm font-semibold"
+          className="btn btn-primary h-11 w-full gap-2 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 sm:h-12"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -167,7 +240,7 @@ const AuthInput = ({
       <Icon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/35" />
       <input
         type={type}
-        className={`input input-bordered h-11 w-full pl-10 text-sm focus:ring-2 focus:ring-primary/20 ${
+        className={`input input-bordered h-11 w-full rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20 sm:h-12 ${
           action ? "pr-10" : ""
         } ${error ? "input-error" : ""}`}
         value={value}

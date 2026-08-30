@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  AlertCircle,
+  ShieldCheck,
+} from "lucide-react";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
 import LoginAuditModal from "../components/auth/LoginAuditModal";
@@ -101,7 +109,17 @@ const Login = () => {
           </>
         }
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <div className="rounded-xl border border-primary/15 bg-primary/8 px-3 py-2.5 text-xs leading-5 text-base-content/70 sm:px-3.5 sm:py-3 sm:text-sm">
+            <div className="flex items-start gap-2.5">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <p>
+                Your account may request camera and location verification if
+                security audit is enabled.
+              </p>
+            </div>
+          </div>
+
           <div className="form-control">
             <label className="label pb-1">
               <span className="label-text font-medium text-sm">Email</span>
@@ -110,7 +128,7 @@ const Login = () => {
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30" />
               <input
                 type="email"
-                className={`input input-bordered w-full pl-10 h-11 text-sm focus:ring-2 focus:ring-primary/20 ${formError ? "input-error" : ""}`}
+                className={`input input-bordered h-11 w-full rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20 sm:h-12 ${formError ? "input-error" : ""}`}
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => {
@@ -130,7 +148,7 @@ const Login = () => {
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30" />
               <input
                 type={showPassword ? "text" : "password"}
-                className={`input input-bordered w-full pl-10 pr-10 h-11 text-sm focus:ring-2 focus:ring-primary/20 ${formError ? "input-error" : ""}`}
+                className={`input input-bordered h-11 w-full rounded-xl pl-10 pr-10 text-sm focus:ring-2 focus:ring-primary/20 sm:h-12 ${formError ? "input-error" : ""}`}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => {
@@ -156,7 +174,7 @@ const Login = () => {
           <div className="flex justify-end">
             <Link
               to="/forgot-password"
-              className="text-xs text-primary hover:underline font-medium"
+              className="text-xs font-semibold text-primary hover:underline"
             >
               Forgot Password?
             </Link>
@@ -171,7 +189,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="btn btn-primary w-full h-11 text-sm font-semibold gap-2"
+            className="btn btn-primary h-11 w-full gap-2 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 sm:h-12"
             disabled={isLoading}
           >
             {isLoading ? (

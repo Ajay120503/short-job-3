@@ -54,12 +54,14 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
 
   useEffect(() => {
     if (!isOpen) {
-      stopCamera();
-      setLocationReady(false);
-      setStatus("");
+      stopVideoStream(streamRef.current);
+      streamRef.current = null;
     }
 
-    return () => stopCamera(false);
+    return () => {
+      stopVideoStream(streamRef.current);
+      streamRef.current = null;
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -112,6 +114,8 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
         throw new Error("Location is not ready. Please restart verification.");
       }
       stopCamera();
+      setLocationReady(false);
+      setStatus("");
       await onCapture({
         photo,
         lat: position.coords.latitude,
@@ -129,126 +133,151 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
 
   const handleCancel = () => {
     stopCamera();
+    setLocationReady(false);
+    setStatus("");
+    onError?.("");
     onCancel?.();
   };
 
   const busy = loading || permissionLoading || captureLoading;
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box max-w-2xl border border-base-300">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold font-heading">
-              Security Verification Required
-            </h3>
-            <p className="text-sm text-base-content/60 mt-2 leading-relaxed">
-              For account security, ShortJob verifies your location and requires
-              a live camera face capture before this sign-in can continue.
-            </p>
+    <div className="modal modal-open px-2 sm:px-4">
+      <div className="modal-box flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden border border-base-300 p-0 shadow-2xl">
+        <div className="shrink-0 border-b border-base-300/70 bg-base-100 px-4 py-4 sm:px-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12 sm:rounded-2xl">
+              <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-heading text-lg font-bold leading-tight sm:text-xl">
+                Security Verification Required
+              </h3>
+              <p className="mt-1.5 text-sm leading-6 text-base-content/60">
+                Allow location and camera, then capture a clear full-face photo
+                to continue signing in.
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="relative overflow-hidden rounded-2xl border border-base-300 bg-black aspect-video">
-            <video
-              ref={videoRef}
-              className={`h-full w-full object-cover ${cameraReady ? "block" : "hidden"}`}
-              muted
-              playsInline
-            />
-            {!cameraReady && (
-              <div className="flex h-full w-full flex-col items-center justify-center text-white/75">
-                <Video className="h-12 w-12" />
-                <p className="mt-3 text-sm font-medium">Camera preview required</p>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+          <div className="grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+            <div className="relative overflow-hidden rounded-2xl border border-base-300 bg-black aspect-[4/5] max-h-[58dvh] sm:aspect-video lg:max-h-none">
+              <video
+                ref={videoRef}
+                className={`h-full w-full object-cover ${cameraReady ? "block" : "hidden"}`}
+                muted
+                playsInline
+              />
+              {!cameraReady && (
+                <div className="flex h-full w-full flex-col items-center justify-center px-5 text-center text-white/75">
+                  <Video className="h-10 w-10 sm:h-12 sm:w-12" />
+                  <p className="mt-3 text-sm font-semibold">
+                    Camera preview required
+                  </p>
+                  <p className="mt-1 max-w-xs text-xs leading-5 text-white/50">
+                    Your browser will ask for camera and location permission.
+                  </p>
+                </div>
+              )}
+              {cameraReady && (
+                <>
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="h-[70%] w-[58%] rounded-[48%] border-2 border-white/85 shadow-[0_0_0_999px_rgba(0,0,0,0.24)] sm:w-[44%]" />
+                  </div>
+                  <div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-xl bg-black/60 px-3 py-2 text-center text-[11px] font-semibold leading-4 text-white sm:inset-x-3 sm:bottom-3 sm:text-xs">
+                    Keep forehead, chin, and both sides of your face inside the oval.
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-base-300 bg-base-200/50 p-3 sm:p-4 space-y-3">
+                <Requirement
+                  icon={LocateFixed}
+                  active={locationReady}
+                  title="Location permission"
+                  description="High accuracy location is attached to this login record."
+                />
+                <Requirement
+                  icon={Camera}
+                  active={cameraReady}
+                  title="Live camera preview"
+                  description="The camera must open before you can capture the login photo."
+                />
+                <Requirement
+                  icon={ShieldCheck}
+                  active={false}
+                  title="Face capture"
+                  description="Your full face must be clear, centered, and visible."
+                />
               </div>
-            )}
-            {cameraReady && (
-              <>
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div className="h-[72%] w-[46%] rounded-[48%] border-2 border-white/80 shadow-[0_0_0_999px_rgba(0,0,0,0.22)]" />
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="rounded-2xl border border-success/20 bg-success/10 p-3">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-success">
+                    <Lightbulb className="h-4 w-4" />
+                    Good capture
+                  </div>
+                  <ul className="space-y-1 text-xs leading-5 text-base-content/65">
+                    <li>Face camera directly.</li>
+                    <li>Show forehead to chin.</li>
+                    <li>Use front light.</li>
+                    <li>Keep camera steady.</li>
+                  </ul>
                 </div>
-                <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-xl bg-black/55 px-3 py-2 text-center text-xs font-medium text-white">
-                  Keep your full face inside the oval. Do not cut forehead,
-                  chin, or either side of the face.
+
+                <div className="rounded-2xl border border-error/20 bg-error/10 p-3">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-error">
+                    <CircleAlert className="h-4 w-4" />
+                    Will be rejected
+                  </div>
+                  <ul className="space-y-1 text-xs leading-5 text-base-content/65">
+                    <li>Half face or cut face.</li>
+                    <li>Looking away or covered face.</li>
+                    <li>Too close to camera.</li>
+                    <li>Dark, blurred, or blocked view.</li>
+                  </ul>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-base-300 bg-base-200/50 p-4 space-y-3">
-            <Requirement
-              icon={LocateFixed}
-              active={locationReady}
-              title="Location permission"
-              description="High accuracy location is attached to this login record."
-            />
-            <Requirement
-              icon={Camera}
-              active={cameraReady}
-              title="Live camera preview"
-              description="The camera must open before you can capture the login photo."
-            />
-            <Requirement
-              icon={ShieldCheck}
-              active={false}
-              title="Face capture"
-              description="Your complete face must be clear, centered, and visible from forehead to chin."
-            />
-          </div>
+          {status && (
+            <div className="alert alert-info alert-soft mt-4 py-2 text-sm">
+              {status}
+            </div>
+          )}
+
+          {error && (
+            <div className="alert alert-error alert-soft mt-4 py-2 text-sm">
+              {error}
+            </div>
+          )}
+
+          <p className="mt-4 text-xs leading-relaxed text-base-content/50">
+            This is used only for login security records. It is visible to you
+            and platform admins, never shown to other users.
+          </p>
+
+          {cameraReady && (
+            <button
+              type="button"
+              className="btn btn-link btn-sm mt-2 px-0 text-base-content/55"
+              onClick={handleOpenCamera}
+              disabled={busy}
+            >
+              Restart permission check
+            </button>
+          )}
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-success/20 bg-success/10 p-3">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-success">
-              <Lightbulb className="h-4 w-4" />
-              Good capture
-            </div>
-            <ul className="space-y-1.5 text-xs leading-5 text-base-content/65">
-              <li>Face the camera directly.</li>
-              <li>Show forehead, eyes, nose, mouth, and chin.</li>
-              <li>Use bright light from the front.</li>
-              <li>Keep the camera steady and avoid backlight.</li>
-            </ul>
-          </div>
-          <div className="rounded-2xl border border-error/20 bg-error/10 p-3">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-error">
-              <CircleAlert className="h-4 w-4" />
-              Will be rejected
-            </div>
-            <ul className="space-y-1.5 text-xs leading-5 text-base-content/65">
-              <li>Half face or face cut by the frame.</li>
-              <li>Looking away, covered face, or very dark photo.</li>
-              <li>Too close to the camera.</li>
-              <li>Blurred photo or blocked camera view.</li>
-            </ul>
-          </div>
-        </div>
-
-        {status && (
-          <div className="alert alert-info alert-soft mt-4 text-sm">
-            {status}
-          </div>
-        )}
-
-        <p className="text-xs text-base-content/50 mt-4 leading-relaxed">
-          This is used only for login security records. It is visible to you and
-          platform admins, never shown to other users.
-        </p>
-
-        {error && (
-          <div className="alert alert-error alert-soft mt-4 text-sm">
-            {error}
-          </div>
-        )}
-
-        <div className="modal-action flex-col sm:flex-row sm:items-center">
+        <div className="modal-action mt-0 shrink-0 flex-col border-t border-base-300/70 bg-base-100 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
           <button
             type="button"
-            className="btn btn-ghost btn-md"
+            className="btn btn-ghost h-11 w-full rounded-xl sm:w-auto"
             onClick={handleCancel}
             disabled={busy}
           >
@@ -257,7 +286,7 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
           {cameraReady ? (
             <button
               type="button"
-              className="btn btn-primary gap-2"
+              className="btn btn-primary h-11 w-full gap-2 rounded-xl sm:w-auto"
               onClick={handleCapture}
               disabled={busy || !locationReady}
             >
@@ -273,7 +302,7 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
           ) : (
             <button
               type="button"
-              className="btn btn-primary gap-2"
+              className="btn btn-primary h-11 w-full gap-2 rounded-xl sm:w-auto"
               onClick={handleOpenCamera}
               disabled={busy}
             >
@@ -286,21 +315,6 @@ const LoginAuditModal = ({ isOpen, loading, error, onCapture, onError, onCancel 
             </button>
           )}
         </div>
-
-        {cameraReady && (
-          <button
-            type="button"
-            className="btn btn-link btn-sm px-0 text-base-content/55"
-            onClick={handleOpenCamera}
-            disabled={busy}
-          >
-            Restart permission check
-          </button>
-        )}
-
-        <p className="text-[11px] text-base-content/40 mt-3">
-          By continuing, you agree to this verification for this sign-in.
-        </p>
       </div>
     </div>
   );
