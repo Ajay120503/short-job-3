@@ -96,7 +96,7 @@ const Landing = () => {
     <div className="min-h-screen bg-base-100 text-base-content overflow-x-hidden">
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
               <FontAwesomeIcon
                 icon={faUserGraduate}
@@ -107,7 +107,7 @@ const Landing = () => {
               ShortJob
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <ThemeToggle compact />
             <Link to="/login" className="btn btn-ghost btn-sm">
               Sign In
@@ -209,10 +209,10 @@ const Landing = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.75, ease: "easeOut", delay: 0.1 }}
-              className="relative mx-auto h-[470px] w-full max-w-lg lg:mx-0 lg:ml-auto"
+              className="group relative mx-auto w-full max-w-md space-y-3 sm:h-[470px] sm:max-w-lg sm:space-y-0 lg:mx-0 lg:ml-auto"
             >
-              <div className="absolute inset-x-8 bottom-2 top-0 rounded-[2rem] border border-base-300 bg-base-200/70 shadow-2xl shadow-primary/10" />
-              <div className="absolute inset-x-14 bottom-9 top-8 rounded-[1.5rem] border border-base-300 bg-base-100 p-4 shadow-xl">
+              <div className="absolute inset-x-8 bottom-2 top-0 hidden rounded-[2rem] border border-base-300 bg-base-200/70 shadow-2xl shadow-primary/10 transition-all duration-500 ease-out sm:block lg:group-hover:inset-x-4 lg:group-hover:bottom-0 lg:group-hover:top-2" />
+              <div className="relative rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl transition-all duration-500 ease-out sm:absolute sm:inset-x-14 sm:bottom-9 sm:top-8 sm:rounded-[1.5rem] sm:p-4 lg:group-hover:inset-x-10 lg:group-hover:bottom-12 lg:group-hover:top-5">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-primary">
@@ -258,7 +258,7 @@ const Landing = () => {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="absolute left-0 top-8 w-[70%] -rotate-3 rounded-xl border border-info/20 bg-base-100 p-4 shadow-lg"
+                className="relative rounded-xl border border-info/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:left-0 sm:top-8 sm:w-[70%] sm:-rotate-3 sm:p-4 lg:group-hover:-left-8 lg:group-hover:top-1 lg:group-hover:-rotate-6"
               >
                 <div className="mb-3 flex items-center gap-2 text-info">
                   <MessageCircle className="h-4 w-4" />
@@ -284,7 +284,7 @@ const Landing = () => {
                   ease: "easeInOut",
                   delay: 0.3,
                 }}
-                className="absolute right-0 top-40 w-[74%] rotate-2 rounded-xl border border-accent/20 bg-base-100 p-4 shadow-lg"
+                className="relative rounded-xl border border-accent/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:right-0 sm:top-40 sm:w-[74%] sm:rotate-2 sm:p-4 lg:group-hover:-right-8 lg:group-hover:top-32 lg:group-hover:rotate-5"
               >
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-accent">
@@ -319,7 +319,7 @@ const Landing = () => {
                   ease: "easeInOut",
                   delay: 0.6,
                 }}
-                className="absolute left-5 top-[21rem] w-[76%] -rotate-1 rounded-xl border border-primary/20 bg-base-100 p-4 shadow-xl"
+                className="relative rounded-xl border border-primary/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:left-5 sm:top-[21rem] sm:w-[76%] sm:-rotate-1 sm:p-4 sm:shadow-xl lg:group-hover:-left-4 lg:group-hover:top-[22rem] lg:group-hover:-rotate-4"
               >
                 <div className="mb-3 flex items-center gap-3">
                   <div className="h-10 w-10 shrink-0 rounded-full bg-primary/15" />
@@ -343,7 +343,7 @@ const Landing = () => {
                   ease: "easeInOut",
                   delay: 0.2,
                 }}
-                className="absolute right-4 bottom-5 w-[62%] rounded-xl border border-success/20 bg-base-100 p-3 shadow-lg"
+                className="relative rounded-xl border border-success/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:right-4 sm:bottom-5 sm:w-[62%] lg:group-hover:-right-6 lg:group-hover:bottom-0"
               >
                 <div className="flex items-center gap-2 text-success">
                   <FileCheck2 className="h-4 w-4" />
