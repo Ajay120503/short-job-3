@@ -302,8 +302,8 @@ const Settings = () => {
       <div className="rounded-2xl border border-base-300/70 bg-base-100 px-3 py-3 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-content shadow-sm sm:h-12 sm:w-12 sm:rounded-2xl">
-              <Settings2 className="h-5 w-5" />
+            <div className="flex aspect-square h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-content shadow-sm sm:h-12 sm:w-12 sm:min-w-12 sm:rounded-2xl">
+              <Settings2 className="h-5 w-5 shrink-0" />
             </div>
             <div>
               <h1 className="font-heading text-xl font-bold sm:text-2xl">
@@ -316,7 +316,7 @@ const Settings = () => {
           </div>
           <Link
             to="/edit-profile"
-            className="btn btn-outline btn-sm justify-start gap-2 sm:justify-center"
+            className="btn btn-outline btn-sm w-full justify-center gap-2 sm:w-auto"
           >
             <UserRound className="h-4 w-4" />
             Edit Profile
