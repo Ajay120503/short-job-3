@@ -7,11 +7,15 @@ import {
   Eye,
   EyeOff,
   History,
+  LogOut,
   Monitor,
   Moon,
   Palette,
+  Settings2,
   Sun,
+  Trash2,
   Type,
+  UserRound,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
@@ -65,6 +69,115 @@ const FONT_PREVIEW_STYLES = {
   compact:
     '"Roboto Condensed", "Inter", system-ui, -apple-system, sans-serif',
   system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+};
+
+const SectionCard = ({
+  icon: Icon,
+  title,
+  description,
+  tone = "primary",
+  children,
+}) => {
+  const toneClass =
+    tone === "success"
+      ? "bg-success/10 text-success"
+      : tone === "error"
+        ? "bg-error/10 text-error"
+        : tone === "secondary"
+          ? "bg-secondary/10 text-secondary"
+          : "bg-primary/10 text-primary";
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
+      <div className="flex items-start gap-3 border border-base-200/70 bg-base-200/20 px-3 py-3 sm:p-5">
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11 ${toneClass}`}
+        >
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="font-heading text-sm font-bold sm:text-lg">{title}</h2>
+          {description && (
+            <p className="mt-0.5 text-xs leading-relaxed text-base-content/55 sm:text-sm">
+              {description}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="p-3 sm:p-5">{children}</div>
+    </section>
+  );
+};
+
+const ToggleRow = ({
+  icon: Icon,
+  title,
+  subtitle,
+  active,
+  activeText,
+  inactiveText,
+  tone = "primary",
+  toggleClass = "toggle-primary",
+  loading,
+  onChange,
+  action,
+}) => {
+  const toneClass =
+    tone === "success"
+      ? "bg-success/10 text-success"
+      : tone === "error"
+        ? "bg-error/10 text-error"
+        : "bg-primary/10 text-primary";
+
+  return (
+    <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              active ? toneClass : "bg-base-200 text-base-content/45"
+            }`}
+          >
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold sm:text-base">{title}</h3>
+            <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-base-content/55 sm:line-clamp-none">
+              {subtitle}
+            </p>
+            <span
+              className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium sm:mt-3 sm:px-2.5 sm:py-1 sm:text-xs ${
+                active ? toneClass : "bg-base-200 text-base-content/60"
+              }`}
+            >
+              {active ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <CircleOff className="h-3.5 w-3.5" />
+              )}
+              {active ? activeText : inactiveText}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <span className="hidden text-xs font-medium text-base-content/50 sm:inline">
+              {active ? "On" : "Off"}
+            </span>
+            <input
+              type="checkbox"
+              className={`toggle ${toggleClass}`}
+              checked={active}
+              onChange={onChange}
+              disabled={loading}
+            />
+          </div>
+          {action}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Settings = () => {
@@ -185,380 +298,311 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold font-heading mb-6">Settings</h1>
-
-      {/* Account Info */}
-      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6">
-        <h3 className="font-semibold text-lg mb-4">Account Information</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-base-200">
-            <span className="text-sm text-base-content/60">Name</span>
-            <span className="text-sm font-medium">{user?.name}</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-base-200">
-            <span className="text-sm text-base-content/60">Email</span>
-            <span className="text-sm font-medium">{user?.email}</span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-base-content/60">Identity</span>
-            <span className="text-sm font-medium capitalize">
-              {getUserRoleLabel(user)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
-        <div className="flex items-start gap-4 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-            {appThemeMode === "dark" ? (
-              <Moon className="w-5 h-5" />
-            ) : appThemeMode === "light" ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Monitor className="w-5 h-5" />
-            )}
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg">App Theme</h3>
-            <p className="text-xs text-base-content/50 mt-1 max-w-md">
-              Choose light, dark, or let ShortJob follow your device setting.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {APP_THEME_OPTIONS.map((option) => {
-            const Icon = option.icon;
-            const selected = appThemeMode === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleAppThemeChange(option.value)}
-                className={`rounded-xl border p-3 text-left transition-all ${
-                  selected
-                    ? "border-primary bg-primary/10 ring-1 ring-primary/30"
-                    : "border-base-300 hover:border-primary/25 hover:bg-base-200/50"
-                }`}
-              >
-                <span
-                  className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg ${
-                    selected ? "bg-primary text-primary-content" : "bg-base-200"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="block text-sm font-semibold">
-                  {option.label}
-                </span>
-                <span className="mt-0.5 block text-xs text-base-content/45">
-                  {option.description}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
-        <div className="flex items-start gap-4 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center">
-            <Type className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg">App Font</h3>
-            <p className="text-xs text-base-content/50 mt-1 max-w-md">
-              Choose the font style used across feeds, profiles, jobs, chat,
-              admin screens, forms, badges, and menus.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {APP_FONT_OPTIONS.map((option) => {
-            const selected = appFontMode === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleAppFontChange(option.value)}
-                className={`rounded-xl border p-3 text-left transition-all ${
-                  selected
-                    ? "border-primary bg-primary/10 ring-1 ring-primary/30"
-                    : "border-base-300 hover:border-primary/25 hover:bg-base-200/50"
-                }`}
-              >
-                <span
-                  className="block text-xl font-bold"
-                  style={{
-                    fontFamily: FONT_PREVIEW_STYLES[option.value],
-                  }}
-                >
-                  {option.preview}
-                </span>
-                <span className="mt-2 block text-sm font-semibold">
-                  {option.label}
-                </span>
-                <span className="mt-0.5 block text-xs text-base-content/45">
-                  {option.description}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                user?.loginAuditEnabled !== false
-                  ? "bg-primary/10 text-primary"
-                  : "bg-base-200 text-base-content/45"
-              }`}
-            >
-              {user?.loginAuditEnabled !== false ? (
-                <History className="w-5 h-5" />
-              ) : (
-                <EyeOff className="w-5 h-5" />
-              )}
+    <div className="settings-page mx-auto max-w-5xl space-y-3 p-3 pb-24 sm:space-y-4 sm:p-4 md:space-y-6 md:p-6">
+      <div className="rounded-2xl border border-base-300/70 bg-base-100 px-3 py-3 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-content shadow-sm sm:h-12 sm:w-12 sm:rounded-2xl">
+              <Settings2 className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg">Login History</h3>
-              <p className="text-xs text-base-content/50 mt-1 max-w-md">
-                Control whether your account can create login audit records. If
-                disabled here, no login photo or location record is captured for
-                you even when admin security audit is globally active.
+              <h1 className="font-heading text-xl font-bold sm:text-2xl">
+                Settings
+              </h1>
+              <p className="text-xs text-base-content/50 sm:text-sm">
+                Manage account, privacy, appearance, and platform preferences.
               </p>
-              <div
-                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                  user?.loginAuditEnabled !== false
-                    ? "bg-primary/10 text-primary"
-                    : "bg-base-200 text-base-content/60"
-                }`}
-              >
-                {user?.loginAuditEnabled !== false ? (
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                ) : (
-                  <CircleOff className="w-3.5 h-3.5" />
-                )}
-                {user?.loginAuditEnabled !== false
-                  ? "Audit records allowed"
-                  : "Audit recording disabled"}
-              </div>
             </div>
           </div>
-          <div className="flex flex-col sm:items-end gap-3">
-            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-              <span className="text-xs font-medium text-base-content/50">
-                {user?.loginAuditEnabled !== false ? "On" : "Off"}
-              </span>
-              <input
-                type="checkbox"
-                className="toggle toggle-primary"
-                checked={user?.loginAuditEnabled !== false}
-                onChange={handleLoginAuditToggle}
-                disabled={loginAuditLoading}
-              />
-            </div>
-            {user?.loginAuditEnabled !== false && (
-              <Link
-                to="/settings/login-history"
-                className="btn btn-outline btn-sm min-w-28 whitespace-nowrap"
-              >
-                View History
-              </Link>
-            )}
-          </div>
+          <Link
+            to="/edit-profile"
+            className="btn btn-outline btn-sm justify-start gap-2 sm:justify-center"
+          >
+            <UserRound className="h-4 w-4" />
+            Edit Profile
+          </Link>
         </div>
       </div>
 
-      {/* Open to Opportunities Toggle */}
-      {canApplyToJobs(user) && (
-        <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div className="flex items-start gap-4 min-w-0">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="order-2 space-y-3 sm:space-y-4 lg:order-1">
+          <SectionCard
+            icon={
+              appThemeMode === "dark"
+                ? Moon
+                : appThemeMode === "light"
+                  ? Sun
+                  : Monitor
+            }
+            title="Appearance"
+            description="Tune the theme and typography used across the full app."
+          >
+            <div className="space-y-4 sm:space-y-5">
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold">App Theme</h3>
+                  <span className="badge badge-sm badge-primary badge-soft capitalize">
+                    {appThemeMode}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {APP_THEME_OPTIONS.map((option) => {
+                    const Icon = option.icon;
+                    const selected = appThemeMode === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleAppThemeChange(option.value)}
+                        className={`rounded-xl border p-2.5 text-left transition-all hover:-translate-y-0.5 sm:p-3 ${
+                          selected
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                            : "border-base-300 bg-base-100 hover:border-primary/25 hover:bg-base-200/50"
+                        }`}
+                      >
+                        <span
+                          className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg sm:mb-3 sm:h-9 sm:w-9 ${
+                            selected
+                              ? "bg-primary text-primary-content"
+                              : "bg-base-200 text-base-content/70"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="block text-xs font-semibold sm:text-sm">
+                          {option.label}
+                        </span>
+                        <span className="mt-0.5 hidden text-xs text-base-content/45 sm:block">
+                          {option.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <Type className="h-4 w-4 text-secondary" />
+                  <h3 className="text-sm font-semibold">App Font</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {APP_FONT_OPTIONS.map((option) => {
+                    const selected = appFontMode === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleAppFontChange(option.value)}
+                        className={`rounded-xl border p-2.5 text-left transition-all hover:-translate-y-0.5 sm:p-3 ${
+                          selected
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                            : "border-base-300 bg-base-100 hover:border-primary/25 hover:bg-base-200/50"
+                        }`}
+                      >
+                        <span
+                          className="block text-lg font-bold sm:text-xl"
+                          style={{
+                            fontFamily: FONT_PREVIEW_STYLES[option.value],
+                          }}
+                        >
+                          {option.preview}
+                        </span>
+                        <span className="mt-1.5 block text-xs font-semibold sm:mt-2 sm:text-sm">
+                          {option.label}
+                        </span>
+                        <span className="mt-0.5 hidden text-xs text-base-content/45 sm:block">
+                          {option.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            icon={Eye}
+            title="Privacy & Visibility"
+            description="Control how your activity and availability appear to others."
+            tone="success"
+          >
+            <div className="divide-y divide-base-200/80 sm:space-y-3 sm:divide-y-0">
+              <ToggleRow
+                icon={user?.loginAuditEnabled !== false ? History : EyeOff}
+                title="Login History"
+                subtitle="Allow secure login audit records for this account when admin security checks are active."
+                active={user?.loginAuditEnabled !== false}
+                activeText="Audit records allowed"
+                inactiveText="Audit recording disabled"
+                loading={loginAuditLoading}
+                onChange={handleLoginAuditToggle}
+                action={
+                  user?.loginAuditEnabled !== false ? (
+                    <Link
+                      to="/settings/login-history"
+                      className="btn btn-outline btn-sm whitespace-nowrap"
+                    >
+                      View History
+                    </Link>
+                  ) : null
+                }
+              />
+
+              {canApplyToJobs(user) && (
+                <ToggleRow
+                  icon={BriefcaseBusiness}
+                  title="Open to Opportunities"
+                  subtitle="Show a briefcase signal on your avatar and let job posters know you are available."
+                  active={Boolean(user?.openToOpportunities)}
+                  activeText="Visible on your profile"
+                  inactiveText="Hidden from profile signals"
+                  tone="success"
+                  toggleClass="toggle-success"
+                  loading={opportunityLoading}
+                  onChange={handleOpportunityToggle}
+                />
+              )}
+
+              <ToggleRow
+                icon={user?.showOnlineStatus !== false ? Eye : EyeOff}
+                title="Online Status"
+                subtitle="When enabled, others can see your online dot and you can see theirs."
+                active={user?.showOnlineStatus !== false}
+                activeText="Visible and viewing others"
+                inactiveText="Hidden from everyone"
+                tone="success"
+                toggleClass="toggle-success"
+                loading={presenceLoading}
+                onChange={handlePresenceToggle}
+              />
+            </div>
+          </SectionCard>
+
+          {canStyleProfile && (
+            <SectionCard
+              icon={Palette}
+              title="Special Profile Color"
+              description="Choose the highlight used on your profile, posts, jobs, avatar ring, and stories."
+              tone="secondary"
+            >
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {SPECIAL_STYLE_VARIANTS.filter(
+                  (v) => !v.adminOnly || isPlatformAdmin(user),
+                ).map((variant) => {
+                  const selected =
+                    (user?.profileThemeVariant || "teal") === variant.value;
+                  return (
+                    <button
+                      key={variant.value}
+                      type="button"
+                      onClick={() => handleThemeChange(variant.value)}
+                      disabled={themeLoading}
+                      className={`rounded-xl border p-3 text-left transition-all hover:-translate-y-0.5 ${
+                        selected
+                          ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                          : "border-base-300 bg-base-100 hover:border-primary/25 hover:bg-base-200/50"
+                      }`}
+                    >
+                      <span
+                        className={`block h-8 rounded-lg ${variant.swatch}`}
+                      />
+                      <span className="mt-2 block text-xs font-semibold">
+                        {variant.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </SectionCard>
+          )}
+        </div>
+
+        <aside className="order-1 space-y-3 sm:space-y-4 lg:order-2">
+          <section
+            className={`rounded-2xl border p-3 shadow-sm sm:p-4 ${
+              canStyleProfile
+                ? specialStyle.shell
+                : "border-base-300/70 bg-base-100"
+            }`}
+          >
+            <div className="flex items-start gap-3">
               <UserAvatar user={user} size={56} />
               <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <BriefcaseBusiness className="w-4 h-4 text-primary" />
-                  <h3 className="font-semibold text-lg">Opportunities</h3>
-                </div>
-                <p className="font-semibold text-sm">Open to Opportunities</p>
-                <p className="text-xs text-base-content/50 mt-1 max-w-md">
-                  Show a briefcase badge on your avatar and let institutions
-                  know you are available for roles.
+                <h2 className="truncate font-heading text-lg font-bold">
+                  {user?.name || "Your Account"}
+                </h2>
+                <p className="truncate text-sm text-base-content/50">
+                  {user?.email}
                 </p>
+                <span className="mt-2 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold capitalize text-primary">
+                  {getUserRoleLabel(user)}
+                </span>
+              </div>
+            </div>
+            <div className="mt-3 divide-y divide-base-200 rounded-xl border border-base-300/60 bg-base-200/25 sm:mt-4">
+              {[
+                ["Theme", appThemeMode],
+                [
+                  "Font",
+                  APP_FONT_OPTIONS.find(
+                    (option) => option.value === appFontMode,
+                  )?.label || appFontMode,
+                ],
+                [
+                  "Online",
+                  user?.showOnlineStatus !== false ? "Visible" : "Hidden",
+                ],
+                [
+                  "Audit",
+                  user?.loginAuditEnabled !== false ? "Allowed" : "Disabled",
+                ],
+              ].map(([label, value]) => (
                 <div
-                  className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                    user?.openToOpportunities
-                      ? "bg-success/10 text-success"
-                      : "bg-base-200 text-base-content/60"
-                  }`}
+                  key={label}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm"
                 >
-                  {user?.openToOpportunities ? (
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  ) : (
-                    <CircleOff className="w-3.5 h-3.5" />
-                  )}
-                  {user?.openToOpportunities
-                    ? "Visible on your profile"
-                    : "Hidden from profile signals"}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-              <span className="text-xs font-medium text-base-content/50">
-                {user?.openToOpportunities ? "On" : "Off"}
-              </span>
-              <input
-                type="checkbox"
-                className="toggle toggle-success"
-                checked={user?.openToOpportunities || false}
-                onChange={handleOpportunityToggle}
-                disabled={opportunityLoading}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-          <div className="flex items-start gap-4 min-w-0">
-            <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                user?.showOnlineStatus !== false
-                  ? "bg-success/10 text-success"
-                  : "bg-base-200 text-base-content/45"
-              }`}
-            >
-              {user?.showOnlineStatus !== false ? (
-                <Eye className="w-5 h-5" />
-              ) : (
-                <EyeOff className="w-5 h-5" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-semibold text-lg">Online Status</h3>
-              <p className="font-semibold text-sm">
-                Show when you are online
-              </p>
-              <p className="text-xs text-base-content/50 mt-1 max-w-md">
-                When enabled, others can see your online dot and you can see
-                theirs. When disabled, all online dots are hidden for you.
-              </p>
-              <div
-                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                  user?.showOnlineStatus !== false
-                    ? "bg-success/10 text-success"
-                    : "bg-base-200 text-base-content/60"
-                }`}
-              >
-                {user?.showOnlineStatus !== false ? (
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                ) : (
-                  <CircleOff className="w-3.5 h-3.5" />
-                )}
-                {user?.showOnlineStatus !== false
-                  ? "Visible and viewing others"
-                  : "Hidden from everyone"}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-            <span className="text-xs font-medium text-base-content/50">
-              {user?.showOnlineStatus !== false ? "On" : "Off"}
-            </span>
-            <input
-              type="checkbox"
-              className="toggle toggle-success"
-              checked={user?.showOnlineStatus !== false}
-              onChange={handlePresenceToggle}
-              disabled={presenceLoading}
-            />
-          </div>
-        </div>
-      </div>
-
-      {canStyleProfile && (
-        <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6 overflow-hidden">
-          <div className="flex items-start gap-4 mb-4">
-            <div
-              className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${specialStyle.soft}`}
-            >
-              <Palette className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg">Special Profile Color</h3>
-              <p className="text-xs text-base-content/50 mt-1 max-w-md">
-                Choose the highlight used on your profile, posts, jobs, avatar
-                ring, and stories.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {SPECIAL_STYLE_VARIANTS.filter(
-              (v) => !v.adminOnly || isPlatformAdmin(user),
-            ).map((variant) => {
-              const selected =
-                (user?.profileThemeVariant || "teal") === variant.value;
-              return (
-                <button
-                  key={variant.value}
-                  type="button"
-                  onClick={() => handleThemeChange(variant.value)}
-                  disabled={themeLoading}
-                  className={`rounded-xl border p-3 text-left transition-all ${
-                    selected
-                      ? "border-primary bg-primary/8 ring-1 ring-primary/30"
-                      : "border-base-300 hover:border-primary/25 hover:bg-base-200/50"
-                  }`}
-                >
-                  <span className={`block h-8 rounded-lg ${variant.swatch}`} />
-                  <span className="mt-2 block text-xs font-semibold">
-                    {variant.label}
+                  <span className="text-base-content/50">{label}</span>
+                  <span className="truncate font-medium capitalize">
+                    {value}
                   </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+                </div>
+              ))}
+            </div>
+          </section>
 
-      {/* Actions */}
-      <div className="card bg-base-100 shadow-sm border border-base-300 p-6 mb-6">
-        <h3 className="font-semibold text-lg mb-4">Account Actions</h3>
-        <div className="space-y-3">
-          <button
-            onClick={logout}
-            className="btn btn-outline btn-warning w-full"
+          <SectionCard
+            icon={LogOut}
+            title="Account Actions"
+            description="Session and account controls."
+            tone="secondary"
           >
-            Logout
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={logout}
+              className="btn btn-outline btn-warning w-full gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </SectionCard>
 
-      {/* Danger Zone */}
-      <div className="card bg-base-100 shadow-sm border border-error/30 p-6">
-        <div className="flex items-center gap-2 mb-2">
-          <h3 className="font-semibold text-lg text-error">Danger Zone</h3>
-        </div>
-        <p className="text-sm text-base-content/60 mb-4">
-          Permanently delete your account and all associated data. This action
-          cannot be undone.
-        </p>
-        <button
-          onClick={() => setShowDeleteModal(true)}
-          className="btn btn-error w-full"
-          disabled={isLoading}
-        >
-          Delete Account
-        </button>
+          <SectionCard
+            icon={Trash2}
+            title="Danger Zone"
+            description="Permanently delete your account and all associated data."
+            tone="error"
+          >
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="btn btn-error w-full gap-2"
+              disabled={isLoading}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Account
+            </button>
+          </SectionCard>
+        </aside>
       </div>
 
       {/* Delete Confirmation Modal */}

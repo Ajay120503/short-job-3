@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Shield, Clock, CheckCircle, RefreshCw, FileText, Briefcase, Image } from "lucide-react";
+import { Shield, Clock, CheckCircle, RefreshCw, FileText, Briefcase, Image, Archive } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import { isAdminUser } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
@@ -13,34 +13,42 @@ const AdminQueue = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [queueType, setQueueType] = useState("post");
+  const [section, setSection] = useState("queue");
 
   const fetchQueue = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await API.get(`/admin/queue?type=${queueType}`);
+      const endpoint = section === "archive" ? "archive" : "queue";
+      const { data } = await API.get(`/admin/${endpoint}?type=${queueType}`);
       setItems(data.items || []);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to fetch queue");
+      toast.error(
+        err.response?.data?.message ||
+          `Failed to fetch moderation ${section === "archive" ? "archive" : "queue"}`,
+      );
     } finally {
       setLoading(false);
     }
-  }, [queueType]);
+  }, [queueType, section]);
 
-  // Initial fetch — inlined to avoid setState-in-effect lint
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const { data } = await API.get(`/admin/queue?type=${queueType}`);
+        const endpoint = section === "archive" ? "archive" : "queue";
+        const { data } = await API.get(`/admin/${endpoint}?type=${queueType}`);
         setItems(data.items || []);
       } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to fetch queue");
+        toast.error(
+          err.response?.data?.message ||
+            `Failed to fetch moderation ${section === "archive" ? "archive" : "queue"}`,
+        );
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [queueType]);
+  }, [queueType, section]);
 
   // Check admin access (after hooks)
   if (!isAuthenticated || !isAdminUser(currentUser)) {
@@ -48,9 +56,8 @@ const AdminQueue = () => {
     return null;
   }
 
-  const pendingCount = items.filter(
-    (item) => item.status === "pending_review" || !item.status,
-  ).length;
+  const itemCount = items.length;
+  const isArchive = section === "archive";
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
@@ -63,10 +70,10 @@ const AdminQueue = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold font-heading sm:text-2xl">
-                Content Moderation Queue
+                Content Moderation
               </h1>
               <p className="text-xs text-base-content/50 sm:text-sm">
-                Review pending posts, jobs, and stories before they go public.
+                Review pending content and revisit rejected archive items.
               </p>
             </div>
           </div>
@@ -78,7 +85,27 @@ const AdminQueue = () => {
 
       {/* Content type tabs */}
       <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="grid grid-cols-2 gap-1 rounded-lg bg-base-200/70 p-1 sm:inline-grid">
+            {[
+              ["queue", "Review Queue", Clock],
+              ["archive", "Rejected Archive", Archive],
+            ].map(([key, label, Icon]) => (
+              <button
+                key={key}
+                onClick={() => setSection(key)}
+                className={`btn btn-sm gap-1.5 ${
+                  section === key
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/25"
+                    : "btn-ghost text-base-content/60"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-3 gap-1 rounded-lg bg-base-200/70 p-1 sm:inline-grid">
             {[
               ["post", "Posts", FileText],
@@ -112,16 +139,32 @@ const AdminQueue = () => {
       </div>
 
       {/* Stats */}
-      <div className="rounded-xl border border-warning/20 bg-warning/5 p-4 shadow-sm">
+      <div
+        className={`rounded-xl border p-4 shadow-sm ${
+          isArchive
+            ? "border-error/20 bg-error/5"
+            : "border-warning/20 bg-warning/5"
+        }`}
+      >
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-warning/80">
-              Pending Review
+            <p
+              className={`text-xs font-bold uppercase tracking-wide ${
+                isArchive ? "text-error/80" : "text-warning/80"
+              }`}
+            >
+              {isArchive ? "Rejected Archive" : "Pending Review"}
             </p>
-            <p className="mt-1 text-2xl font-bold text-warning">{pendingCount}</p>
+            <p className={`mt-1 text-2xl font-bold ${isArchive ? "text-error" : "text-warning"}`}>
+              {itemCount}
+            </p>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
-            <Clock className="w-5 h-5" />
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+              isArchive ? "bg-error/10 text-error" : "bg-warning/10 text-warning"
+            }`}
+          >
+            {isArchive ? <Archive className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
           </div>
         </div>
       </div>
@@ -145,10 +188,11 @@ const AdminQueue = () => {
             <CheckCircle className="w-10 h-10 text-base-content/20" />
           </div>
           <h3 className="text-xl font-semibold text-base-content/40 mb-1">
-            All Clear!
+            {isArchive ? "Archive Empty" : "All Clear!"}
           </h3>
           <p className="text-sm text-base-content/30">
-            No pending {queueType} items in the moderation queue.
+            No {isArchive ? "rejected" : "pending"} {queueType} items in the{" "}
+            {isArchive ? "archive" : "moderation queue"}.
           </p>
         </div>
       ) : (
@@ -158,6 +202,7 @@ const AdminQueue = () => {
               key={item._id}
               item={item}
               type={queueType}
+              mode={section}
               onUpdate={fetchQueue}
             />
           ))}

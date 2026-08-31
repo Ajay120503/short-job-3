@@ -168,6 +168,10 @@ select,
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
+
+  .app-main > .settings-page {
+    padding: 0.75rem max(0.75rem, env(safe-area-inset-right)) calc(70px + 1rem) max(0.75rem, env(safe-area-inset-left)) !important;
+  }
 }
 
 /* Consistent placeholder backgrounds for icons, avatars, and image placeholders */

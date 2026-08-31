@@ -28,8 +28,9 @@ const formatFlag = (flag) => {
  * @param {string} type - The content type ('post', 'job', 'story')
  * @param {function} onUpdate - Callback to refresh parent data after actions
  */
-const QueueItem = ({ item, type, onUpdate }) => {
+const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
   const [actionLoading, setActionLoading] = useState(false);
+  const isArchive = mode === "archive" || item.status === "rejected";
 
   const handleModerate = async (action) => {
     setActionLoading(true);
@@ -221,15 +222,17 @@ const QueueItem = ({ item, type, onUpdate }) => {
           Review Detail
         </Link>
 
-        <div className="grid grid-cols-2 gap-2 sm:flex">
-          <button
-            onClick={() => handleModerate("reject")}
-            className="btn btn-outline btn-error btn-sm"
-            disabled={actionLoading}
-          >
-            <XCircle className="w-4 h-4 mr-1" />
-            Reject
-          </button>
+        <div className={`grid gap-2 sm:flex ${isArchive ? "grid-cols-1" : "grid-cols-2"}`}>
+          {!isArchive && (
+            <button
+              onClick={() => handleModerate("reject")}
+              className="btn btn-outline btn-error btn-sm"
+              disabled={actionLoading}
+            >
+              <XCircle className="w-4 h-4 mr-1" />
+              Reject
+            </button>
+          )}
           <button
             onClick={() => handleModerate("approve")}
             className="btn btn-primary btn-sm"
