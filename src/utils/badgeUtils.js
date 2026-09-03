@@ -155,7 +155,8 @@ export const getActiveBadges = (user) => {
 
 /**
  * Returns a human-readable label for a user's primary identity badge.
- * Used everywhere that previously checked `user?.role` for display.
+ * Trust and verification badges are deliberately ignored here so labels such
+ * as "Email Verified" never appear as a user's role/type.
  * Falls back to category, then "User".
  *
  * @param {object} user
@@ -174,15 +175,6 @@ export const getUserRoleLabel = (user) => {
       const label = badgeConfig[identityBadge.type]?.label;
       if (label) return label;
       return identityBadge.type
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
-    }
-    // If no identity badge, show the first active badge
-    if (active.length > 0) {
-      const label = badgeConfig[active[0].type]?.label;
-      if (label) return label;
-      // Fallback: prettify the type string
-      return active[0].type
         .replace(/_/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
     }

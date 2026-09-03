@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   Send,
   ImagePlus,
   ArrowLeft,
-  User,
   MessageCircle,
   Edit3,
   Trash2,
@@ -12,7 +11,6 @@ import {
   X,
   MoreHorizontal,
   Eraser,
-  AlertTriangle,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import { useSocket } from "../context/SocketContext";
@@ -44,10 +42,8 @@ const dedupeConversations = (items, currentUserId) => {
 const Chat = () => {
   const { id: selectedUserId } = useParams();
   const { user } = useAuthStore();
-  const navigate = useNavigate();
   const {
     socket,
-    onlineUsers,
     isUserOnline,
     emitTyping,
     emitStopTyping,
@@ -61,7 +57,6 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState({});
   const [editingMessage, setEditingMessage] = useState(null);
-  const [editText, setEditText] = useState("");
   const [menuOpenId, setMenuOpenId] = useState(null);
 
   // Confirm modal states
@@ -99,7 +94,7 @@ const Chat = () => {
             dedupeConversations([data.conversation, ...prev], user?._id)
           );
           joinConversation(data.conversation._id);
-        } catch (err) {
+        } catch {
           toast.error("Could not start conversation");
         }
       };
@@ -192,7 +187,7 @@ const Chat = () => {
       }
     };
 
-    const handleStopTyping = ({ conversationId, userId }) => {
+    const handleStopTyping = ({ userId }) => {
       setTypingUsers((prev) => ({ ...prev, [userId]: false }));
     };
 
@@ -254,7 +249,6 @@ const Chat = () => {
         prev.map((m) => (m._id === msgId ? data.message : m))
       );
       setEditingMessage(null);
-      setEditText("");
       toast.success("Message updated");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update message");
@@ -341,15 +335,16 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden bg-base-100">
       {/* Conversation List */}
       <div
         className={`${
           activeConversation ? "hidden md:flex" : "flex"
-        } md:w-80 w-full flex-col border-r border-base-300`}
+        } w-full flex-col border-r border-base-300/70 bg-base-100 md:w-80`}
       >
-        <div className="p-4 border-b border-base-300">
-          <h1 className="text-xl font-bold font-heading">Messages</h1>
+        <div className="border-b border-base-300/70 px-4 py-3.5">
+          <h1 className="font-heading text-lg font-bold">Messages</h1>
+          <p className="mt-0.5 text-xs text-base-content/45">Your conversations</p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {loading ? (
@@ -372,15 +367,15 @@ const Chat = () => {
                 <button
                   key={conv._id}
                   onClick={() => setActiveConversation(conv)}
-                  className={`w-full flex items-center gap-3 p-4 border-l-4 text-left transition-colors ${
+                  className={`w-full flex items-center gap-3 border-l-[3px] px-4 py-3 text-left transition-all ${
                     isSpecialOther
                       ? `${specialStyle.shell} ${specialStyle.shellHover}`
-                      : "hover:bg-base-200 border-l-transparent"
+                      : "border-l-transparent hover:bg-base-200/60"
                   } ${
                     activeConversation?._id === conv._id
                       ? isSpecialOther
                         ? "border-l-[var(--special-ring)]"
-                        : "bg-base-200 border-l-primary"
+                        : "border-l-primary bg-primary/7"
                       : ""
                   }`}
                 >
@@ -400,7 +395,7 @@ const Chat = () => {
                         {other?.name || "Unknown"}
                       </p>
                       {conv.lastMessageTime && (
-                        <span className="text-xs text-base-content/40">
+                        <span className="ml-2 shrink-0 text-[10px] text-base-content/40">
                           {new Date(conv.lastMessageTime).toLocaleDateString()}
                         </span>
                       )}
@@ -432,10 +427,10 @@ const Chat = () => {
 
             return (
           <div
-            className={`flex items-center justify-between p-4 border-b ${
+            className={`z-10 flex min-h-16 items-center justify-between border-b px-3 py-3 sm:px-5 ${
               isSpecialOther
                 ? `${specialStyle.shell} border-base-300/60`
-                : "bg-base-100 border-base-300"
+                : "border-base-300/70 bg-base-100/95 backdrop-blur"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -447,15 +442,15 @@ const Chat = () => {
               </button>
               <Link
                 to={`/profile/${getOtherParticipant(activeConversation)?._id}`}
-                className="flex items-center gap-3"
+                className="flex min-w-0 items-center gap-3 rounded-xl"
               >
                 <UserAvatar
                   user={getOtherParticipant(activeConversation)}
                   size={40}
                 />
-                <div>
+                <div className="min-w-0">
                   <p
-                    className={`font-semibold text-sm ${
+                    className={`truncate text-sm font-semibold ${
                       isSpecialOther ? specialStyle.muted : ""
                     }`}
                   >
@@ -505,17 +500,20 @@ const Chat = () => {
           })()}
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 space-y-1 overflow-y-auto bg-base-200/25 px-3 py-5 sm:px-6">
             {messages.length === 0 ? (
-              <p className="text-center text-base-content/50 mt-10">
-                No messages yet. Say hello!
-              </p>
+              <div className="mx-auto mt-12 max-w-xs text-center">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <MessageCircle className="h-6 w-6" />
+                </div>
+                <p className="font-semibold">Start the conversation</p>
+                <p className="mt-1 text-xs text-base-content/45">Send a friendly message to say hello.</p>
+              </div>
             ) : (
               messages.map((msg) => {
                 const isMine =
                   msg.sender?._id === user._id || msg.sender === user._id;
                 const isDeleted = msg.type === "deleted";
-                const isEditing = editingMessage === msg._id;
                 const isSpecialSender = !isMine && canUseSpecialStyle(msg.sender);
                 const specialStyle = getSpecialUserStyle(msg.sender);
                 return (
@@ -523,12 +521,12 @@ const Chat = () => {
                     key={msg._id}
                     className={`chat ${
                       isMine ? "chat-end" : "chat-start"
-                    } group`}
+                    } group py-0.5`}
                   >
                     <div className="chat-image avatar">
                       <UserAvatar user={msg.sender} size={32} />
                     </div>
-                    <div className="chat-header text-xs opacity-50 mb-0.5 flex items-center gap-2">
+                    <div className="chat-header mb-1 flex items-center gap-2 px-1 text-[10px] text-base-content/45">
                       <span className={isSpecialSender ? specialStyle.muted : ""}>
                         {msg.sender?.name || "User"}
                       </span>
@@ -543,13 +541,13 @@ const Chat = () => {
                       )}
                     </div>
                     <div
-                      className={`chat-bubble text-sm relative ${
+                      className={`chat-bubble relative max-w-[min(78vw,34rem)] whitespace-pre-wrap break-words px-3.5 py-2.5 text-sm leading-relaxed shadow-sm sm:max-w-[32rem] ${
                         isMine
-                          ? "chat-bubble-primary"
+                          ? "chat-bubble-primary text-primary-content"
                           : isSpecialSender
-                            ? `${specialStyle.soft} border`
-                            : ""
-                      } ${isDeleted ? "opacity-50 italic" : ""}`}
+                            ? `${specialStyle.soft} border border-base-300/60`
+                            : "border border-base-300/60 bg-base-100 text-base-content"
+                      } ${isDeleted ? "italic opacity-55" : ""}`}
                     >
                       {isDeleted ? (
                         <span className="text-xs italic">
@@ -561,7 +559,7 @@ const Chat = () => {
                         <img
                           src={msg.fileUrl}
                           alt=""
-                          className="max-w-[200px] rounded-lg"
+                          className="max-h-80 w-auto max-w-full rounded-xl object-cover"
                         />
                       ) : msg.type === "file" ? (
                         <a
@@ -576,8 +574,8 @@ const Chat = () => {
                       )}
                     </div>
                     {isMine && !isDeleted && (
-                      <div className="chat-footer flex items-center gap-1 mt-0.5">
-                        <span className="text-[10px] opacity-50">
+                      <div className="chat-footer mt-0.5 flex min-h-5 items-center gap-1 px-1">
+                        <span className="text-[9px] text-base-content/45">
                           {msg.readBy?.length > 1 ? "✓✓ Read" : "✓ Sent"}
                         </span>
                         {/* Edit/Delete dropdown */}
@@ -588,7 +586,8 @@ const Chat = () => {
                                 menuOpenId === msg._id ? null : msg._id
                               )
                             }
-                            className="btn btn-ghost btn-xs btn-square opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="btn btn-ghost btn-xs btn-square opacity-60 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+                            aria-label="Message actions"
                           >
                             <MoreHorizontal className="w-3 h-3" />
                           </button>
@@ -630,7 +629,7 @@ const Chat = () => {
                 <div className="chat-image avatar">
                   <div className="w-8 rounded-full bg-base-300"></div>
                 </div>
-                <div className="chat-bubble bg-base-200">
+                <div className="chat-bubble border border-base-300/60 bg-base-100 px-4 py-3 shadow-sm">
                   <div className="flex gap-1">
                     <div className="w-2 h-2 bg-base-content/40 rounded-full animate-bounce"></div>
                     <div
@@ -649,7 +648,7 @@ const Chat = () => {
           </div>
 
           {/* Message Input */}
-          <div className="border-t border-base-300 bg-base-100">
+          <div className="border-t border-base-300/70 bg-base-100 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-5">
             {editingMessage && (
               <div className="flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-primary/10">
                 <div className="flex items-center gap-2 text-xs text-primary">
@@ -673,15 +672,15 @@ const Chat = () => {
                   handleSendMessage(e);
                 }
               }}
-              className="p-4 flex gap-2"
+              className="flex items-center gap-2 rounded-2xl border border-base-300/80 bg-base-200/35 p-1.5 shadow-sm transition focus-within:border-primary/45 focus-within:bg-base-100 focus-within:ring-2 focus-within:ring-primary/10"
             >
-              <button type="button" className="btn btn-ghost btn-circle btn-sm">
+              <button type="button" className="btn btn-ghost btn-circle btn-sm shrink-0 text-base-content/55 hover:text-primary" aria-label="Attach image">
                 <ImagePlus className="w-5 h-5" />
               </button>
               <input
                 ref={editInputRef}
                 type="text"
-                className="input input-bordered flex-1 rounded-full"
+                className="min-w-0 flex-1 border-0 bg-transparent px-1 text-sm outline-none placeholder:text-base-content/35"
                 placeholder={
                   editingMessage ? "Edit message..." : "Type a message..."
                 }
@@ -693,7 +692,7 @@ const Chat = () => {
               />
               <button
                 type="submit"
-                className={`btn btn-circle btn-sm ${
+                className={`btn btn-circle btn-sm shrink-0 shadow-sm ${
                   editingMessage ? "btn-success" : "btn-primary"
                 }`}
                 disabled={!messageText.trim()}

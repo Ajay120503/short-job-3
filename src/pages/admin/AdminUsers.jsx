@@ -237,7 +237,7 @@ const AdminUsers = () => {
               <thead>
                 <tr>
                   <th>User</th>
-                  <th>Role</th>
+                  <th>User Type</th>
                   <th>Badges</th>
                   <th>Status</th>
                   <th>Joined</th>
