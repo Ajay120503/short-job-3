@@ -65,7 +65,7 @@ const RightSidebar = () => {
 
     const fetchRecentJobs = async () => {
       try {
-        const { data } = await API.get("/jobs?limit=10");
+        const { data } = await API.get("/jobs?limit=20");
         const jobs = (data.jobs || []).filter(
           (j) => j.postedBy?._id !== user?._id && isJobDeadlineActive(j),
         );
