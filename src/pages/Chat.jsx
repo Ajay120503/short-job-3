@@ -527,7 +527,9 @@ const Chat = () => {
                       <UserAvatar user={msg.sender} size={32} />
                     </div>
                     <div className="chat-header mb-1 flex items-center gap-2 px-1 text-[10px] text-base-content/45">
-                      <span className={isSpecialSender ? specialStyle.muted : ""}>
+                      <span
+                        className={isSpecialSender ? specialStyle.muted : ""}
+                      >
                         {msg.sender?.name || "User"}
                       </span>
                       <time className="text-[10px]">
@@ -541,7 +543,7 @@ const Chat = () => {
                       )}
                     </div>
                     <div
-                      className={`chat-bubble relative max-w-[min(78vw,34rem)] whitespace-pre-wrap break-words px-3.5 py-2.5 text-sm leading-relaxed shadow-sm sm:max-w-[32rem] ${
+                      className={`chat-bubble relative max-w-[min(78vw,34rem)] whitespace-pre-wrap break-words px-2 py-1 text-sm leading-relaxed shadow-sm sm:max-w-[32rem] ${
                         isMine
                           ? "chat-bubble-primary text-primary-content"
                           : isSpecialSender
@@ -583,7 +585,7 @@ const Chat = () => {
                           <button
                             onClick={() =>
                               setMenuOpenId(
-                                menuOpenId === msg._id ? null : msg._id
+                                menuOpenId === msg._id ? null : msg._id,
                               )
                             }
                             className="btn btn-ghost btn-xs btn-square opacity-60 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
