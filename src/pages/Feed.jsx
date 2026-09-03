@@ -25,7 +25,7 @@ import {
   canUseSpecialStyle,
   getSpecialUserStyle,
 } from "../utils/specialUserStyles";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const CommentItem = ({
   comment,

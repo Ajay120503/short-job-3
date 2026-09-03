@@ -27,7 +27,7 @@ import useAuthStore from "../store/authStore";
 import NoticeboardBanner from "../components/post/NoticeboardBanner";
 import UserAvatar from "../components/common/UserAvatar";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const exploreFilters = [
   { value: "", label: "All", icon: Users },

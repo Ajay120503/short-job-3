@@ -14,11 +14,10 @@ import {
   Shield,
   ShieldCheck,
 } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "../../store/authStore";
 import { useSocket } from "../../context/SocketContext";
 import UserAvatar from "./UserAvatar";
+import Brand from "./Brand";
 import { isAdminUser, getUserRoleLabel } from "../../utils/badgeUtils";
 
 const Sidebar = ({ collapsed, onToggle }) => {
@@ -67,7 +66,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   return (
     <aside
-      className={`hidden md:flex flex-col bg-base-100 border-r border-base-300 sticky top-0 h-screen overflow-visible transition-[width,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] z-30 will-change-[width] ${
+      className={`hidden lg:flex flex-col bg-base-100 border-r border-base-300/80 sticky top-0 h-screen overflow-visible transition-[width,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] z-30 will-change-[width] shadow-[1px_0_0_color-mix(in_srgb,var(--color-base-content)_4%,transparent)] ${
         collapsed ? "w-[72px]" : "w-64"
       }`}
     >
@@ -84,15 +83,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               : "max-w-44 translate-x-0 scale-100 opacity-100 delay-100"
           }`}
         >
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm shrink-0">
-            <FontAwesomeIcon
-              icon={faUserGraduate}
-              className="w-4 h-4 text-white"
-            />
-          </div>
-          <span className="text-lg font-bold text-primary whitespace-nowrap">
-            ShortJob
-          </span>
+          <Brand size="sm" />
         </div>
         <button
           onClick={onToggle}
@@ -117,7 +108,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               `flex items-center rounded-xl ${smoothTransition} group relative ${
                 isActive
                   ? "bg-primary/10 text-primary font-semibold"
-                  : "text-base-content/70 hover:bg-base-200"
+                  : "text-base-content/75 hover:bg-base-200 hover:text-base-content"
               } ${navItemClass}`
             }
             title={collapsed ? item.label : undefined}
@@ -176,7 +167,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               `flex items-center rounded-xl ${smoothTransition} group relative ${
                 isActive
                   ? "bg-primary/10 text-primary"
-                  : "text-base-content/50 hover:text-base-content/80 hover:bg-base-200"
+                  : "text-base-content/65 hover:text-base-content hover:bg-base-200"
               } ${navItemClass}`
             }
             title={collapsed ? item.label : undefined}

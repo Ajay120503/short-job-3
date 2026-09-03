@@ -17,7 +17,7 @@ import {
 } from "../../utils/badgeUtils";
 import useAuthStore from "../../store/authStore";
 import API from "../../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 /**
  * Reusable admin user row with block/unblock and badge-grant actions.

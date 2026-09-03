@@ -1,33 +1,33 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* ShortJob Custom Theme — Warm Professional (Teal + Coral) */
+/* ShortJob — high-contrast professional indigo + amber system */
 @plugin "daisyui/theme" {
   name: "ShortJob";
   default: true;
   color-scheme: "light";
-  --color-primary: #147f83;
+  --color-primary: #147F83;
   --color-primary-content: #ffffff;
-  --color-secondary: #2f6f73;
+  --color-secondary: #147F83;
   --color-secondary-content: #ffffff;
-  --color-accent: #d96b4d;
+  --color-accent: #c2410c;
   --color-accent-content: #ffffff;
-  --color-neutral: #33413d;
+  --color-neutral: #172033;
   --color-neutral-content: #ffffff;
-  --color-base-100: #fbfefd;
-  --color-base-200: #edf7f6;
-  --color-base-300: #d5ebe8;
-  --color-base-content: #26332f;
-  --color-info: #247f9e;
+  --color-base-100: #ffffff;
+  --color-base-200: #f5f7fb;
+  --color-base-300: #dce2ec;
+  --color-base-content: #172033;
+  --color-info: #0369a1;
   --color-info-content: #ffffff;
-  --color-success: #2f9e44;
+  --color-success: #15803d;
   --color-success-content: #ffffff;
-  --color-warning: #d97706;
+  --color-warning: #b45309;
   --color-warning-content: #ffffff;
-  --color-error: #dc3f2f;
+  --color-error: #b91c1c;
   --color-error-content: #ffffff;
-  --radius-box: 0.625rem;
-  --radius-btn: 0.5rem;
+  --radius-box: 0.875rem;
+  --radius-btn: 0.625rem;
   --radius-badge: 1.9rem;
   --animation-btn: 0.25s;
   --animation-input: 0.2s;
@@ -40,28 +40,28 @@
 @plugin "daisyui/theme" {
   name: "ShortJobDark";
   color-scheme: "dark";
-  --color-primary: #36b8b5;
-  --color-primary-content: #031312;
-  --color-secondary: #6fc2ba;
-  --color-secondary-content: #061715;
-  --color-accent: #f08a6c;
-  --color-accent-content: #190704;
-  --color-neutral: #d9e7e2;
-  --color-neutral-content: #071615;
-  --color-base-100: #071615;
-  --color-base-200: #0d211f;
-  --color-base-300: #17302d;
-  --color-base-content: #e7f3ef;
-  --color-info: #65c6e2;
-  --color-info-content: #041519;
-  --color-success: #6edb82;
-  --color-success-content: #06160a;
-  --color-warning: #f4b45f;
-  --color-warning-content: #1c1003;
-  --color-error: #ff7a72;
-  --color-error-content: #1d0504;
-  --radius-box: 0.625rem;
-  --radius-btn: 0.5rem;
+  --color-primary: #147F83;
+  --color-primary-content: #ffffff;
+  --color-secondary: #147F83;
+  --color-secondary-content: #ffffff;
+  --color-accent: #fb923c;
+  --color-accent-content: #241005;
+  --color-neutral: #dce5f5;
+  --color-neutral-content: #0b1220;
+  --color-base-100: #101725;
+  --color-base-200: #171f30;
+  --color-base-300: #2b364a;
+  --color-base-content: #eef3fb;
+  --color-info: #7dd3fc;
+  --color-info-content: #08202b;
+  --color-success: #86efac;
+  --color-success-content: #082313;
+  --color-warning: #fbbf24;
+  --color-warning-content: #271603;
+  --color-error: #fca5a5;
+  --color-error-content: #2b0808;
+  --radius-box: 0.875rem;
+  --radius-btn: 0.625rem;
   --radius-badge: 1.9rem;
   --animation-btn: 0.25s;
   --animation-input: 0.2s;
@@ -74,8 +74,8 @@
 /* Global font modes */
 :root,
 html[data-font="modern"] {
-  --app-font-body: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
-  --app-font-heading: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+  --app-font-body: "Manrope", "Inter", system-ui, -apple-system, sans-serif;
+  --app-font-heading: "Outfit", "Manrope", system-ui, -apple-system, sans-serif;
   --app-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
@@ -110,6 +110,11 @@ body {
   min-height: 100vh;
   text-rendering: optimizeLegibility;
   letter-spacing: 0;
+  background: var(--color-base-200);
+  color: var(--color-base-content);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
@@ -120,6 +125,8 @@ h5,
 h6 {
   font-family: var(--app-font-heading);
   letter-spacing: 0;
+  line-height: 1.2;
+  font-weight: 700;
 }
 
 button,
@@ -135,12 +142,45 @@ select,
 }
 
 ::selection {
-  background: rgba(20, 127, 131, 0.16);
+  background: color-mix(in srgb, var(--color-primary) 22%, transparent);
 }
 
 :focus-visible {
-  outline: 2px solid rgba(20, 127, 131, 0.55);
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 58%, transparent);
   outline-offset: 2px;
+}
+
+/* Shared component polish */
+.app-main {
+  background-color: color-mix(in srgb, var(--color-base-200) 82%, var(--color-base-100));
+  scrollbar-gutter: stable;
+}
+
+.app-main :where(.card, .modal-box) {
+  border-color: color-mix(in srgb, var(--color-base-content) 12%, transparent);
+}
+
+:where(.btn, .input, .select, .textarea) {
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+:where(.input, .select, .textarea):focus,
+:where(.input, .select, .textarea):focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 14%, transparent);
+  outline: none;
+}
+
+.btn-primary {
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.text-base-content\/30 { color: color-mix(in srgb, var(--color-base-content) 50%, transparent); }
+.text-base-content\/40 { color: color-mix(in srgb, var(--color-base-content) 58%, transparent); }
+.text-base-content\/50 { color: color-mix(in srgb, var(--color-base-content) 68%, transparent); }
+
+@media (max-width: 1023px) {
+  .app-main { padding-bottom: calc(4.75rem + env(safe-area-inset-bottom)); }
 }
 
 /* Custom scrollbar */
@@ -171,6 +211,22 @@ select,
 
   .app-main > .settings-page {
     padding: 0.75rem max(0.75rem, env(safe-area-inset-right)) calc(70px + 1rem) max(0.75rem, env(safe-area-inset-left)) !important;
+  }
+
+  body { font-size: 0.9rem; }
+  :where(input, select, textarea) { font-size: 16px !important; }
+  :where(button, .btn, a[role="button"]) { min-height: 2.75rem; }
+  .btn-xs { min-height: 1.75rem; }
+  .btn-sm { min-height: 2.5rem; }
+  .app-main :where(.card) { border-radius: 0.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -225,9 +281,9 @@ select,
 }
 
 .special-teal {
-  --special-text: #147f83;
-  --special-text-muted: #116d70;
-  --special-ring: #147f83;
+  --special-text: #147F83;
+  --special-text-muted: #095c60;
+  --special-ring: #147F83;
 }
 
 .special-coral {
@@ -358,7 +414,7 @@ select,
   --special-border-hover: #43c7c1;
   --special-text: #61d7d2;
   --special-text-muted: #93e1dd;
-  --special-ring: #36b8b5;
+  --special-ring: #147F83;
   --special-marker-text: #031312;
 }
 
@@ -565,16 +621,61 @@ select,
 }
 
 .btn-primary {
-  border-color: color-mix(in srgb, var(--color-primary) 88%, var(--color-base-content));
-  background-color: var(--color-primary);
-  color: var(--color-primary-content);
-  box-shadow: 0 12px 26px -18px var(--color-primary);
+  border-color: #147F83;
+  background-color: #147F83;
+  color: #ffffff;
+  box-shadow: 0 12px 26px -18px rgba(20, 127, 131, 0.7);
 }
 
 .btn-primary:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 75%, var(--color-base-content));
-  background-color: color-mix(in srgb, var(--color-primary) 88%, var(--color-base-content));
-  box-shadow: 0 16px 32px -20px var(--color-primary);
+  border-color: #106F73;
+  background-color: #106F73;
+  color: #ffffff;
+  box-shadow: 0 16px 32px -20px rgba(20, 127, 131, 0.85);
+}
+
+/* Stable logo colors: independent from component or theme utility precedence. */
+.shortjob-brand-mark {
+  background-color: #147F83 !important;
+  color: #ffffff !important;
+}
+
+.shortjob-brand-wordmark {
+  color: #147F83 !important;
+}
+
+.shortjob-brand-emblem {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 8px 18px -10px rgba(20, 127, 131, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.shortjob-brand-emblem-inverse {
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.shortjob-brand-icon-shell {
+  background-color: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.shortjob-brand-name {
+  letter-spacing: -0.045em;
+  font-weight: 600;
+}
+
+.shortjob-brand-name-job {
+  font-weight: 800;
+}
+
+.shortjob-brand-tagline {
+  font-family: var(--app-font-body);
+  font-weight: 600;
+  letter-spacing: 0.025em;
 }
 
 .btn-secondary,
@@ -722,15 +823,15 @@ select,
 }
 
 [data-theme="ShortJobDark"] .btn-primary {
-  border-color: #2aa6a3;
-  background: #188b88;
-  color: #f1fffb;
-  box-shadow: 0 14px 30px -22px rgba(54, 184, 181, 0.9);
+  border-color: #147F83;
+  background: #147F83;
+  color: #ffffff;
+  box-shadow: 0 14px 30px -22px rgba(20, 127, 131, 0.9);
 }
 
 [data-theme="ShortJobDark"] .btn-primary:hover {
-  border-color: #4ed4cf;
-  background: #1e9d99;
+  border-color: #1A9297;
+  background: #1A9297;
   color: #ffffff;
 }
 
@@ -747,22 +848,22 @@ select,
 }
 
 .public-brand-panel {
-  background: #147f83;
+  background: #147F83;
   color: #ffffff;
 }
 
 [data-theme="ShortJobDark"] .public-brand-panel {
-  background: #102c2a;
+  background: #147F83;
   color: #f3fffc;
 }
 
 .landing-cta-panel {
-  background: #147f83;
+  background: #147F83;
   color: #ffffff;
 }
 
 [data-theme="ShortJobDark"] .landing-cta-panel {
-  background: #123734;
+  background: #147F83;
   border-color: rgba(101, 198, 226, 0.24);
   color: #eefcf8;
   box-shadow:
@@ -811,14 +912,14 @@ select,
 }
 
 [data-theme="ShortJobDark"] .landing-cta-primary {
-  background-color: #36b8b5;
-  color: #031312;
-  box-shadow: 0 16px 34px -24px rgba(54, 184, 181, 0.9);
+  background-color: #ffffff;
+  color: #147F83;
+  box-shadow: 0 16px 34px -24px rgba(0, 0, 0, 0.45);
 }
 
 [data-theme="ShortJobDark"] .landing-cta-primary:hover {
-  background-color: #65c6e2;
-  color: #041519;
+  background-color: #eef8f8;
+  color: #095c60;
 }
 
 [data-theme="ShortJobDark"] .landing-cta-secondary {
@@ -827,7 +928,7 @@ select,
 }
 
 [data-theme="ShortJobDark"] .landing-cta-secondary:hover {
-  background-color: rgba(54, 184, 181, 0.14);
+  background-color: rgba(255, 255, 255, 0.14);
   color: #ffffff;
 }
 

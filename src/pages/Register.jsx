@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import AuthLayout from "../components/auth/AuthLayout";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

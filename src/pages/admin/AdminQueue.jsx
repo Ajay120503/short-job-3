@@ -4,7 +4,7 @@ import { Shield, Clock, CheckCircle, RefreshCw, FileText, Briefcase, Image, Arch
 import useAuthStore from "../../store/authStore";
 import { isAdminUser } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import QueueItem from "../../components/admin/QueueItem";
 
 const AdminQueue = () => {

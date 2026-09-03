@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import API from "../../utils/axios";
 import FontAwesomeGraduateIcon from "../common/FontAwesomeGraduateIcon";
 

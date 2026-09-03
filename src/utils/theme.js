@@ -26,7 +26,7 @@ export const applyAppTheme = (mode = getStoredThemeMode()) => {
   document.documentElement.setAttribute("data-theme", resolvedTheme);
   document.documentElement.style.colorScheme =
     resolvedTheme === "ShortJobDark" ? "dark" : "light";
-  const themeColor = resolvedTheme === "ShortJobDark" ? "#071615" : "#147f83";
+  const themeColor = "#147F83";
   document
     .querySelector('meta[name="theme-color"]')
     ?.setAttribute("content", themeColor);

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import API from "../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 import ConfirmModal from "../components/common/ConfirmModal";
 import { useSocket } from "../context/SocketContext";
 import {

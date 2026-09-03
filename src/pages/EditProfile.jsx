@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Camera, X, Upload } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const MAX_RESUME_SIZE = 10 * 1024 * 1024;

@@ -16,7 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import API from "../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,

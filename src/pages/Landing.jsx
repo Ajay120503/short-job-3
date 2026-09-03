@@ -13,9 +13,8 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import ThemeToggle from "../components/common/ThemeToggle";
+import Brand from "../components/common/Brand";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
@@ -96,15 +95,7 @@ const Landing = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
-              <FontAwesomeIcon
-                icon={faUserGraduate}
-                className="h-5 w-5 text-white"
-              />
-            </span>
-            <span className="font-heading text-lg font-bold text-primary">
-              ShortJob
-            </span>
+            <Brand size="md" />
           </Link>
           <div className="flex items-center gap-1">
             <ThemeToggle compact />
@@ -503,12 +494,7 @@ const Landing = () => {
             transition={{ duration: 0.55 }}
             className="landing-cta-panel mx-auto max-w-4xl rounded-xl border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
           >
-            <div className="landing-cta-mark mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg">
-              <FontAwesomeIcon
-                icon={faUserGraduate}
-                className="h-6 w-6 text-white"
-              />
-            </div>
+            <Brand size="lg" inverse iconOnly className="mb-5" />
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               Start building your network today.
             </h2>
@@ -532,15 +518,7 @@ const Landing = () => {
       <footer className="border-t border-base-300 px-4 py-8 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-sm text-base-content/45 sm:flex-row">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white">
-              <FontAwesomeIcon
-                icon={faUserGraduate}
-                className="h-4 w-4 text-white"
-              />
-            </span>
-            <span className="font-heading font-bold text-base-content">
-              ShortJob
-            </span>
+            <Brand size="sm" />
           </div>
           <div className="flex items-center gap-5">
             <Link to="/login" className="hover:text-primary">

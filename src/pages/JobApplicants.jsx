@@ -39,7 +39,7 @@ import {
   canUseSpecialStyle,
   getSpecialUserStyle,
 } from "../utils/specialUserStyles";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const statusColors = {
   applied: "badge-ghost",
@@ -696,7 +696,7 @@ const JobApplicants = () => {
             .meta { color: #66736f; margin-bottom: 18px; }
             .summary { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
             .box { border: 1px solid #d5ebe8; border-radius: 8px; padding: 10px 12px; }
-            .box strong { display: block; font-size: 18px; color: #147f83; }
+            .box strong { display: block; font-size: 18px; color: #147F83; }
             table { width: 100%; border-collapse: collapse; font-size: 11px; }
             th { background: #edf7f6; text-align: left; }
             th, td { border: 1px solid #d5ebe8; padding: 7px; vertical-align: top; }

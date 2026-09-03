@@ -19,7 +19,7 @@ import {
 import useAuthStore from "../../store/authStore";
 import { isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 const AdminSettings = () => {
   const { user: currentUser, isAuthenticated } = useAuthStore();

@@ -14,7 +14,7 @@ import {
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
 import AuthLayout from "../components/auth/AuthLayout";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const steps = [
   { key: "details", label: "Your details" },

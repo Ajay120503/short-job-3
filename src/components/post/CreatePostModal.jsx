@@ -5,7 +5,7 @@ import {
   Send,
 } from "lucide-react";
 import API from "../../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import useAuthStore from "../../store/authStore";
 import { getAvailablePostTypes } from "../../utils/postTypeConfig";
 

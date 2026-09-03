@@ -3,7 +3,7 @@ import { Zap } from "lucide-react";
 import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
 import { canApplyToJobs } from "../../utils/badgeUtils";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import { getProfileCompletionStatus } from "../../utils/profileCompletion";
 
 const QuickApplyBtn = ({ jobId, alreadyApplied, onApplied }) => {

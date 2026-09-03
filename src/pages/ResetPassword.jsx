@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import API from "../utils/axios";
 import AuthLayout from "../components/auth/AuthLayout";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

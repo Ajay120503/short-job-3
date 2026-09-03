@@ -1,7 +1,7 @@
 import { ThumbsUp } from "lucide-react";
 import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 const EndorsementTag = ({ skill, profileId, onEndorse }) => {
   const { user } = useAuthStore();

@@ -17,7 +17,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import useAuthStore from "../../store/authStore";
 import API from "../../utils/axios";
 import { getUserRoleLabel, isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";

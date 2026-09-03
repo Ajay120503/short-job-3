@@ -14,7 +14,7 @@ import { isAdminUser } from "../../utils/badgeUtils";
 import BadgeChip from "../../components/common/BadgeChip";
 import API from "../../utils/axios";
 import { getJobMapLink, getJobWorkModeLabel, getJobWorkplaceLabel } from "../../utils/jobLocation";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 const splitQualifications = (value = "") =>
   value

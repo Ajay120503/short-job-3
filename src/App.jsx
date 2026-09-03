@@ -6,8 +6,6 @@ import {
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "./store/authStore";
 import { SocketProvider } from "./context/SocketContext";
 import {
@@ -27,6 +25,7 @@ import RightSidebar from "./components/common/RightSidebar";
 import BottomNav from "./components/common/BottomNav";
 import MobileHeader from "./components/common/MobileHeader";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import Brand from "./components/common/Brand";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -132,14 +131,7 @@ function App() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-base-100">
         <div className="text-center">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <FontAwesomeIcon
-              icon={faUserGraduate}
-              className="w-8 h-8 text-white"
-              fontSize={24}
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-primary">ShortJob</h1>
+          <Brand size="xl" className="mb-4 flex-col" />
           <p className="mt-2 text-base-content/60">
             Where Careers Begin
           </p>
@@ -152,7 +144,7 @@ function App() {
   return (
     <SocketProvider>
       <Router>
-        <div className="min-h-screen bg-base-100">
+        <div className="min-h-screen bg-base-200">
           <Toaster
             position="top-center"
             toastOptions={{
@@ -226,7 +218,7 @@ function App() {
               path="/*"
               element={
                 <ProtectedRoute>
-                  <div className="flex flex-col h-screen overflow-hidden bg-base-100">
+                  <div className="flex flex-col h-screen overflow-hidden bg-base-200">
                     <MobileHeader />
                     <div className="flex flex-1 min-h-0">
                       <Sidebar

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import BadgeChip from "../common/BadgeChip";
 import API from "../../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 const formatFlag = (flag) => {
   if (!flag) return "Unknown signal";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, X, Image, Send } from "lucide-react";
 import API from "../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const MAX_STORY_IMAGE_SIZE = 5 * 1024 * 1024;
 

@@ -27,7 +27,7 @@ import BadgeChip from "../../components/common/BadgeChip";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import UserAvatar from "../../components/common/UserAvatar";
 import API from "../../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 const AdminUserDetail = () => {
   const { id } = useParams();

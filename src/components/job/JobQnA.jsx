@@ -3,7 +3,7 @@ import { MessageCircleQuestion, MoreHorizontal, Send, Trash2 } from "lucide-reac
 import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
 import ConfirmModal from "../common/ConfirmModal";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 const JobQnA = ({ jobId, isJobPoster }) => {
   const { user } = useAuthStore();

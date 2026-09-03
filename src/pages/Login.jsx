@@ -10,7 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 import LoginAuditModal from "../components/auth/LoginAuditModal";
 import AuthLayout from "../components/auth/AuthLayout";
 

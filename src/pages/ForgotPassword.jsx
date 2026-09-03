@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AlertCircle, CheckCircle2, Mail, Send } from "lucide-react";
 import API from "../utils/axios";
 import AuthLayout from "../components/auth/AuthLayout";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

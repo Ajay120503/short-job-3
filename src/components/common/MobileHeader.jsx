@@ -13,11 +13,10 @@ import {
   LogOut,
   Shield,
 } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "../../store/authStore";
 import { useSocket } from "../../context/SocketContext";
 import UserAvatar from "./UserAvatar";
+import Brand from "./Brand";
 import { isAdminUser } from "../../utils/badgeUtils";
 
 const MobileHeader = () => {
@@ -34,17 +33,11 @@ const MobileHeader = () => {
 
   return (
     <>
-      <header className="md:hidden sticky top-0 z-40 bg-base-100/95 backdrop-blur-md border-b border-base-300/80 shadow-sm safe-area-top">
-        <div className="flex items-center justify-between px-3 py-2">
+      <header className="lg:hidden sticky top-0 z-40 bg-base-100/95 backdrop-blur-xl border-b border-base-300/80 shadow-sm safe-area-top">
+        <div className="flex min-h-14 items-center justify-between px-3 py-2 sm:px-5">
           {/* Logo */}
           <Link to="/feed" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-              <FontAwesomeIcon
-                icon={faUserGraduate}
-                className="w-[18px] h-[18px] text-white"
-              />
-            </div>
-            <span className="text-base font-bold text-primary">ShortJob</span>
+            <Brand size="sm" />
           </Link>
 
           {/* Right side: search + menu */}
@@ -180,7 +173,7 @@ const MobileHeader = () => {
       {/* Overlay when menu is open */}
       {menuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/20 z-30"
+            className="lg:hidden fixed inset-0 bg-neutral/35 backdrop-blur-[1px] z-30"
           onClick={() => setMenuOpen(false)}
         />
       )}

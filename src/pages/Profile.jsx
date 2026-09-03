@@ -21,7 +21,7 @@ import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
 import { getUserRoleLabel, getActiveBadges } from "../utils/badgeUtils";
 import BadgeChip from "../components/common/BadgeChip";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 import ConfirmModal from "../components/common/ConfirmModal";
 import StrengthMeter from "../components/profile/StrengthMeter";
 import VerifiedBadge from "../components/common/VerifiedBadge";

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import useAuthStore from "../store/authStore";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const SocketContext = createContext(null);
 
@@ -141,7 +141,7 @@ export const SocketProvider = ({ children }) => {
             {payload?.id}
           </div>
         ),
-        { icon: "🤖", duration: 6000 },
+        { icon: "🤖", duration: 6000, dedupeKey: `moderation:${payload?.id}:${payload?.decision}` },
       );
     });
 
@@ -181,6 +181,7 @@ export const SocketProvider = ({ children }) => {
         {
           icon: iconMap[notification.type] || "🔔",
           duration: 5000,
+          dedupeKey: notification._id || `${notification.type}:${notification.message}:${notification.link || ""}`,
         },
       );
     });

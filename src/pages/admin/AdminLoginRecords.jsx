@@ -11,7 +11,7 @@ import API from "../../utils/axios";
 import UserAvatar from "../../components/common/UserAvatar";
 import UserSignalBadge from "../../components/common/UserSignalBadge";
 import LoginRecordDetail from "../../components/admin/LoginRecordDetail";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 
 const formatDate = (value) =>
   value

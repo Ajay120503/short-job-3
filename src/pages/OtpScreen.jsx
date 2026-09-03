@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AlertCircle, Mail, RefreshCw, ShieldCheck } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import AuthLayout from "../components/auth/AuthLayout";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const OTP_LENGTH = 6;
 

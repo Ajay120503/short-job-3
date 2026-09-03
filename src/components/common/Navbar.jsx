@@ -8,11 +8,10 @@ import {
   User,
   Settings,
 } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "../../store/authStore";
 import { useSocket } from "../../context/SocketContext";
 import UserAvatar from "./UserAvatar";
+import Brand from "./Brand";
 
 const Navbar = () => {
   const { user, logout } = useAuthStore();
@@ -31,15 +30,7 @@ const Navbar = () => {
     <nav className="hidden md:flex items-center justify-between px-4 lg:px-6 py-2.5 bg-base-100/95 backdrop-blur-md border-b border-base-300/80 sticky top-0 z-50 shadow-sm">
       {/* Logo */}
       <Link to="/feed" className="flex items-center gap-2 shrink-0">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-          <FontAwesomeIcon
-            icon={faUserGraduate}
-            className="w-[18px] h-[18px] text-white"
-          />
-        </div>
-        <span className="text-lg lg:text-xl font-bold text-primary hidden lg:block">
-          ShortJob
-        </span>
+        <Brand size="sm" className="[&>span:last-child]:hidden lg:[&>span:last-child]:block" />
       </Link>
 
       {/* Search Bar */}

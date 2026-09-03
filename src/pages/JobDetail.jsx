@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 import SkillGapBar from "../components/job/SkillGapBar";
 // import QuickApplyBtn from "../components/job/QuickApplyBtn";
 import ReachStats from "../components/job/ReachStats";

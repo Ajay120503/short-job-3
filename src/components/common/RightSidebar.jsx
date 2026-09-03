@@ -82,7 +82,7 @@ const RightSidebar = () => {
   }, [following, user?._id]);
 
   return (
-    <aside className="hidden lg:flex flex-col w-[360px] xl:w-[380px] bg-base-100 border-l border-base-200/80 sticky top-0 h-screen overflow-hidden">
+    <aside className="hidden 2xl:flex flex-col w-[340px] bg-base-100 border-l border-base-300/70 sticky top-0 h-screen overflow-hidden">
       <div className="border-b border-base-200/80 p-4">
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <Link

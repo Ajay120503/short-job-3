@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Camera, Clock, Laptop, MapPin, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import API from "../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
 
 const formatDate = (value) =>

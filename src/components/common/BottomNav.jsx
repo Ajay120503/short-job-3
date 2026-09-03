@@ -28,14 +28,14 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-md border-t border-base-300/80 z-40 safe-area-bottom shadow-lg">
-      <div className="flex items-center justify-around py-1.5">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-xl border-t border-base-300/80 z-40 safe-area-bottom shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+      <div className="mx-auto flex min-h-[4rem] max-w-2xl items-center justify-around px-1 py-1.5 sm:px-4">
         {navItems.slice(0, 2).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all ${
+              `flex min-h-11 min-w-14 flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all ${
                 isActive
                   ? "text-primary"
                   : "text-base-content/40 hover:text-base-content/70"
@@ -81,7 +81,7 @@ const BottomNav = () => {
         {/* Center Create Post Button */}
         <button
           onClick={() => navigate("/posts/create")}
-          className="flex flex-col items-center gap-0.5 px-2 py-1 -mt-5"
+          className="flex min-h-11 min-w-14 flex-col items-center justify-center gap-0.5 px-2 py-1 -mt-5"
         >
           <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 transition-all">
             <PlusCircle className="w-6 h-6 text-white" />
@@ -96,7 +96,7 @@ const BottomNav = () => {
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all ${
+              `flex min-h-11 min-w-14 flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all ${
                 isActive
                   ? "text-primary"
                   : "text-base-content/40 hover:text-base-content/70"

@@ -23,7 +23,7 @@ import {
   canUseSpecialStyle,
   getSpecialUserStyle,
 } from "../utils/specialUserStyles";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 
 const getOtherParticipantFromConversation = (conversation, currentUserId) =>
   conversation?.participants?.find((participant) => participant._id !== currentUserId) ||
