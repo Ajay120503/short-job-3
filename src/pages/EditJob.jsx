@@ -14,9 +14,11 @@ import {
   Save,
   LocateFixed,
   ExternalLink,
+  Clock,
 } from "lucide-react";
 import API from "../utils/axios";
 import toast from "../utils/toast";
+import JobTimeField from "../components/job/JobTimeField";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,
@@ -41,6 +43,13 @@ const LOCATIONS = [
   { value: "hybrid", label: "Hybrid" },
 ];
 
+const SHORT_JOB_TYPES = [
+  ["one_day_gig", "One-day gig"], ["few_hours", "A few hours"],
+  ["weekend_only", "Weekend only"], ["short_term", "Short term"],
+  ["ongoing_part_time", "Ongoing part-time"], ["full_time", "Full-time"],
+  ["internship", "Internship"], ["volunteer", "Volunteer"],
+];
+
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 const todayInputValue = new Date().toISOString().split("T")[0];
 
@@ -55,6 +64,11 @@ const EditJob = () => {
     description: "",
     institutionName: "",
     roleType: "other",
+    shortJobType: "short_term",
+    durationValue: "",
+    durationUnit: "hours",
+    startTime: "",
+    endTime: "",
     isPaid: false,
     currency: "INR",
     stipend: "",
@@ -88,6 +102,11 @@ const EditJob = () => {
           description: job.description || "",
           institutionName: job.institutionName || "",
           roleType: job.roleType || "other",
+          shortJobType: job.shortJobType || "short_term",
+          durationValue: job.duration?.value || 1,
+          durationUnit: job.duration?.unit || "days",
+          startTime: job.startTime || "",
+          endTime: job.endTime || "",
           isPaid: job.isPaid || false,
           currency: job.currency || "INR",
           stipend: job.stipend || "",
@@ -163,6 +182,11 @@ const EditJob = () => {
     if (form.description.trim().length < 30) {
       nextErrors.description = "Add at least 30 characters so applicants understand the role.";
     }
+    if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
+    if (!Number.isInteger(Number(form.durationValue)) || Number(form.durationValue) < 1) nextErrors.durationValue = "Enter a positive whole number.";
+    if (!form.startTime) nextErrors.startTime = "Start time is required.";
+    if (!form.endTime) nextErrors.endTime = "End time is required.";
+    if (form.startTime && form.endTime && form.startTime === form.endTime) nextErrors.endTime = "End time must be different from the start time.";
     if (!form.deadline) nextErrors.deadline = "Application deadline is required.";
     if (form.deadline && form.deadline < todayInputValue) {
       nextErrors.deadline = "Deadline cannot be in the past.";
@@ -234,6 +258,11 @@ const EditJob = () => {
     formData.append("title", form.title);
     formData.append("description", form.description);
     formData.append("roleType", form.roleType);
+    formData.append("shortJobType", form.shortJobType);
+    formData.append("durationValue", form.durationValue);
+    formData.append("durationUnit", form.durationUnit);
+    formData.append("startTime", form.startTime);
+    formData.append("endTime", form.endTime);
     formData.append("isPaid", form.isPaid);
     formData.append("location", form.location);
     formData.append("workplaceName", form.workplaceName);
@@ -412,6 +441,31 @@ const EditJob = () => {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="form-control">
+              <label className="label pb-1"><span className="label-text text-sm font-medium">Short Job Type *</span></label>
+              <select name="shortJobType" value={form.shortJobType} onChange={handleChange} className="select select-bordered h-12 w-full text-sm">
+                {SHORT_JOB_TYPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] gap-3">
+              <div className="form-control">
+                <label className="label pb-1"><span className="label-text text-sm font-medium">Duration *</span></label>
+                <input name="durationValue" type="number" min="1" step="1" value={form.durationValue} onChange={handleChange} className={`input input-bordered ${errors.durationValue ? "input-error" : ""}`} />
+                {errors.durationValue && <FieldError>{errors.durationValue}</FieldError>}
+              </div>
+              <div className="form-control">
+                <label className="label pb-1"><span className="label-text text-sm font-medium">Unit</span></label>
+                <select name="durationUnit" value={form.durationUnit} onChange={handleChange} className="select select-bordered"><option value="hours">Hours</option><option value="days">Days</option></select>
+              </div>
+            </div>
+            <div className="rounded-xl border border-base-300/60 bg-base-200/35 p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-sm font-medium"><Clock className="h-4 w-4 text-primary" /> Daily working time</div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <JobTimeField name="startTime" label="Start time" value={form.startTime} onChange={handleChange} error={errors.startTime} />
+                <JobTimeField name="endTime" label="End time" value={form.endTime} onChange={handleChange} error={errors.endTime} />
+              </div>
+              <p className="mt-2 text-[11px] text-base-content/45">Applicants see these times in 12-hour AM/PM format.</p>
             </div>
           </div>
         </div>

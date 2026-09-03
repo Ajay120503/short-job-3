@@ -25,7 +25,11 @@ const calculateAge = (dateValue) => {
   return Math.max(age, 0);
 };
 
-const todayInputValue = new Date().toISOString().split("T")[0];
+const minimumAgeDate = (() => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 18);
+  return date.toISOString().split("T")[0];
+})();
 
 const EditProfile = () => {
   const { user, setUser } = useAuthStore();
@@ -131,8 +135,10 @@ const EditProfile = () => {
     if (form.dateOfBirth) {
       const calculatedAge = calculateAge(form.dateOfBirth);
       if (calculatedAge === "") nextErrors.dateOfBirth = "Choose a valid past date.";
-      if (calculatedAge !== "" && calculatedAge > 120) {
-        nextErrors.dateOfBirth = "Please choose a realistic date of birth.";
+      if (calculatedAge !== "" && calculatedAge < 18) {
+        nextErrors.dateOfBirth = "You must be at least 18 years old to use ShortJob.";
+      } else if (calculatedAge !== "" && calculatedAge > 100) {
+        nextErrors.dateOfBirth = "Age must be 100 years or less.";
       }
     }
     if (form.experience !== "" && Number(form.experience) < 0) {
@@ -175,7 +181,12 @@ const EditProfile = () => {
       toast.success("Profile updated!");
       navigate(`/profile/${user._id}`);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Update failed");
+      const message = err.response?.data?.message || "Failed to update profile.";
+      const fieldErrors = err.response?.data?.errors;
+      if (fieldErrors?.age) {
+        setErrors((prev) => ({ ...prev, dateOfBirth: fieldErrors.age }));
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -308,7 +319,8 @@ const EditProfile = () => {
                   className="input input-bordered w-full input-sm text-sm bg-base-200/70"
                   value={form.age}
                   readOnly
-                  min="0"
+                  min="18"
+                  max="100"
                   placeholder="Auto"
                 />
                 <p className="mt-1 text-[11px] text-base-content/40">
@@ -327,7 +339,7 @@ const EditProfile = () => {
                   className={`input input-bordered w-full input-sm text-sm ${errors.dateOfBirth ? "input-error" : ""}`}
                   value={form.dateOfBirth}
                   onChange={handleChange}
-                  max={todayInputValue}
+                  max={minimumAgeDate}
                 />
                 {errors.dateOfBirth && <FieldError>{errors.dateOfBirth}</FieldError>}
               </div>

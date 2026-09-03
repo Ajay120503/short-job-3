@@ -15,6 +15,7 @@ import {
 } from "../../utils/specialUserStyles";
 import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../../utils/jobLocation";
 import { normalizeJobSkills } from "../../utils/jobSkills";
+import { getJobScheduleLabel } from "../../utils/jobSchedule";
 
 const LinkedJobCard = ({ job }) => {
   if (!job) return null;
@@ -129,6 +130,12 @@ const LinkedJobCard = ({ job }) => {
               >
                 <Clock className="w-3.5 h-3.5" />
                 {formatDeadline()}
+              </span>
+            )}
+            {getJobScheduleLabel(job) && (
+              <span className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                {getJobScheduleLabel(job)}
               </span>
             )}
           </div>

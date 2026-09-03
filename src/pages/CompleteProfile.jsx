@@ -39,7 +39,11 @@ const calculateAge = (dateValue) => {
   return Math.max(age, 0);
 };
 
-const todayInputValue = new Date().toISOString().split("T")[0];
+const minimumAgeDate = (() => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 18);
+  return date.toISOString().split("T")[0];
+})();
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 /**
@@ -82,7 +86,7 @@ const CompleteProfile = () => {
 
   // If user already has profile basics and is verified, skip wizard
   useEffect(() => {
-    if (user?.isVerified && (user?.bio || user?.profilePic?.url)) {
+    if (user?.isVerified && Number(user?.age) >= 18 && (user?.bio || user?.profilePic?.url)) {
       navigate("/feed");
     }
   }, [user, navigate]);
@@ -118,11 +122,15 @@ const CompleteProfile = () => {
     const nextErrors = {};
     if (targetStep === 0) {
       if (formData.bio.length > 200) nextErrors.bio = "Bio cannot exceed 200 characters.";
-      if (formData.dateOfBirth) {
+      if (!formData.dateOfBirth) {
+        nextErrors.dateOfBirth = "Date of birth is required to confirm you are 18 or older.";
+      } else {
         const age = calculateAge(formData.dateOfBirth);
         if (age === "") nextErrors.dateOfBirth = "Choose a valid past date.";
-        if (age !== "" && age > 120) {
-          nextErrors.dateOfBirth = "Please choose a realistic date of birth.";
+        if (age !== "" && age < 18) {
+          nextErrors.dateOfBirth = "You must be at least 18 years old to use ShortJob.";
+        } else if (age !== "" && age > 100) {
+          nextErrors.dateOfBirth = "Age must be 100 years or less.";
         }
       }
       if (formData.linkedinUrl && !/^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(formData.linkedinUrl.trim())) {
@@ -152,14 +160,21 @@ const CompleteProfile = () => {
     setStep((prev) => Math.min(prev + 1, steps.length - 1));
   };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
-  const handleSkip = () => {
-    toast.success("You can complete your profile later from Settings.");
-    navigate("/feed");
-  };
-
   // ── Submit ──
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const age = calculateAge(formData.dateOfBirth);
+    if (age === "" || age < 18 || age > 100) {
+      setErrors({
+        dateOfBirth:
+          age !== "" && age < 18
+            ? "You must be at least 18 years old to use ShortJob."
+            : "Enter a valid date of birth for an age between 18 and 100.",
+      });
+      setStep(0);
+      toast.error("You must confirm that you are 18 or older.");
+      return;
+    }
     if (!validateStep()) {
       toast.error("Please fix the highlighted fields.");
       return;
@@ -324,7 +339,8 @@ const CompleteProfile = () => {
           <input
             type="date"
             className={`input input-bordered w-full input-sm ${errors.dateOfBirth ? "input-error" : ""}`}
-            max={todayInputValue}
+            max={minimumAgeDate}
+            required
             value={formData.dateOfBirth}
             onChange={(e) => updateField("dateOfBirth", e.target.value)}
           />
@@ -639,14 +655,6 @@ const CompleteProfile = () => {
 
         <div className="border-t border-base-200 pt-5">
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="btn btn-ghost flex-1 sm:flex-none"
-              disabled={loading}
-            >
-              Skip for now
-            </button>
             <div className="flex flex-1 gap-3">
               {step > 0 && (
                 <button
@@ -688,8 +696,7 @@ const CompleteProfile = () => {
             </div>
           </div>
           <p className="mt-3 text-center text-xs text-base-content/45 sm:text-left">
-            Skipping will not remove your account. You can finish these details
-            later from profile settings.
+            ShortJob is available only to users who are 18 years of age or older.
           </p>
         </div>
       </form>

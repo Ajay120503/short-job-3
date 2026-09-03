@@ -32,6 +32,7 @@ import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getUserSignal } from "../utils/userSignals";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
 import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../utils/jobLocation";
+import { getJobScheduleLabel } from "../utils/jobSchedule";
 
 const Profile = () => {
   const { id } = useParams();
@@ -886,6 +887,11 @@ const Profile = () => {
                           day: "numeric",
                         })}
                       </span>
+                      {getJobScheduleLabel(job) && (
+                        <span className="rounded-full bg-primary/8 px-2 py-1 text-primary">
+                          {getJobScheduleLabel(job)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

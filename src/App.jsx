@@ -245,6 +245,10 @@ function App() {
                             path="/jobs/:id/applicants"
                             element={<JobApplicants />}
                           />
+                          <Route
+                            path="/profile/edit"
+                            element={<Navigate to="/edit-profile#age" replace />}
+                          />
                           <Route path="/profile/:id" element={<Profile />} />
                           <Route
                             path="/edit-profile"

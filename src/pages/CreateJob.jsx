@@ -13,10 +13,12 @@ import {
   ArrowLeft,
   LocateFixed,
   ExternalLink,
+  Clock,
 } from "lucide-react";
 import API from "../utils/axios";
 import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
+import JobTimeField from "../components/job/JobTimeField";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,
@@ -52,6 +54,8 @@ const CreateJob = () => {
     shortJobType: "one_day_gig",
     durationValue: "",
     durationUnit: "hours",
+    startTime: "",
+    endTime: "",
     isPaid: false,
     currency: "INR",
     stipend: "",
@@ -115,6 +119,11 @@ const CreateJob = () => {
     if (!form.description.trim()) nextErrors.description = "Description is required.";
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
     if (!Number.isInteger(Number(form.durationValue)) || Number(form.durationValue) < 1) nextErrors.durationValue = "Enter a positive whole number.";
+    if (!form.startTime) nextErrors.startTime = "Start time is required.";
+    if (!form.endTime) nextErrors.endTime = "End time is required.";
+    if (form.startTime && form.endTime && form.startTime === form.endTime) {
+      nextErrors.endTime = "End time must be different from the start time.";
+    }
     if (form.description.trim().length < 30) {
       nextErrors.description = "Add at least 30 characters so applicants understand the role.";
     }
@@ -192,6 +201,8 @@ const CreateJob = () => {
     formData.append("shortJobType", form.shortJobType);
     formData.append("durationValue", form.durationValue);
     formData.append("durationUnit", form.durationUnit);
+    formData.append("startTime", form.startTime);
+    formData.append("endTime", form.endTime);
     formData.append("isPaid", form.isPaid);
     formData.append("location", form.location);
     formData.append("workplaceName", form.workplaceName);
@@ -366,6 +377,16 @@ const CreateJob = () => {
                 <label className="label pb-1"><span className="label-text text-sm font-medium">Unit</span></label>
                 <select name="durationUnit" value={form.durationUnit} onChange={handleChange} className="select select-bordered"><option value="hours">Hours</option><option value="days">Days</option></select>
               </div>
+            </div>
+            <div className="rounded-xl border border-base-300/60 bg-base-200/35 p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
+                <Clock className="h-4 w-4 text-primary" /> Daily working time
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <JobTimeField name="startTime" label="Start time" value={form.startTime} onChange={handleChange} error={errors.startTime} />
+                <JobTimeField name="endTime" label="End time" value={form.endTime} onChange={handleChange} error={errors.endTime} />
+              </div>
+              <p className="mt-2 text-[11px] text-base-content/45">Times are displayed to applicants in 12-hour AM/PM format.</p>
             </div>
           </div>
         </div>
@@ -733,7 +754,7 @@ const ProfileGate = ({ message, allowEdit = true }) => (
   <div className="mx-auto mt-16 max-w-md rounded-2xl border border-base-300 bg-base-100 p-6 text-center shadow-sm">
     <h1 className="font-heading text-xl font-bold">Complete your profile</h1>
     <p className="mt-2 text-sm text-base-content/65">{message}</p>
-    {allowEdit && <Link to="/profile/edit#age" className="btn btn-primary btn-sm mt-5">Add age</Link>}
+    {allowEdit && <Link to="/edit-profile#age" className="btn btn-primary btn-sm mt-5">Add age</Link>}
   </div>
 );
 

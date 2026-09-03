@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Search,
   PlusCircle,
+  Clock,
 } from "lucide-react";
 import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
@@ -22,6 +23,7 @@ import {
 import { getSpecialUserStyle } from "../../utils/specialUserStyles";
 import { getJobWorkplaceLabel } from "../../utils/jobLocation";
 import { normalizeJobSkills } from "../../utils/jobSkills";
+import { getJobScheduleLabel } from "../../utils/jobSchedule";
 
 const visibleSkillsLimit = 2;
 
@@ -325,6 +327,11 @@ const RightSidebar = () => {
                               </span>
                             </span>
                           </div>
+                          {getJobScheduleLabel(job) && (
+                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-primary">
+                              <Clock className="h-3 w-3" /> {getJobScheduleLabel(job)}
+                            </div>
+                          )}
                           {normalizeJobSkills(job.skillsRequired).length > 0 && (
                             <div className="mt-2 flex max-w-full items-center gap-1 overflow-hidden">
                               {normalizeJobSkills(job.skillsRequired)

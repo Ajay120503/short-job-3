@@ -13,6 +13,10 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/blocked" replace />;
   }
 
+  if (!Number.isFinite(Number(user?.age)) || Number(user.age) < 18) {
+    return <Navigate to="/complete-profile" replace />;
+  }
+
   return children;
 };
 
