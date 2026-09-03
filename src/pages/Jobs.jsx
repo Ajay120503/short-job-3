@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Briefcase, MapPin, Clock, Plus, Search, SlidersHorizontal, Users } from "lucide-react";
+import { Archive, Briefcase, MapPin, Clock, Plus, Search, SlidersHorizontal, Users } from "lucide-react";
 import API from "../utils/axios";
 import useAuthStore from "../store/authStore";
 import { canCreateJobs } from "../utils/badgeUtils";
@@ -46,6 +46,7 @@ const isOwnJob = (job, userId) => Boolean(userId && getUserId(job?.postedBy) ===
 const Jobs = () => {
   const { user } = useAuthStore();
   const [jobs, setJobs] = useState([]);
+  const [archivedJobs, setArchivedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,9 +63,20 @@ const Jobs = () => {
       } finally {
         setLoading(false);
       }
+
+      if (canPost) {
+        try {
+          const { data } = await API.get("/jobs/my/archive");
+          setArchivedJobs(data.jobs || []);
+        } catch (err) {
+          console.error("Failed to fetch archived jobs:", err);
+        }
+      } else {
+        setArchivedJobs([]);
+      }
     };
     fetchJobs();
-  }, []);
+  }, [canPost]);
 
   if (loading) {
     return (
@@ -340,6 +352,107 @@ const Jobs = () => {
             );
           })}
         </div>
+      )}
+
+      {canPost && archivedJobs.length > 0 && (
+        <section className="mt-6 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-base-200 text-base-content/55">
+                <Archive className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="font-heading text-lg font-bold">
+                  Archived Jobs
+                </h2>
+                <p className="text-xs text-base-content/50">
+                  Your jobs with passed deadlines are kept here.
+                </p>
+              </div>
+            </div>
+            <span className="badge badge-sm badge-neutral badge-soft">
+              {archivedJobs.length}
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {archivedJobs.map((job) => {
+              const posterSignal = getUserSignal(job.postedBy);
+              const isSpecialArchivedJob = Boolean(posterSignal);
+              const archivedStyle = getSpecialUserStyle(job.postedBy);
+
+              return (
+                <Link
+                  key={job._id}
+                  to={`/jobs/${job._id}`}
+                  className={`block rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                    isSpecialArchivedJob
+                      ? `${archivedStyle.shell} ${archivedStyle.shellHover}`
+                      : "border-base-300/60 bg-base-200/35 hover:border-primary/30 hover:bg-primary/5"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-base-100 ring-1 ring-base-300/60">
+                      {job.image?.url ? (
+                        <img
+                          src={job.image.url}
+                          alt={job.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Briefcase
+                          className={`h-5 w-5 ${
+                            isSpecialArchivedJob
+                              ? archivedStyle.icon
+                              : "text-base-content/35"
+                          }`}
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3
+                          className={`line-clamp-1 text-sm font-semibold ${
+                            isSpecialArchivedJob ? archivedStyle.muted : ""
+                          }`}
+                        >
+                          {job.title}
+                        </h3>
+                        <span
+                          className={`badge badge-xs ${
+                            isSpecialArchivedJob
+                              ? archivedStyle.label
+                              : "badge-neutral badge-soft"
+                          }`}
+                        >
+                          Deadline passed
+                        </span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-base-content/50">
+                        <span className="line-clamp-1">
+                          {job.institutionName || "Your organization"}
+                        </span>
+                        <span className="h-1 w-1 rounded-full bg-base-content/25" />
+                        <span>
+                          Closed{" "}
+                          {new Date(job.deadline).toLocaleDateString("en-IN", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                        <span className="h-1 w-1 rounded-full bg-base-content/25" />
+                        <span>
+                          {job.applicationCount || 0} applicant
+                          {(job.applicationCount || 0) !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
       )}
     </div>
   );

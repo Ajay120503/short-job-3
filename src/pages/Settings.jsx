@@ -324,8 +324,8 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="order-2 space-y-3 sm:space-y-4 lg:order-1">
+      <div className="grid min-w-0 gap-3 sm:gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="order-2 min-w-0 space-y-3 sm:space-y-4 2xl:order-1">
           <SectionCard
             icon={
               appThemeMode === "dark"
@@ -519,7 +519,7 @@ const Settings = () => {
           )}
         </div>
 
-        <aside className="order-1 space-y-3 sm:space-y-4 lg:order-2">
+        <aside className="order-1 min-w-0 space-y-3 sm:space-y-4 2xl:order-2">
           <section
             className={`rounded-2xl border p-3 shadow-sm sm:p-4 ${
               canStyleProfile
