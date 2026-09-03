@@ -19,6 +19,10 @@ const CreatePostModal = ({ onClose }) => {
   const [images, setImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [eventDate, setEventDate] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [resourceUrl, setResourceUrl] = useState("");
 
   const handleImagesChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -41,11 +45,14 @@ const CreatePostModal = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const nextErrors = {};
-    if (!text.trim() && images.length === 0) {
+    if (!text.trim() && images.length === 0 && !["poll", "event", "resource_share"].includes(type)) {
       nextErrors.form = "Please add text or images to your post.";
     }
     if (text.length > 2000) nextErrors.text = "Post text cannot exceed 2000 characters.";
     if (tags.length > 160) nextErrors.tags = "Tags are too long.";
+    if (type === "poll" && pollOptions.filter((item) => item.trim()).length < 2) nextErrors.form = "Add at least two poll options.";
+    if (type === "event" && (!eventDate || !eventLocation.trim())) nextErrors.form = "Add the event date and location.";
+    if (type === "resource_share" && !resourceUrl.trim()) nextErrors.form = "Add a resource link.";
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       toast.error("Please fix the highlighted fields.");
@@ -58,6 +65,9 @@ const CreatePostModal = ({ onClose }) => {
       formData.append("text", text);
       formData.append("type", type);
       formData.append("tags", tags);
+      if (type === "poll") formData.append("pollOptions", JSON.stringify(pollOptions));
+      if (type === "event") { formData.append("eventDate", eventDate); formData.append("eventLocation", eventLocation); }
+      if (type === "resource_share") { formData.append("resourceUrl", resourceUrl); formData.append("resourceFileType", "link"); }
       images.forEach((img) => formData.append("images", img));
 
       await API.post("/posts", formData, {
@@ -118,6 +128,10 @@ const CreatePostModal = ({ onClose }) => {
             {errors.text && <FieldError>{errors.text}</FieldError>}
             {errors.form && <FieldError>{errors.form}</FieldError>}
           </div>
+
+          {type === "poll" && <div className="space-y-2">{pollOptions.map((option, index) => <div key={index} className="flex gap-2"><input className="input input-bordered input-sm grow" value={option} placeholder={`Option ${index + 1}`} onChange={(e) => setPollOptions((items) => items.map((item, i) => i === index ? e.target.value : item))} />{pollOptions.length > 2 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPollOptions((items) => items.filter((_, i) => i !== index))}>×</button>}</div>)}{pollOptions.length < 6 && <button type="button" className="btn btn-ghost btn-xs" onClick={() => setPollOptions((items) => [...items, ""])}>+ Add option</button>}</div>}
+          {type === "event" && <div className="grid gap-2 sm:grid-cols-2"><input type="datetime-local" className="input input-bordered input-sm" value={eventDate} onChange={(e) => setEventDate(e.target.value)} /><input className="input input-bordered input-sm" placeholder="Event location" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} /></div>}
+          {type === "resource_share" && <input type="url" className="input input-bordered w-full" placeholder="https://…" value={resourceUrl} onChange={(e) => setResourceUrl(e.target.value)} />}
 
           {/* Post Type Selector */}
           <div>

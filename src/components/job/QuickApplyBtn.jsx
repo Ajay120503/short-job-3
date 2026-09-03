@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Zap } from "lucide-react";
 import API from "../../utils/axios";
-import { calcStrength } from "../../utils/profileStrength";
 import useAuthStore from "../../store/authStore";
 import { canApplyToJobs } from "../../utils/badgeUtils";
 import toast from "react-hot-toast";
+import { getProfileCompletionStatus } from "../../utils/profileCompletion";
 
 const QuickApplyBtn = ({ jobId, alreadyApplied, onApplied }) => {
   const { user } = useAuthStore();
@@ -14,10 +14,13 @@ const QuickApplyBtn = ({ jobId, alreadyApplied, onApplied }) => {
     Boolean(alreadyApplied) ||
     (localApply.jobId === jobId && localApply.applied);
 
-  const profileStrength = calcStrength(user);
-  if (profileStrength < 80 || !canApplyToJobs(user) || applied) return null;
+  if (!canApplyToJobs(user) || applied) return null;
 
   const handleQuickApply = async () => {
+    if (user?.age == null) return toast.error("Please add your age to continue — you must be 18+ to apply.");
+    if (Number(user.age) < 18) return toast.error("You must be 18 or older to apply on ShorJob.");
+    const completion = getProfileCompletionStatus(user);
+    if (!completion.isComplete) return toast.error(`Complete your profile: ${completion.missingMandatory.join(", ")}`);
     setLoading(true);
     try {
       await API.post(`/jobs/${jobId}/quick-apply`);

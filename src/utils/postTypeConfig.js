@@ -4,6 +4,12 @@ import {
   FileText,
   Megaphone,
   Sparkles,
+  CircleHelp,
+  ChartNoAxesColumn,
+  CalendarDays,
+  Paperclip,
+  PartyPopper,
+  MessagesSquare,
 } from "lucide-react";
 
 export const postTypes = [
@@ -33,6 +39,12 @@ export const postTypes = [
     icon: Sparkles,
     requiresInstitution: true,
   },
+  { value: "question", label: "Ask", icon: CircleHelp },
+  { value: "poll", label: "Poll", icon: ChartNoAxesColumn },
+  { value: "event", label: "Event", icon: CalendarDays },
+  { value: "resource_share", label: "Share", icon: Paperclip },
+  { value: "celebration", label: "Cheer", icon: PartyPopper },
+  { value: "discussion", label: "Discuss", icon: MessagesSquare },
 ];
 
 export const getAvailablePostTypes = (user) =>

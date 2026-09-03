@@ -24,6 +24,17 @@ const writeBlockedAccount = (payload = {}) => {
 
 const initialBlockedAccount = readBlockedAccount();
 
+const captureCurrentLocation = () => {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      API.patch('/users/me/location', { lat: coords.latitude, lng: coords.longitude }).catch(() => {});
+    },
+    () => {},
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+  );
+};
+
 const useAuthStore = create((set, get) => ({
   user: initialBlockedAccount,
   isAuthenticated: Boolean(initialBlockedAccount),
@@ -75,6 +86,7 @@ const useAuthStore = create((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      captureCurrentLocation();
       return data;
     } catch (error) {
       const message =
@@ -113,6 +125,7 @@ const useAuthStore = create((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      captureCurrentLocation();
       return data;
     } catch (error) {
       const message =
@@ -140,6 +153,7 @@ const useAuthStore = create((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      captureCurrentLocation();
       return data;
     } catch (error) {
       const message = error.response?.data?.message || "Login failed";
@@ -166,6 +180,7 @@ const useAuthStore = create((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      captureCurrentLocation();
       return data;
     } catch (error) {
       const message =

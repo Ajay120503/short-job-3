@@ -38,8 +38,10 @@ const StoryBar = ({ onAddStory }) => {
       }
     };
     loadStories();
+    const interval = window.setInterval(loadStories, 180000);
     return () => {
       isMounted = false;
+      window.clearInterval(interval);
     };
   }, []);
 
@@ -157,6 +159,7 @@ const StoryBar = ({ onAddStory }) => {
       {viewingStory && (
         <StoryViewer
           group={viewingStory}
+          currentUserId={user?._id}
           onClose={() => setViewingStory(null)}
           onViewed={fetchStories}
         />

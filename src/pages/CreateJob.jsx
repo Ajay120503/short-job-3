@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Briefcase,
   Building2,
@@ -16,22 +16,18 @@ import {
 } from "lucide-react";
 import API from "../utils/axios";
 import toast from "react-hot-toast";
+import useAuthStore from "../store/authStore";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,
   getJobWorkplaceLabel,
 } from "../utils/jobLocation";
 
-const ROLE_TYPES = [
-  { value: "teacher", label: "Creator" },
-  { value: "professor", label: "Expert" },
-  { value: "assistant", label: "Assistant" },
-  { value: "research", label: "Research / Analysis" },
-  { value: "intern", label: "Internship" },
-  { value: "volunteer", label: "Volunteer" },
-  { value: "hod", label: "Team Leadership" },
-  { value: "principal", label: "Organization Leadership" },
-  { value: "other", label: "Other" },
+const SHORT_JOB_TYPES = [
+  ["one_day_gig", "One-day gig"], ["few_hours", "A few hours"],
+  ["weekend_only", "Weekend only"], ["short_term", "Short term"],
+  ["ongoing_part_time", "Ongoing part-time"], ["full_time", "Full-time"],
+  ["internship", "Internship"], ["volunteer", "Volunteer"],
 ];
 
 const LOCATIONS = [
@@ -45,6 +41,7 @@ const todayInputValue = new Date().toISOString().split("T")[0];
 
 const CreateJob = () => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
@@ -52,6 +49,9 @@ const CreateJob = () => {
     description: "",
     institutionName: "",
     roleType: "other",
+    shortJobType: "one_day_gig",
+    durationValue: "",
+    durationUnit: "hours",
     isPaid: false,
     currency: "INR",
     stipend: "",
@@ -113,6 +113,8 @@ const CreateJob = () => {
     if (!form.title.trim()) nextErrors.title = "Job title is required.";
     if (form.title.trim().length > 120) nextErrors.title = "Job title is too long.";
     if (!form.description.trim()) nextErrors.description = "Description is required.";
+    if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
+    if (!Number.isInteger(Number(form.durationValue)) || Number(form.durationValue) < 1) nextErrors.durationValue = "Enter a positive whole number.";
     if (form.description.trim().length < 30) {
       nextErrors.description = "Add at least 30 characters so applicants understand the role.";
     }
@@ -187,6 +189,9 @@ const CreateJob = () => {
     formData.append("title", form.title);
     formData.append("description", form.description);
     formData.append("roleType", form.roleType);
+    formData.append("shortJobType", form.shortJobType);
+    formData.append("durationValue", form.durationValue);
+    formData.append("durationUnit", form.durationUnit);
     formData.append("isPaid", form.isPaid);
     formData.append("location", form.location);
     formData.append("workplaceName", form.workplaceName);
@@ -243,6 +248,9 @@ const CreateJob = () => {
         : undefined,
   };
   const mapEmbedUrl = getJobMapEmbedUrl(previewJob);
+
+  if (user?.age == null) return <ProfileGate message="Please add your age to continue — you must be 18+ to post a job." />;
+  if (Number(user.age) < 18) return <ProfileGate message="You must be 18 or older to post a job on ShorJob." allowEdit={false} />;
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
@@ -326,26 +334,38 @@ const CreateJob = () => {
               {errors.description && <FieldError>{errors.description}</FieldError>}
             </div>
 
-            {/* Opportunity Type */}
+            {/* Short Job Type */}
             <div className="form-control">
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5" />
-                  Opportunity Type
+                  Short Job Type <span className="text-error">*</span>
                 </span>
               </label>
               <select
-                name="roleType"
+                name="shortJobType"
                 className="select select-bordered w-full h-12 text-sm"
-                value={form.roleType}
+                value={form.shortJobType}
                 onChange={handleChange}
               >
-                {ROLE_TYPES.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
+                {SHORT_JOB_TYPES.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
                   </option>
                 ))}
               </select>
+              {errors.shortJobType && <FieldError>{errors.shortJobType}</FieldError>}
+            </div>
+            <div className="grid grid-cols-[1fr_auto] gap-3">
+              <div className="form-control">
+                <label className="label pb-1"><span className="label-text text-sm font-medium">Duration *</span></label>
+                <input name="durationValue" type="number" min="1" step="1" value={form.durationValue} onChange={handleChange} className={`input input-bordered ${errors.durationValue ? 'input-error' : ''}`} placeholder="4" />
+                {errors.durationValue && <FieldError>{errors.durationValue}</FieldError>}
+              </div>
+              <div className="form-control">
+                <label className="label pb-1"><span className="label-text text-sm font-medium">Unit</span></label>
+                <select name="durationUnit" value={form.durationUnit} onChange={handleChange} className="select select-bordered"><option value="hours">Hours</option><option value="days">Days</option></select>
+              </div>
             </div>
           </div>
         </div>
@@ -707,6 +727,14 @@ const CreateJob = () => {
 
 const FieldError = ({ children }) => (
   <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
+
+const ProfileGate = ({ message, allowEdit = true }) => (
+  <div className="mx-auto mt-16 max-w-md rounded-2xl border border-base-300 bg-base-100 p-6 text-center shadow-sm">
+    <h1 className="font-heading text-xl font-bold">Complete your profile</h1>
+    <p className="mt-2 text-sm text-base-content/65">{message}</p>
+    {allowEdit && <Link to="/profile/edit#age" className="btn btn-primary btn-sm mt-5">Add age</Link>}
+  </div>
 );
 
 export default CreateJob;

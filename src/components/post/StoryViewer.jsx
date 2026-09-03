@@ -5,8 +5,9 @@ import UserAvatar from "../common/UserAvatar";
 import UserSignalBadge from "../common/UserSignalBadge";
 import { getUserSignal } from "../../utils/userSignals";
 
-const StoryViewer = ({ group, onClose, onViewed }) => {
+const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
   const stories = group.stories || [];
   const currentStory = stories[currentIndex];
 
@@ -71,7 +72,17 @@ const StoryViewer = ({ group, onClose, onViewed }) => {
   const isAdminAuthor = authorSignal?.key === "admin";
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center ${isAdminAuthor ? "bg-neutral" : "bg-black"}`}>
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center ${isAdminAuthor ? "bg-neutral" : "bg-black"}`}
+      onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
+      onTouchEnd={(event) => {
+        if (touchStart == null) return;
+        const delta = event.changedTouches[0].clientX - touchStart;
+        if (delta > 50) handlePrev();
+        if (delta < -50) handleNext();
+        setTouchStart(null);
+      }}
+    >
       {/* Close button */}
       <button
         onClick={onClose}
@@ -123,10 +134,10 @@ const StoryViewer = ({ group, onClose, onViewed }) => {
               </span>
             )}
           </div>
-          <p className="text-white/60 text-xs flex items-center gap-1">
+          {group.author?._id === currentUserId && <p className="text-white/60 text-xs flex items-center gap-1">
             <Eye className="w-3 h-3" /> {currentStory.viewers?.length || 0}{" "}
             views
-          </p>
+          </p>}
         </div>
       </div>
 

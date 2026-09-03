@@ -29,6 +29,8 @@ const ROLE_TYPE_LABELS = {
   principal: "Organization Leadership",
   other: "Other",
 };
+const SHORT_JOB_LABELS = { one_day_gig: "One-day gig", few_hours: "A few hours", weekend_only: "Weekend only", short_term: "Short term", ongoing_part_time: "Part-time", full_time: "Full-time", internship: "Internship", volunteer: "Volunteer" };
+const INDIAN_STATES = ["Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi"];
 
 const hasAppliedToJob = (job, userId) =>
   Boolean(
@@ -50,13 +52,24 @@ const Jobs = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [radiusKm, setRadiusKm] = useState("25");
+  const [useLocation, setUseLocation] = useState(Boolean(user?.currentLocation?.lat));
+  const [shortTypes, setShortTypes] = useState([]);
 
   const canPost = canCreateJobs(user);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const { data } = await API.get("/jobs");
+        const params = {};
+        if (filter !== "all") params.isPaid = filter === "paid";
+        if (city.trim()) params.city = city.trim();
+        if (state) params.state = state;
+        if (shortTypes.length) params.shortJobType = shortTypes.join(",");
+        if (useLocation && radiusKm !== "any" && user?.currentLocation?.lat != null) Object.assign(params, { lat: user.currentLocation.lat, lng: user.currentLocation.lng, radiusKm });
+        const { data } = await API.get("/jobs", { params });
         setJobs(data.jobs || []);
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
@@ -76,7 +89,7 @@ const Jobs = () => {
       }
     };
     fetchJobs();
-  }, [canPost]);
+  }, [canPost, city, state, radiusKm, useLocation, shortTypes, filter, user?.currentLocation?.lat, user?.currentLocation?.lng]);
 
   if (loading) {
     return (
@@ -95,7 +108,6 @@ const Jobs = () => {
   const visibleJobs = jobs.filter((job) => !isOwnJob(job, user?._id));
 
   const filtered = visibleJobs
-    .filter((j) => (filter === "all" ? true : j.isPaid === (filter === "paid")))
     .filter((j) => {
       const term = searchTerm.trim().toLowerCase();
       if (!term) return true;
@@ -180,6 +192,17 @@ const Jobs = () => {
               Unpaid
             </button>
           </div>
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <input className="input input-bordered input-sm" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
+          <select className="select select-bordered select-sm" value={state} onChange={(e) => setState(e.target.value)}><option value="">All states</option>{INDIAN_STATES.map((item) => <option key={item}>{item}</option>)}</select>
+          <select className="select select-bordered select-sm" value={radiusKm} disabled={!useLocation} onChange={(e) => setRadiusKm(e.target.value)}><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="any">Any distance</option></select>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <label className="label cursor-pointer gap-2 p-0 text-xs"><input type="checkbox" className="toggle toggle-primary toggle-sm" checked={useLocation} disabled={!user?.currentLocation?.lat} onChange={(e) => setUseLocation(e.target.checked)} />Use my current location</label>
+          <select className="select select-bordered select-sm" value="" onChange={(e) => { if (e.target.value && !shortTypes.includes(e.target.value)) setShortTypes((items) => [...items, e.target.value]); }}><option value="">Add job type…</option>{Object.entries(SHORT_JOB_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+          {shortTypes.map((item) => <button key={item} className="badge badge-primary badge-outline" onClick={() => setShortTypes((items) => items.filter((value) => value !== item))}>{SHORT_JOB_LABELS[item]} ×</button>)}
+          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setCity(""); setState(""); setRadiusKm("25"); setUseLocation(false); setShortTypes([]); setSearchTerm(""); }}>Clear all filters</button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-base-content/45">
           <SlidersHorizontal className="h-3.5 w-3.5" />
@@ -296,8 +319,10 @@ const Jobs = () => {
                             )}
                           </span>
                           <span className="badge badge-xs badge-soft badge-primary font-medium">
-                            {ROLE_TYPE_LABELS[job.roleType] || job.roleType || "Opportunity"}
+                            {SHORT_JOB_LABELS[job.shortJobType] || ROLE_TYPE_LABELS[job.roleType] || "Opportunity"}
                           </span>
+                          {job.duration?.value && <span className="badge badge-xs badge-outline">{job.duration.value} {job.duration.unit === "hours" ? "hrs" : "days"}</span>}
+                          {job.distanceKm != null && <span className="badge badge-xs badge-info badge-soft">{Number(job.distanceKm).toFixed(1)} km away</span>}
                           {job.postedBy?._id === user?._id &&
                             job.status &&
                             job.status !== "approved" && (

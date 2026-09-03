@@ -181,6 +181,22 @@ const Feed = () => {
     );
   };
 
+  const handleVote = async (postId, optionIndex) => {
+    try {
+      await API.post(`/posts/${postId}/vote`, { optionIndex });
+      const { data } = await API.get(`/posts/${postId}`);
+      setPosts((items) => items.map((item) => item._id === postId ? data.post : item));
+    } catch (error) { toast.error(error.response?.data?.message || "Could not vote"); }
+  };
+
+  const handleRsvp = async (postId) => {
+    try {
+      await API.post(`/posts/${postId}/rsvp`);
+      const { data } = await API.get(`/posts/${postId}`);
+      setPosts((items) => items.map((item) => item._id === postId ? data.post : item));
+    } catch (error) { toast.error(error.response?.data?.message || "Could not update RSVP"); }
+  };
+
   // Open comment modal
   const openComments = async (post) => {
     setCommentPost(post);
@@ -416,6 +432,10 @@ const Feed = () => {
 
                   {/* Linked Job Card */}
                   {post.jobPost && <LinkedJobCard job={post.jobPost} />}
+
+                  {post.type === "poll" && <div className="mb-4 space-y-2">{post.pollOptions?.map((option, index) => { const total = post.pollOptions.reduce((sum, item) => sum + (item.votes?.length || 0), 0); const percent = total ? Math.round((option.votes?.length || 0) * 100 / total) : 0; const voted = option.votes?.includes(user?._id); return <button key={option._id || index} onClick={() => handleVote(post._id, index)} className={`relative w-full overflow-hidden rounded-lg border p-2 text-left text-sm ${voted ? "border-primary" : "border-base-300"}`}><span className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${percent}%` }} /><span className="relative flex justify-between"><span>{option.text}</span><span>{percent}%</span></span></button>; })}</div>}
+                  {post.type === "event" && <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-semibold">{new Date(post.eventDetails?.date).toLocaleString("en-IN")}</p><p className="text-base-content/60">{post.eventDetails?.location}</p><button className="btn btn-primary btn-xs mt-2" onClick={() => handleRsvp(post._id)}>{post.eventDetails?.rsvps?.includes(user?._id) ? "Going" : "RSVP"} · {post.eventDetails?.rsvps?.length || 0}</button></div>}
+                  {post.type === "resource_share" && <a href={post.resourceUrl} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm mb-4">Open resource</a>}
 
                   {/* Images */}
                   {post.images?.length > 0 && (
