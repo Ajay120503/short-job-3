@@ -26,6 +26,13 @@ import { normalizeJobSkills } from "../../utils/jobSkills";
 
 const visibleSkillsLimit = 2;
 
+const isJobDeadlineActive = (job) => {
+  if (!job?.deadline) return false;
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  return new Date(job.deadline) >= todayStart;
+};
+
 const RightSidebar = () => {
   const { user } = useAuthStore();
   const [suggestedUsers, setSuggestedUsers] = useState([]);
@@ -60,7 +67,7 @@ const RightSidebar = () => {
       try {
         const { data } = await API.get("/jobs?limit=10");
         const jobs = (data.jobs || []).filter(
-          (j) => j.postedBy?._id !== user?._id,
+          (j) => j.postedBy?._id !== user?._id && isJobDeadlineActive(j),
         );
         setRecentJobs(jobs.slice(0, 5));
       } catch {
