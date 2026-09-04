@@ -117,21 +117,6 @@ export const SocketProvider = ({ children }) => {
       window.location.href = "/blocked";
     });
 
-    // ── Moderation: content approved / rejected ──
-    socket.on("content_approved", (payload) => {
-      toast.success(
-        payload?.message || "Your content has been approved and is now live!",
-      );
-    });
-
-    socket.on("content_rejected", (payload) => {
-      toast.error(
-        payload?.reason ||
-          payload?.message ||
-          "Your content was not approved. See admin notes for details.",
-      );
-    });
-
     // ── Moderation: auto-moderation result (admin notification) ──
     socket.on("auto_moderation_done", (payload) => {
       toast(
@@ -149,6 +134,8 @@ export const SocketProvider = ({ children }) => {
     socket.on("notification", (notification) => {
       // Increment notification badge
       setNotificationCount((prev) => prev + 1);
+
+      if (notification.silentToast) return;
 
       // Show clickable toast that navigates to the exact link
       const iconMap = {

@@ -65,9 +65,16 @@ const AdminContentDetail = () => {
     try {
       const endpoint = `/admin/content/${type}/${id}/${action}`;
       const body = action === "reject" ? { notes } : {};
-      await API.put(endpoint, body);
+      const { data } = await API.put(endpoint, body);
       toast.success(
-        action === "approve" ? "Content approved!" : "Content rejected",
+        action === "approve"
+          ? data.alreadyApproved
+            ? "Content is already approved"
+            : "Content approved and published"
+          : data.alreadyRejected
+            ? "Content is already rejected"
+            : "Content rejected",
+        { dedupeKey: `admin-moderation:${type}:${id}:${action}` },
       );
       navigate("/admin/queue");
     } catch (err) {
@@ -86,6 +93,7 @@ const AdminContentDetail = () => {
         data.moderationResult?.approved
           ? "Rule check approved this content"
           : "Rule check rejected this content",
+        { dedupeKey: `rule-check:${type}:${id}:${data.moderationResult?.approved}` },
       );
     } catch (err) {
       toast.error(err.response?.data?.message || "Rule check failed");
@@ -428,11 +436,11 @@ const AdminContentDetail = () => {
 
             <button
               onClick={() => handleModerate("approve")}
-              disabled={actionLoading}
+              disabled={actionLoading || content.status === "approved"}
               className="btn btn-success w-full gap-2"
             >
               <CheckCircle className="w-5 h-5" />
-              Approve Content
+              {content.status === "approved" ? "Content Approved" : "Approve Content"}
             </button>
 
             <div className="form-control">
@@ -452,11 +460,11 @@ const AdminContentDetail = () => {
 
             <button
               onClick={() => handleModerate("reject")}
-              disabled={actionLoading}
+              disabled={actionLoading || content.status === "rejected"}
               className="btn btn-error w-full gap-2"
             >
               <XCircle className="w-5 h-5" />
-              Reject Content
+              {content.status === "rejected" ? "Content Rejected" : "Reject Content"}
             </button>
           </div>
         </div>

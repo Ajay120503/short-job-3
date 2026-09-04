@@ -11,3 +11,17 @@ export const getJobScheduleLabel = (job) => {
   const end = formatJobTime(job?.endTime);
   return start && end ? `${start} – ${end}` : "";
 };
+
+const SHORT_JOB_TYPE_LABELS = {
+  one_day_gig: "One-day gig",
+  few_hours: "A few hours",
+  weekend_only: "Weekend opportunity",
+  short_term: "Short-term opportunity",
+  ongoing_part_time: "Part-time opportunity",
+  full_time: "Full-time opportunity",
+  internship: "Internship",
+  volunteer: "Volunteer opportunity",
+};
+
+export const getShortJobTypeLabel = (job) =>
+  SHORT_JOB_TYPE_LABELS[job?.shortJobType] || "Job opportunity";

@@ -193,7 +193,7 @@ const EditProfile = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 md:p-6 pb-20">
+    <div className="max-w-3xl mx-auto p-4 md:p-6 pb-20">
       <h1 className="text-2xl font-bold font-heading mb-6">Edit Profile</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -268,7 +268,9 @@ const EditProfile = () => {
               />
             </label>
           </div>
-          {errors.institutionPic && <FieldError>{errors.institutionPic}</FieldError>}
+          {errors.institutionPic && (
+            <FieldError>{errors.institutionPic}</FieldError>
+          )}
         </div>
 
         {/* Basic Info */}
@@ -341,7 +343,9 @@ const EditProfile = () => {
                   onChange={handleChange}
                   max={minimumAgeDate}
                 />
-                {errors.dateOfBirth && <FieldError>{errors.dateOfBirth}</FieldError>}
+                {errors.dateOfBirth && (
+                  <FieldError>{errors.dateOfBirth}</FieldError>
+                )}
               </div>
             </div>
             <div className="form-control">
@@ -387,7 +391,9 @@ const EditProfile = () => {
                     onChange={handleChange}
                     placeholder="e.g. Product Trainer"
                   />
-                  {errors.currentPosition && <FieldError>{errors.currentPosition}</FieldError>}
+                  {errors.currentPosition && (
+                    <FieldError>{errors.currentPosition}</FieldError>
+                  )}
                 </div>
                 <div className="form-control">
                   <label className="label py-0 pb-1">
@@ -402,7 +408,9 @@ const EditProfile = () => {
                     onChange={handleChange}
                     placeholder="e.g. DPS Pune"
                   />
-                  {errors.currentCompany && <FieldError>{errors.currentCompany}</FieldError>}
+                  {errors.currentCompany && (
+                    <FieldError>{errors.currentCompany}</FieldError>
+                  )}
                 </div>
               </div>
             )}
@@ -490,7 +498,9 @@ const EditProfile = () => {
                 onChange={handleChange}
                 min="0"
               />
-              {errors.experience && <FieldError>{errors.experience}</FieldError>}
+              {errors.experience && (
+                <FieldError>{errors.experience}</FieldError>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 mt-3">
@@ -579,7 +589,9 @@ const EditProfile = () => {
                 onChange={handleChange}
                 placeholder="https://linkedin.com/in/yourprofile"
               />
-              {errors.linkedinUrl && <FieldError>{errors.linkedinUrl}</FieldError>}
+              {errors.linkedinUrl && (
+                <FieldError>{errors.linkedinUrl}</FieldError>
+              )}
             </div>
             <div className="form-control col-span-2">
               <label className="label py-0 pb-1">
