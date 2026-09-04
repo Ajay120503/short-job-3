@@ -708,6 +708,19 @@ select,
   color: var(--color-primary);
 }
 
+.btn-outline.btn-primary {
+  border-color: var(--color-primary);
+  background-color: transparent;
+  color: var(--color-primary);
+  box-shadow: none;
+}
+
+.btn-outline.btn-primary:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-primary-content);
+}
+
 .badge {
   border-width: 1px;
   border-color: color-mix(in srgb, currentColor 20%, transparent);
