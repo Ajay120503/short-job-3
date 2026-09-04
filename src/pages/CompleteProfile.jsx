@@ -644,7 +644,7 @@ const CompleteProfile = () => {
       title="Complete your profile"
       subtitle={`Step ${step + 1} of ${steps.length}. Add the profile details that help others trust and understand your work.`}
       badge="Profile setup"
-      panelClassName="max-w-2xl"
+      panelClassName="max-w-3xl"
     >
       {renderStepIndicator()}
 
@@ -696,7 +696,8 @@ const CompleteProfile = () => {
             </div>
           </div>
           <p className="mt-3 text-center text-xs text-base-content/45 sm:text-left">
-            ShortJob is available only to users who are 18 years of age or older.
+            ShortJob is available only to users who are 18 years of age or
+            older.
           </p>
         </div>
       </form>

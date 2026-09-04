@@ -29,7 +29,7 @@ const BottomNav = () => {
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-xl border-t border-base-300/80 z-40 safe-area-bottom shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-      <div className="mx-auto flex min-h-[4rem] max-w-2xl items-center justify-around px-1 py-1.5 sm:px-4">
+      <div className="mx-auto flex min-h-[4rem] max-w-3xl items-center justify-around px-1 py-1.5 sm:px-4">
         {navItems.slice(0, 2).map((item) => (
           <NavLink
             key={item.to}

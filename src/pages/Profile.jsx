@@ -32,7 +32,7 @@ import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getUserSignal } from "../utils/userSignals";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
 import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../utils/jobLocation";
-import { getJobScheduleLabel } from "../utils/jobSchedule";
+import { getJobDateTimeLabel } from "../utils/jobSchedule";
 
 const Profile = () => {
   const { id } = useParams();
@@ -389,7 +389,7 @@ const Profile = () => {
             {/* Bio */}
             {profile.bio && (
               <p
-                className={`mx-auto max-w-2xl text-sm leading-relaxed md:mx-0 ${isSpecialProfile ? "text-base-content/75" : "text-base-content/70"}`}
+                className={`mx-auto max-w-3xl text-sm leading-relaxed md:mx-0 ${isSpecialProfile ? "text-base-content/75" : "text-base-content/70"}`}
               >
                 {profile.bio}
               </p>
@@ -400,7 +400,7 @@ const Profile = () => {
               profile.currentCompany ||
               profile.previousWork) && (
               <div
-                className={`mt-3 mx-auto max-w-2xl rounded-xl border p-3 text-left md:mx-0 ${isSpecialProfile ? specialStyle.soft : "bg-base-200/60 border-base-300/50"}`}
+                className={`mt-3 mx-auto max-w-3xl rounded-xl border p-3 text-left md:mx-0 ${isSpecialProfile ? specialStyle.soft : "bg-base-200/60 border-base-300/50"}`}
               >
                 {(profile.currentPosition || profile.currentCompany) && (
                   <div className="flex items-start gap-2 text-sm">
@@ -887,9 +887,9 @@ const Profile = () => {
                           day: "numeric",
                         })}
                       </span>
-                      {getJobScheduleLabel(job) && (
+                      {getJobDateTimeLabel(job) && (
                         <span className="rounded-full bg-primary/8 px-2 py-1 text-primary">
-                          {getJobScheduleLabel(job)}
+                          {getJobDateTimeLabel(job)}
                         </span>
                       )}
                     </div>

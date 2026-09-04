@@ -23,7 +23,7 @@ import {
 import { getSpecialUserStyle } from "../../utils/specialUserStyles";
 import { getJobWorkplaceLabel } from "../../utils/jobLocation";
 import { normalizeJobSkills } from "../../utils/jobSkills";
-import { getJobScheduleLabel } from "../../utils/jobSchedule";
+import { getJobDateTimeLabel } from "../../utils/jobSchedule";
 
 const visibleSkillsLimit = 2;
 
@@ -327,9 +327,9 @@ const RightSidebar = () => {
                               </span>
                             </span>
                           </div>
-                          {getJobScheduleLabel(job) && (
+                          {getJobDateTimeLabel(job) && (
                             <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-primary">
-                              <Clock className="h-3 w-3" /> {getJobScheduleLabel(job)}
+                              <Clock className="h-3 w-3" /> {getJobDateTimeLabel(job)}
                             </div>
                           )}
                           {normalizeJobSkills(job.skillsRequired).length > 0 && (

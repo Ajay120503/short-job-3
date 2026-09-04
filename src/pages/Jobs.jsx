@@ -10,7 +10,7 @@ import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getUserSignal } from "../utils/userSignals";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
 import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../utils/jobLocation";
-import { getJobScheduleLabel } from "../utils/jobSchedule";
+import { getJobDateTimeLabel } from "../utils/jobSchedule";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -323,7 +323,7 @@ const Jobs = () => {
                             {SHORT_JOB_LABELS[job.shortJobType] || ROLE_TYPE_LABELS[job.roleType] || "Opportunity"}
                           </span>
                           {job.duration?.value && <span className="badge badge-xs badge-outline">{job.duration.value} {job.duration.unit === "hours" ? "hrs" : "days"}</span>}
-                          {getJobScheduleLabel(job) && <span className="badge badge-xs badge-outline"><Clock className="h-3 w-3" /> {getJobScheduleLabel(job)}</span>}
+                          {getJobDateTimeLabel(job) && <span className="badge badge-xs badge-outline"><Clock className="h-3 w-3" /> {getJobDateTimeLabel(job)}</span>}
                           {job.distanceKm != null && <span className="badge badge-xs badge-info badge-soft">{Number(job.distanceKm).toFixed(1)} km away</span>}
                           {job.postedBy?._id === user?._id &&
                             job.status &&

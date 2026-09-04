@@ -12,6 +12,35 @@ export const getJobScheduleLabel = (job) => {
   return start && end ? `${start} – ${end}` : "";
 };
 
+export const calculateDurationHours = (startTime, endTime) => {
+  if (!startTime || !endTime) return "";
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
+  let minutes = endHour * 60 + endMinute - (startHour * 60 + startMinute);
+  if (minutes <= 0) minutes += 24 * 60;
+  return Number((minutes / 60).toFixed(2));
+};
+
+export const calculateEndTime = (startTime, durationHours) => {
+  if (!startTime || !Number.isFinite(Number(durationHours)) || Number(durationHours) <= 0) return "";
+  const [hour, minute] = startTime.split(":").map(Number);
+  const totalMinutes = (hour * 60 + minute + Math.round(Number(durationHours) * 60)) % (24 * 60);
+  return `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
+};
+
+export const formatJobDate = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+};
+
+export const getJobDateTimeLabel = (job) => {
+  const date = formatJobDate(job?.jobDate);
+  const time = getJobScheduleLabel(job);
+  return [date, time].filter(Boolean).join(" · ");
+};
+
 const SHORT_JOB_TYPE_LABELS = {
   one_day_gig: "One-day gig",
   few_hours: "A few hours",

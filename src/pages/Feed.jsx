@@ -272,7 +272,7 @@ const Feed = () => {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-4">
+      <div className="max-w-3xl mx-auto p-4 md:p-6 space-y-4">
         <div className="h-10 w-32 skeleton mb-6"></div>
         {[1, 2, 3].map((i) => (
           <div key={i} className="card border border-base-300/50 p-5 space-y-4">
@@ -295,7 +295,7 @@ const Feed = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
+    <div className="max-w-3xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
       {/* Story Bar */}
       <StoryBar onAddStory={() => navigate("/stories/create")} />
 
@@ -372,7 +372,9 @@ const Feed = () => {
                         </p>
                         <div
                           className={`flex items-center gap-2 text-xs ${
-                            isSpecialPost ? "text-base-content/55" : "text-base-content/40"
+                            isSpecialPost
+                              ? "text-base-content/55"
+                              : "text-base-content/40"
                           }`}
                         >
                           <span className="capitalize line-clamp-1 max-w-23">
@@ -433,9 +435,69 @@ const Feed = () => {
                   {/* Linked Job Card */}
                   {post.jobPost && <LinkedJobCard job={post.jobPost} />}
 
-                  {post.type === "poll" && <div className="mb-4 space-y-2">{post.pollOptions?.map((option, index) => { const total = post.pollOptions.reduce((sum, item) => sum + (item.votes?.length || 0), 0); const percent = total ? Math.round((option.votes?.length || 0) * 100 / total) : 0; const voted = option.votes?.includes(user?._id); return <button key={option._id || index} onClick={() => handleVote(post._id, index)} className={`relative w-full overflow-hidden rounded-lg border p-2 text-left text-sm ${voted ? "border-primary" : "border-base-300"}`}><span className="absolute inset-y-0 left-0 bg-primary/10" style={{ width: `${percent}%` }} /><span className="relative flex justify-between"><span>{option.text}</span><span>{percent}%</span></span></button>; })}</div>}
-                  {post.type === "event" && <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-semibold">{new Date(post.eventDetails?.date).toLocaleString("en-IN")}</p><p className="text-base-content/60">{post.eventDetails?.location}</p><button className="btn btn-primary btn-xs mt-2" onClick={() => handleRsvp(post._id)}>{post.eventDetails?.rsvps?.includes(user?._id) ? "Going" : "RSVP"} · {post.eventDetails?.rsvps?.length || 0}</button></div>}
-                  {post.type === "resource_share" && <a href={post.resourceUrl} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm mb-4">Open resource</a>}
+                  {post.type === "poll" && (
+                    <div className="mb-4 space-y-2">
+                      {post.pollOptions?.map((option, index) => {
+                        const total = post.pollOptions.reduce(
+                          (sum, item) => sum + (item.votes?.length || 0),
+                          0,
+                        );
+                        const percent = total
+                          ? Math.round(
+                              ((option.votes?.length || 0) * 100) / total,
+                            )
+                          : 0;
+                        const voted = option.votes?.includes(user?._id);
+                        return (
+                          <button
+                            key={option._id || index}
+                            onClick={() => handleVote(post._id, index)}
+                            className={`relative w-full overflow-hidden rounded-lg border p-2 text-left text-sm ${voted ? "border-primary" : "border-base-300"}`}
+                          >
+                            <span
+                              className="absolute inset-y-0 left-0 bg-primary/10"
+                              style={{ width: `${percent}%` }}
+                            />
+                            <span className="relative flex justify-between">
+                              <span>{option.text}</span>
+                              <span>{percent}%</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {post.type === "event" && (
+                    <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm">
+                      <p className="font-semibold">
+                        {new Date(post.eventDetails?.date).toLocaleString(
+                          "en-IN",
+                        )}
+                      </p>
+                      <p className="text-base-content/60">
+                        {post.eventDetails?.location}
+                      </p>
+                      <button
+                        className="btn btn-primary btn-xs mt-2"
+                        onClick={() => handleRsvp(post._id)}
+                      >
+                        {post.eventDetails?.rsvps?.includes(user?._id)
+                          ? "Going"
+                          : "RSVP"}{" "}
+                        · {post.eventDetails?.rsvps?.length || 0}
+                      </button>
+                    </div>
+                  )}
+                  {post.type === "resource_share" && (
+                    <a
+                      href={post.resourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-outline btn-sm mb-4"
+                    >
+                      Open resource
+                    </a>
+                  )}
 
                   {/* Images */}
                   {post.images?.length > 0 && (
@@ -586,7 +648,7 @@ const Feed = () => {
           onClick={() => setCommentPost(null)}
         >
           <div
-            className="bg-base-100 rounded-t-2xl md:rounded-2xl w-full h-[92dvh] md:h-auto md:max-h-[86vh] md:max-w-2xl flex flex-col shadow-2xl border border-base-300/70"
+            className="bg-base-100 rounded-t-2xl md:rounded-2xl w-full h-[92dvh] md:h-auto md:max-h-[86vh] md:max-w-3xl flex flex-col shadow-2xl border border-base-300/70"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

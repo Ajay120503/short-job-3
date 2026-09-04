@@ -19,6 +19,7 @@ import API from "../utils/axios";
 import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
 import JobTimeField from "../components/job/JobTimeField";
+import { calculateDurationHours, calculateEndTime } from "../utils/jobSchedule";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,
@@ -54,6 +55,7 @@ const CreateJob = () => {
     shortJobType: "one_day_gig",
     durationValue: "",
     durationUnit: "hours",
+    jobDate: "",
     startTime: "",
     endTime: "",
     isPaid: false,
@@ -80,10 +82,18 @@ const CreateJob = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setForm((prev) => {
+      const next = { ...prev, [name]: type === "checkbox" ? checked : value };
+      if ((name === "startTime" || name === "endTime") && next.startTime && next.endTime) {
+        next.durationUnit = "hours";
+        next.durationValue = calculateDurationHours(next.startTime, next.endTime);
+      } else if (name === "startTime" && next.durationUnit === "hours" && next.durationValue) {
+        next.endTime = calculateEndTime(next.startTime, next.durationValue);
+      } else if ((name === "durationValue" || name === "durationUnit") && next.durationUnit === "hours" && next.startTime) {
+        next.endTime = calculateEndTime(next.startTime, next.durationValue);
+      }
+      return next;
+    });
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -118,7 +128,8 @@ const CreateJob = () => {
     if (form.title.trim().length > 120) nextErrors.title = "Job title is too long.";
     if (!form.description.trim()) nextErrors.description = "Description is required.";
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
-    if (!Number.isInteger(Number(form.durationValue)) || Number(form.durationValue) < 1) nextErrors.durationValue = "Enter a positive whole number.";
+    if (!Number.isFinite(Number(form.durationValue)) || Number(form.durationValue) <= 0) nextErrors.durationValue = "Enter a positive duration.";
+    if (!form.jobDate) nextErrors.jobDate = "Job date is required.";
     if (!form.startTime) nextErrors.startTime = "Start time is required.";
     if (!form.endTime) nextErrors.endTime = "End time is required.";
     if (form.startTime && form.endTime && form.startTime === form.endTime) {
@@ -131,6 +142,7 @@ const CreateJob = () => {
     if (form.deadline && form.deadline < todayInputValue) {
       nextErrors.deadline = "Deadline cannot be in the past.";
     }
+    if (form.jobDate && form.deadline && form.deadline > form.jobDate) nextErrors.deadline = "Deadline cannot be after the job date.";
     if (!form.contactEmail.trim()) nextErrors.contactEmail = "Contact email is required.";
     if (form.contactEmail && !isValidEmail(form.contactEmail)) {
       nextErrors.contactEmail = "Enter a valid email address.";
@@ -201,6 +213,7 @@ const CreateJob = () => {
     formData.append("shortJobType", form.shortJobType);
     formData.append("durationValue", form.durationValue);
     formData.append("durationUnit", form.durationUnit);
+    formData.append("jobDate", form.jobDate);
     formData.append("startTime", form.startTime);
     formData.append("endTime", form.endTime);
     formData.append("isPaid", form.isPaid);
@@ -381,8 +394,8 @@ const CreateJob = () => {
                 <input
                   name="durationValue"
                   type="number"
-                  min="1"
-                  step="1"
+                  min="0.25"
+                  step="0.25"
                   value={form.durationValue}
                   onChange={handleChange}
                   className={`input input-bordered ${errors.durationValue ? "input-error" : ""}`}
@@ -412,6 +425,14 @@ const CreateJob = () => {
                 <Clock className="h-4 w-4 text-primary" /> Daily working time
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
+                <div className="form-control sm:col-span-2">
+                  <label className="label pb-1"><span className="label-text text-xs font-semibold">Job date *</span></label>
+                  <div className="relative">
+                    <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+                    <input name="jobDate" type="date" min={todayInputValue} value={form.jobDate} onChange={handleChange} className={`input input-bordered h-12 w-full rounded-xl pl-10 ${errors.jobDate ? "input-error" : ""}`} required />
+                  </div>
+                  {errors.jobDate && <FieldError>{errors.jobDate}</FieldError>}
+                </div>
                 <JobTimeField
                   name="startTime"
                   label="Start time"

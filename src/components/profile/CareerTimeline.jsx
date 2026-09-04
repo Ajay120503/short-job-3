@@ -198,12 +198,13 @@ const TimelineEditor = ({
   onSave,
 }) => (
   <div className="modal modal-open">
-    <div className="modal-box max-w-2xl">
+    <div className="modal-box max-w-3xl">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <h3 className="font-bold text-lg">Career Timeline</h3>
           <p className="text-xs text-base-content/50">
-            Add background, work, and achievement milestones shown on your profile.
+            Add background, work, and achievement milestones shown on your
+            profile.
           </p>
         </div>
         <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle">

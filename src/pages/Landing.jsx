@@ -118,7 +118,7 @@ const Landing = () => {
               initial="hidden"
               animate="show"
               variants={stagger}
-              className="max-w-2xl"
+              className="max-w-3xl"
             >
               <motion.div
                 variants={fadeUp}
@@ -381,7 +381,7 @@ const Landing = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.35 }}
               variants={stagger}
-              className="mx-auto mb-12 max-w-2xl text-center"
+              className="mx-auto mb-12 max-w-3xl text-center"
             >
               <motion.div
                 variants={fadeUp}
@@ -436,7 +436,7 @@ const Landing = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.3 }}
               variants={stagger}
-              className="mb-12 max-w-2xl"
+              className="mb-12 max-w-3xl"
             >
               <motion.h2
                 variants={fadeUp}

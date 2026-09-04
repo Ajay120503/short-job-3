@@ -34,7 +34,7 @@ import {
 } from "../utils/jobLocation";
 import { normalizeJobSkills } from "../utils/jobSkills";
 import {
-  getJobScheduleLabel,
+  getJobDateTimeLabel,
   getShortJobTypeLabel,
 } from "../utils/jobSchedule";
 
@@ -107,7 +107,7 @@ const JobDetail = () => {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-4">
+      <div className="max-w-3xl mx-auto p-4 md:p-6 space-y-4">
         <div className="h-6 w-24 skeleton rounded mb-4"></div>
         <div className="card border border-base-300/50 p-6 space-y-4">
           <div className="h-8 w-3/4 skeleton rounded"></div>
@@ -121,7 +121,7 @@ const JobDetail = () => {
 
   if (!job) {
     return (
-      <div className="max-w-2xl mx-auto p-6 text-center py-20">
+      <div className="max-w-3xl mx-auto p-6 text-center py-20">
         <Briefcase className="w-16 h-16 text-base-content/20 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-base-content/40 mb-2">
           Job not found
@@ -222,9 +222,9 @@ const JobDetail = () => {
             <div className="bg-base-200/50 rounded-xl p-3 text-center">
               <Clock className="w-4 h-4 text-primary mx-auto mb-1" />
               <p className="text-xs font-medium">
-                {getJobScheduleLabel(job) || "Not specified"}
+                {getJobDateTimeLabel(job) || "Not specified"}
               </p>
-              <p className="text-[10px] text-base-content/40">Working time</p>
+            <p className="text-[10px] text-base-content/40">Job schedule</p>
             </div>
             <div className="bg-base-200/50 rounded-xl p-3 text-center">
               <Briefcase className="w-4 h-4 text-primary mx-auto mb-1" />
