@@ -16,19 +16,22 @@ import FontAwesomeGraduateIcon from "../common/FontAwesomeGraduateIcon";
 const typeConfig = {
   school: {
     icon: FontAwesomeGraduateIcon,
-    color: "text-blue-500",
-    bg: "bg-blue-50",
+    label: "Education",
+    color: "text-info",
+    bg: "bg-info/10",
   },
   college: {
     icon: Building2,
-    color: "text-purple-500",
-    bg: "bg-purple-50",
+    label: "Education",
+    color: "text-secondary",
+    bg: "bg-secondary/10",
   },
-  work: { icon: Briefcase, color: "text-teal-500", bg: "bg-teal-50" },
+  work: { icon: Briefcase, label: "Experience", color: "text-primary", bg: "bg-primary/10" },
   achievement: {
     icon: Trophy,
-    color: "text-amber-500",
-    bg: "bg-amber-50",
+    label: "Achievement",
+    color: "text-warning",
+    bg: "bg-warning/10",
   },
 };
 
@@ -100,21 +103,27 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
     }
   };
 
-  if (!timeline || timeline.length === 0) {
+  const hasEntries = sorted.length > 0;
+
+  if (!hasEntries) {
     if (!isOwner) return null;
     return (
       <>
-        <div className="mt-4 p-4 bg-base-200/30 rounded-lg text-center">
-          <p className="text-sm text-base-content/40">
-            No career timeline entries yet.
+        <section className="my-4 rounded-2xl border border-dashed border-base-300 bg-base-100 p-6 text-center shadow-sm">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Briefcase className="h-5 w-5" />
+          </div>
+          <h3 className="mt-3 font-heading text-base font-bold">Build your career journey</h3>
+          <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-base-content/50">
+            Add education, experience, and achievements to help visitors understand your background.
           </p>
           <button
             onClick={openEditor}
-            className="btn btn-ghost btn-xs gap-1 mt-2"
+            className="btn btn-primary btn-sm mt-4 gap-1.5"
           >
-            <Plus className="w-3 h-3" /> Add Entry
+            <Plus className="h-4 w-4" /> Add first milestone
           </button>
-        </div>
+        </section>
         {editing && (
           <TimelineEditor
             draft={draft}
@@ -131,45 +140,52 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
   }
 
   return (
-    <div className="mt-4 mb-4">
-      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-        Career Journey
+    <section className="my-4 overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
+      <div className="flex items-center gap-3 border-b border-base-300/60 px-4 py-3.5 sm:px-5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Briefcase className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <h3 className="font-heading text-sm font-bold">Career Journey</h3>
+          <p className="text-[11px] text-base-content/45">{sorted.length} {sorted.length === 1 ? "milestone" : "milestones"}</p>
+        </div>
         {isOwner && (
           <button
             onClick={openEditor}
-            className="btn btn-ghost btn-xs gap-1 ml-auto"
+            className="btn btn-ghost btn-sm ml-auto gap-1.5 text-primary"
           >
-            <Pencil className="w-3 h-3" /> Manage
+            <Pencil className="h-3.5 w-3.5" /> Manage
           </button>
         )}
-      </h3>
-      <div className="relative pl-6">
+      </div>
+      <div className="relative px-4 py-5 pl-12 sm:px-5 sm:pl-14">
         {/* Vertical line */}
-        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-base-300 rounded-full" />
+        <div className="absolute bottom-7 left-[27px] top-7 w-px bg-gradient-to-b from-primary/60 via-base-300 to-base-300 sm:left-[35px]" />
 
         {sorted.map((entry, idx) => {
           const config = typeConfig[entry.type] || typeConfig.school;
           const Icon = config.icon;
           return (
-            <div key={idx} className="relative pb-4 last:pb-0">
+            <article key={`${entry.year}-${entry.title}-${idx}`} className="group relative pb-5 last:pb-0">
               {/* Node */}
               <div
-                className={`absolute -left-6 top-1 w-6 h-6 rounded-full ${config.bg} flex items-center justify-center border-2 border-base-100`}
+                className={`absolute -left-9 top-1 flex h-7 w-7 items-center justify-center rounded-xl border-2 border-base-100 shadow-sm sm:-left-10 ${config.bg}`}
               >
                 <Icon className={`w-3 h-3 ${config.color}`} />
               </div>
-              <div>
-                <span className="text-xs font-bold text-base-content/50">
-                  {entry.year}
-                </span>
-                <p className="text-sm font-medium">{entry.title}</p>
+              <div className="rounded-xl border border-transparent px-3 py-2 transition-colors group-hover:border-base-300/60 group-hover:bg-base-200/35">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-bold text-primary">{entry.year}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${config.bg} ${config.color}`}>{config.label}</span>
+                </div>
+                <p className="text-sm font-semibold leading-snug">{entry.title}</p>
                 {entry.institution && (
                   <p className="text-xs text-base-content/50">
                     {entry.institution}
                   </p>
                 )}
               </div>
-            </div>
+            </article>
           );
         })}
       </div>
@@ -184,7 +200,7 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
           onSave={saveTimeline}
         />
       )}
-    </div>
+    </section>
   );
 };
 
@@ -197,35 +213,48 @@ const TimelineEditor = ({
   onClose,
   onSave,
 }) => (
-  <div className="modal modal-open">
-    <div className="modal-box max-w-3xl">
-      <div className="flex items-start justify-between gap-3 mb-4">
+  <div className="modal modal-open px-2" role="dialog" aria-modal="true" aria-labelledby="timeline-editor-title">
+    <div className="modal-box max-h-[92dvh] max-w-3xl overflow-hidden border border-base-300 p-0 shadow-2xl">
+      <div className="flex items-start justify-between gap-3 border-b border-base-300/60 px-4 py-4 sm:px-5">
         <div>
-          <h3 className="font-bold text-lg">Career Timeline</h3>
+          <h3 id="timeline-editor-title" className="font-heading text-lg font-bold">Career Timeline</h3>
           <p className="text-xs text-base-content/50">
             Add background, work, and achievement milestones shown on your
             profile.
           </p>
         </div>
-        <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
+        <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle" aria-label="Close timeline editor">
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="space-y-3 max-h-[58vh] overflow-y-auto pr-1">
+      <div className="max-h-[58dvh] space-y-3 overflow-y-auto bg-base-200/25 px-4 py-4 sm:px-5">
         {draft.map((entry, index) => (
           <div
             key={index}
-            className="rounded-xl border border-base-300 bg-base-100 p-3"
+            className="rounded-2xl border border-base-300/70 bg-base-100 p-3.5 shadow-sm"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-              <input
-                className="input input-bordered input-sm"
-                placeholder="Year"
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-xs font-bold text-base-content/55">Milestone {index + 1}</span>
+              <button type="button" onClick={() => removeDraft(index)} className="btn btn-ghost btn-xs btn-square text-error" aria-label={`Remove milestone ${index + 1}`}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+              <label className="form-control">
+                <span className="label-text mb-1 text-[11px] font-medium">Year *</span>
+                <input
+                className="input input-bordered input-sm w-full"
+                placeholder="2026"
+                inputMode="numeric"
+                maxLength={4}
                 value={entry.year}
                 onChange={(e) => updateDraft(index, "year", e.target.value)}
               />
-              <select
+              </label>
+              <label className="form-control">
+                <span className="label-text mb-1 text-[11px] font-medium">Type</span>
+                <select
                 className="select select-bordered select-sm"
                 value={entry.type}
                 onChange={(e) => updateDraft(index, "type", e.target.value)}
@@ -235,38 +264,39 @@ const TimelineEditor = ({
                 <option value="work">Work</option>
                 <option value="achievement">Achievement</option>
               </select>
-              <input
+              </label>
+              <label className="form-control sm:col-span-2">
+                <span className="label-text mb-1 text-[11px] font-medium">Title *</span>
+                <input
                 className="input input-bordered input-sm sm:col-span-2"
-                placeholder="Title"
+                placeholder="e.g. Joined as Product Designer"
                 value={entry.title}
                 onChange={(e) => updateDraft(index, "title", e.target.value)}
               />
+              </label>
             </div>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3">
+              <label className="form-control">
+              <span className="label-text mb-1 text-[11px] font-medium">Organization or place</span>
               <input
-                className="input input-bordered input-sm flex-1"
+                className="input input-bordered input-sm w-full"
                 placeholder="Organization or place"
                 value={entry.institution}
                 onChange={(e) =>
                   updateDraft(index, "institution", e.target.value)
                 }
               />
-              <button
-                onClick={() => removeDraft(index)}
-                className="btn btn-ghost btn-sm btn-square text-error"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              </label>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="modal-action justify-between">
-        <button onClick={addDraft} className="btn btn-ghost btn-sm gap-2">
+      <div className="modal-action m-0 flex-col-reverse justify-between gap-2 border-t border-base-300/60 px-4 py-3 sm:flex-row sm:px-5">
+        <button type="button" onClick={addDraft} className="btn btn-ghost btn-sm gap-2">
           <Plus className="w-4 h-4" /> Add Entry
         </button>
-        <button
+        <button type="button"
           onClick={onSave}
           disabled={saving}
           className="btn btn-primary btn-sm gap-2"
