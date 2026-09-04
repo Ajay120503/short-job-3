@@ -7,11 +7,20 @@ import {
   Save,
   Trash2,
   X,
+  BookOpen,
+  BadgeCheck,
+  FolderKanban,
+  TrendingUp,
+  HeartHandshake,
+  Award,
+  MapPin,
+  ExternalLink,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import toast from "../../utils/toast";
 import API from "../../utils/axios";
 import FontAwesomeGraduateIcon from "../common/FontAwesomeGraduateIcon";
+import ConfirmModal from "../common/ConfirmModal";
 
 const typeConfig = {
   school: {
@@ -26,7 +35,14 @@ const typeConfig = {
     color: "text-secondary",
     bg: "bg-secondary/10",
   },
+  course: { icon: BookOpen, label: "Course", color: "text-info", bg: "bg-info/10" },
+  certification: { icon: BadgeCheck, label: "Certification", color: "text-success", bg: "bg-success/10" },
+  internship: { icon: Briefcase, label: "Internship", color: "text-primary", bg: "bg-primary/10" },
   work: { icon: Briefcase, label: "Experience", color: "text-primary", bg: "bg-primary/10" },
+  promotion: { icon: TrendingUp, label: "Promotion", color: "text-success", bg: "bg-success/10" },
+  project: { icon: FolderKanban, label: "Project", color: "text-secondary", bg: "bg-secondary/10" },
+  volunteer: { icon: HeartHandshake, label: "Volunteering", color: "text-error", bg: "bg-error/10" },
+  award: { icon: Award, label: "Award", color: "text-warning", bg: "bg-warning/10" },
   achievement: {
     icon: Trophy,
     label: "Achievement",
@@ -35,12 +51,17 @@ const typeConfig = {
   },
 };
 
-const emptyEntry = { year: "", title: "", institution: "", type: "school" };
+const emptyEntry = {
+  year: "", endYear: "", title: "", institution: "", type: "school",
+  description: "", location: "", skills: "", link: "",
+};
 
 const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(timeline.length ? timeline : [emptyEntry]);
   const [saving, setSaving] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const sorted = useMemo(
     () =>
@@ -80,11 +101,24 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
         title: String(entry.title || "").trim(),
         institution: String(entry.institution || "").trim(),
         type: entry.type || "school",
+        endYear: String(entry.endYear || "").trim(),
+        description: String(entry.description || "").trim(),
+        location: String(entry.location || "").trim(),
+        skills: typeof entry.skills === "string" ? entry.skills.split(",").map((skill) => skill.trim()).filter(Boolean) : entry.skills || [],
+        link: String(entry.link || "").trim(),
       }))
       .filter((entry) => entry.year || entry.title || entry.institution);
 
     if (cleaned.some((entry) => !entry.year || !entry.title)) {
       toast.error("Each timeline entry needs a year and title.");
+      return;
+    }
+    if (cleaned.some((entry) => !/^\d{4}$/.test(entry.year) || (entry.endYear && (!/^\d{4}$/.test(entry.endYear) || Number(entry.endYear) < Number(entry.year))))) {
+      toast.error("Use valid years, and keep the end year after the start year.");
+      return;
+    }
+    if (cleaned.some((entry) => entry.link && !/^https?:\/\//i.test(entry.link))) {
+      toast.error("Milestone links must start with http:// or https://.");
       return;
     }
 
@@ -100,6 +134,28 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
       toast.error(err.response?.data?.message || "Failed to update timeline");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteTimelineEntry = async () => {
+    if (!entryToDelete || !isOwner) return;
+    const targetId = entryToDelete._id ? String(entryToDelete._id) : "";
+    const nextTimeline = (timeline || []).filter((entry) =>
+      targetId ? String(entry._id) !== targetId : entry !== entryToDelete,
+    );
+
+    setDeleting(true);
+    try {
+      const { data } = await API.put(`/users/${userId}/timeline`, {
+        timeline: nextTimeline,
+      });
+      onUpdated?.(data.user?.timeline || nextTimeline, data.user);
+      setEntryToDelete(null);
+      toast.success("Timeline milestone deleted");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete milestone");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -159,14 +215,14 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
         )}
       </div>
       <div className="relative px-4 py-5 pl-12 sm:px-5 sm:pl-14">
-        {/* Vertical line */}
-        <div className="absolute bottom-7 left-[27px] top-7 w-px bg-gradient-to-b from-primary/60 via-base-300 to-base-300 sm:left-[35px]" />
-
         {sorted.map((entry, idx) => {
           const config = typeConfig[entry.type] || typeConfig.school;
           const Icon = config.icon;
           return (
             <article key={`${entry.year}-${entry.title}-${idx}`} className="group relative pb-5 last:pb-0">
+              {idx < sorted.length - 1 && (
+                <div className="absolute -bottom-[18px] -left-[22px] top-[18px] w-px bg-gradient-to-b from-primary/45 to-base-300 sm:-left-[26px]" aria-hidden="true" />
+              )}
               {/* Node */}
               <div
                 className={`absolute -left-9 top-1 flex h-7 w-7 items-center justify-center rounded-xl border-2 border-base-100 shadow-sm sm:-left-10 ${config.bg}`}
@@ -175,14 +231,39 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
               </div>
               <div className="rounded-xl border border-transparent px-3 py-2 transition-colors group-hover:border-base-300/60 group-hover:bg-base-200/35">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-bold text-primary">{entry.year}</span>
+                  <span className="text-xs font-bold text-primary">{entry.year}{entry.endYear ? ` – ${entry.endYear}` : ""}</span>
                   <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${config.bg} ${config.color}`}>{config.label}</span>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => setEntryToDelete(entry)}
+                      className="btn btn-ghost btn-xs btn-square ml-auto text-base-content/35 opacity-70 hover:bg-error/10 hover:text-error sm:opacity-0 sm:group-hover:opacity-100"
+                      aria-label={`Delete ${entry.title}`}
+                      title="Delete milestone"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
                 <p className="text-sm font-semibold leading-snug">{entry.title}</p>
                 {entry.institution && (
                   <p className="text-xs text-base-content/50">
                     {entry.institution}
                   </p>
+                )}
+                {entry.location && (
+                  <p className="mt-1 flex items-center gap-1 text-[11px] text-base-content/45"><MapPin className="h-3 w-3" /> {entry.location}</p>
+                )}
+                {entry.description && <p className="mt-2 text-xs leading-5 text-base-content/65">{entry.description}</p>}
+                {entry.skills?.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {entry.skills.map((skill, skillIndex) => <span key={`${skill}-${skillIndex}`} className="badge badge-xs badge-ghost">{skill}</span>)}
+                  </div>
+                )}
+                {entry.link && (
+                  <a href={entry.link} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                    View details <ExternalLink className="h-3 w-3" />
+                  </a>
                 )}
               </div>
             </article>
@@ -200,6 +281,17 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
           onSave={saveTimeline}
         />
       )}
+      <ConfirmModal
+        isOpen={Boolean(entryToDelete)}
+        onClose={() => !deleting && setEntryToDelete(null)}
+        onConfirm={deleteTimelineEntry}
+        title="Delete this milestone?"
+        message={`“${entryToDelete?.title || "This milestone"}” will be permanently removed from your career timeline.`}
+        confirmText="Delete milestone"
+        cancelText="Keep it"
+        variant="danger"
+        isLoading={deleting}
+      />
     </section>
   );
 };
@@ -254,14 +346,21 @@ const TimelineEditor = ({
               </label>
               <label className="form-control">
                 <span className="label-text mb-1 text-[11px] font-medium">Type</span>
-                <select
+              <select
                 className="select select-bordered select-sm"
                 value={entry.type}
                 onChange={(e) => updateDraft(index, "type", e.target.value)}
               >
-                <option value="school">Foundation</option>
-                <option value="college">Advanced</option>
-                <option value="work">Work</option>
+                <option value="school">School education</option>
+                <option value="college">College / degree</option>
+                <option value="course">Course / training</option>
+                <option value="certification">Certification</option>
+                <option value="internship">Internship</option>
+                <option value="work">Work experience</option>
+                <option value="promotion">Promotion</option>
+                <option value="project">Project</option>
+                <option value="volunteer">Volunteering</option>
+                <option value="award">Award</option>
                 <option value="achievement">Achievement</option>
               </select>
               </label>
@@ -275,6 +374,16 @@ const TimelineEditor = ({
               />
               </label>
             </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label className="form-control">
+                <span className="label-text mb-1 text-[11px] font-medium">End year <span className="font-normal text-base-content/40">(optional)</span></span>
+                <input className="input input-bordered input-sm w-full" placeholder="2026 or leave blank" inputMode="numeric" maxLength={4} value={entry.endYear || ""} onChange={(e) => updateDraft(index, "endYear", e.target.value)} />
+              </label>
+              <label className="form-control">
+                <span className="label-text mb-1 text-[11px] font-medium">Location</span>
+                <input className="input input-bordered input-sm w-full" placeholder="e.g. Pune, India or Remote" maxLength={120} value={entry.location || ""} onChange={(e) => updateDraft(index, "location", e.target.value)} />
+              </label>
+            </div>
             <div className="mt-3">
               <label className="form-control">
               <span className="label-text mb-1 text-[11px] font-medium">Organization or place</span>
@@ -286,6 +395,23 @@ const TimelineEditor = ({
                   updateDraft(index, "institution", e.target.value)
                 }
               />
+              </label>
+            </div>
+            <div className="mt-3">
+              <label className="form-control">
+                <span className="label-text mb-1 text-[11px] font-medium">Description</span>
+                <textarea className="textarea textarea-bordered min-h-20 w-full text-sm" placeholder="What did you learn, build, lead, or achieve?" maxLength={500} value={entry.description || ""} onChange={(e) => updateDraft(index, "description", e.target.value)} />
+                <span className="mt-1 text-right text-[10px] text-base-content/35">{(entry.description || "").length}/500</span>
+              </label>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label className="form-control">
+                <span className="label-text mb-1 text-[11px] font-medium">Skills used</span>
+                <input className="input input-bordered input-sm w-full" placeholder="React, Leadership, Research" value={Array.isArray(entry.skills) ? entry.skills.join(", ") : entry.skills || ""} onChange={(e) => updateDraft(index, "skills", e.target.value)} />
+              </label>
+              <label className="form-control">
+                <span className="label-text mb-1 text-[11px] font-medium">Proof or project link</span>
+                <input type="url" className="input input-bordered input-sm w-full" placeholder="https://..." value={entry.link || ""} onChange={(e) => updateDraft(index, "link", e.target.value)} />
               </label>
             </div>
           </div>
