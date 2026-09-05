@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2, Settings, Camera } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import {
-  isAdminUser,
   isSuperAdminUser,
   getUserRoleLabel,
 } from "../../utils/badgeUtils";
@@ -41,7 +40,7 @@ const AdminLoginRecords = () => {
   const canDeleteRecords = isSuperAdminUser(user);
 
   useEffect(() => {
-    if (!isAuthenticated || !isAdminUser(user)) {
+    if (!isAuthenticated || !isSuperAdminUser(user)) {
       navigate("/feed");
       return;
     }
@@ -114,7 +113,7 @@ const AdminLoginRecords = () => {
                 Login Records
               </h1>
               <p className="text-xs text-base-content/50 sm:text-sm">
-                Admin-only audit trail for location and photo verified sign-ins.
+                Super-admin-only audit trail for location and photo verified sign-ins.
               </p>
             </div>
           </div>

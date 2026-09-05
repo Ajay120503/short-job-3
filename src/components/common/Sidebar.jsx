@@ -18,7 +18,11 @@ import useAuthStore from "../../store/authStore";
 import { useSocket } from "../../context/SocketContext";
 import UserAvatar from "./UserAvatar";
 import Brand from "./Brand";
-import { isAdminUser, getUserRoleLabel } from "../../utils/badgeUtils";
+import {
+  isAdminUser,
+  isSuperAdminUser,
+  getUserRoleLabel,
+} from "../../utils/badgeUtils";
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const { user } = useAuthStore();
@@ -34,6 +38,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   ];
 
   const isAdmin = isAdminUser(user);
+  const isSuperAdmin = isSuperAdminUser(user);
   const labelClass = collapsed
     ? "max-w-0 -translate-x-2 opacity-0 delay-0"
     : "max-w-40 translate-x-0 opacity-100 delay-100";
@@ -59,7 +64,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
     ...(isAdmin
       ? [
           { to: "/admin", icon: Shield, label: "Admin Dashboard" },
-          { to: "/admin/login-records", icon: ShieldCheck, label: "Login Records" },
+          ...(isSuperAdmin
+            ? [{ to: "/admin/login-records", icon: ShieldCheck, label: "Login Records" }]
+            : []),
         ]
       : []),
   ];

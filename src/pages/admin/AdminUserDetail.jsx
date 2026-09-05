@@ -227,6 +227,7 @@ const AdminUserDetail = () => {
     isSuperAdminUser(currentUser) &&
     currentUser?._id !== profile._id &&
     !profile.isSuperAdmin;
+  const canViewPlatformControls = isSuperAdminUser(currentUser);
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
@@ -240,7 +241,9 @@ const AdminUserDetail = () => {
             <div>
               <h1 className="text-xl font-bold font-heading sm:text-2xl">User Details</h1>
               <p className="text-xs text-base-content/50 sm:text-sm">
-                Account trust, badges, notes, and access controls.
+                {canViewPlatformControls
+                  ? "Account trust, badges, notes, and access controls."
+                  : "User moderation notes."}
               </p>
             </div>
           </div>
@@ -264,15 +267,18 @@ const AdminUserDetail = () => {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="truncate text-xl font-bold">{profile.name}</h2>
-                  {profile.isSuperAdmin ? (
-                    <span className="badge badge-primary badge-sm">Super Admin</span>
-                  ) : profile.isAdmin ? (
-                    <span className="badge badge-info badge-sm">Admin</span>
-                  ) : null}
+                  {canViewPlatformControls &&
+                    (profile.isSuperAdmin ? (
+                      <span className="badge badge-primary badge-sm">Super Admin</span>
+                    ) : profile.isAdmin ? (
+                      <span className="badge badge-info badge-sm">Admin</span>
+                    ) : null)}
                 </div>
-                <p className="text-sm text-base-content/50">
-                  {getUserRoleLabel(profile)}
-                </p>
+                {canViewPlatformControls && (
+                  <p className="text-sm text-base-content/50">
+                    {getUserRoleLabel(profile)}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -313,7 +319,8 @@ const AdminUserDetail = () => {
             )}
           </div>
 
-          {/* User Details Grid */}
+          {/* Platform controls and sensitive account state are super-admin only. */}
+          {canViewPlatformControls && (
           <div className="grid grid-cols-1 gap-4 mt-5 md:grid-cols-2 md:gap-6">
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
@@ -393,7 +400,9 @@ const AdminUserDetail = () => {
               )}
             </div>
           </div>
+          )}
 
+          {canViewPlatformControls && (
           <div className="mt-6 rounded-xl border border-base-300/60 bg-base-200/35 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
@@ -436,8 +445,10 @@ const AdminUserDetail = () => {
               )}
             </div>
           </div>
+          )}
 
           {/* Badges Section */}
+          {canViewPlatformControls && (
           <div className="mt-6">
             <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Award className="w-4 h-4" /> Badges
@@ -460,6 +471,7 @@ const AdminUserDetail = () => {
               ))}
             </div>
           </div>
+          )}
 
           {/* Grant Badge */}
           {canManageUser && (
@@ -493,15 +505,15 @@ const AdminUserDetail = () => {
             </div>
           )}
 
-          {/* Admin Notes */}
+          {/* Moderation Notes */}
           <div className="mt-6">
             <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-              <History className="w-4 h-4" /> Admin Notes
+              <History className="w-4 h-4" /> Moderation Notes
             </h3>
             <textarea
               className="textarea textarea-bordered w-full text-sm"
               rows={3}
-              placeholder="Add notes about this user..."
+              placeholder="Add moderation notes about this user..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
