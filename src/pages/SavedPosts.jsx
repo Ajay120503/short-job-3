@@ -109,9 +109,9 @@ const SavedPosts = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
-      <div className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+      <div data-page-header className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div data-page-heading-icon className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <BookmarkCheck className="h-5 w-5" />
           </div>
           <div>

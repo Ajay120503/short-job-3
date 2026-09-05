@@ -183,6 +183,31 @@ select,
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
+/* Flat page heading shared by primary screens (matches the Feed heading). */
+[data-page-header] {
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-page-header] [data-page-heading-icon] {
+  display: none;
+}
+
+[data-page-header] h1 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  letter-spacing: -0.015em;
+}
+
+[data-page-header] h1 + p {
+  margin-top: 0.125rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: color-mix(in srgb, var(--color-base-content) 56%, transparent);
+}
+
 [data-filter-panel]:focus-within {
   border-color: color-mix(in srgb, var(--color-primary) 32%, transparent);
   box-shadow: 0 16px 38px -28px color-mix(in srgb, var(--color-primary) 65%, transparent);

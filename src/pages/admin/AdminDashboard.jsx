@@ -252,10 +252,10 @@ const AdminDashboard = () => {
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
-      <div className="rounded-xl sm:rounded-2xl bg-base-100 border border-base-300/70 shadow-sm p-4 sm:p-5">
+      <div data-page-header className="rounded-xl sm:rounded-2xl bg-base-100 border border-base-300/70 shadow-sm p-4 sm:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-3">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <div data-page-heading-icon className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <Shield className="w-6 h-6 text-primary" />
             </div>
             <div className="min-w-0">

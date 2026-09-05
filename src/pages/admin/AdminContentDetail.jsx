@@ -156,10 +156,10 @@ const AdminContentDetail = () => {
   return (
     <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
-      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+      <div data-page-header className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div data-page-heading-icon className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Shield className="h-5 w-5" />
             </div>
             <div>

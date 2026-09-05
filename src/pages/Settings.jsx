@@ -362,10 +362,10 @@ const Settings = () => {
 
   return (
     <div className="settings-page mx-auto max-w-5xl space-y-3 p-3 pb-24 sm:space-y-4 sm:p-4 md:space-y-6 md:p-6">
-      <div className="rounded-2xl border border-base-300/70 bg-base-100 px-3 py-3 shadow-sm sm:p-5">
+      <div data-page-header className="rounded-2xl border border-base-300/70 bg-base-100 px-3 py-3 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex aspect-square h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-content shadow-sm sm:h-12 sm:w-12 sm:min-w-12 sm:rounded-2xl">
+            <div data-page-heading-icon className="flex aspect-square h-10 w-10 min-w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-content shadow-sm sm:h-12 sm:w-12 sm:min-w-12 sm:rounded-2xl">
               <Settings2 className="h-5 w-5 shrink-0" />
             </div>
             <div>

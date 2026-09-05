@@ -102,10 +102,10 @@ const AdminLoginRecords = () => {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-2 py-3 pb-20 sm:px-4 md:p-6">
-      <div className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+      <div data-page-header className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div data-page-heading-icon className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
