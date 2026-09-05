@@ -126,7 +126,7 @@ const SavedPosts = () => {
       </div>
 
       {posts.length > 0 && (
-        <div className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+        <div data-filter-panel className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
           <label className="input input-bordered h-10 rounded-xl flex items-center gap-2">
             <Search className="h-4 w-4 text-base-content/35" />
             <input

@@ -8,6 +8,7 @@ import {
   EyeOff,
   History,
   LogOut,
+  MapPin,
   Monitor,
   Moon,
   Palette,
@@ -188,6 +189,8 @@ const Settings = () => {
   const [opportunityLoading, setOpportunityLoading] = useState(false);
   const [presenceLoading, setPresenceLoading] = useState(false);
   const [loginAuditLoading, setLoginAuditLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [showLocationPermissionModal, setShowLocationPermissionModal] = useState(false);
   const [themeLoading, setThemeLoading] = useState(false);
   const [appThemeMode, setAppThemeMode] = useState(getStoredThemeMode);
   const [appFontMode, setAppFontMode] = useState(getStoredFontMode);
@@ -248,6 +251,66 @@ const Settings = () => {
       toast.error(err.response?.data?.message || "Failed to update login audit");
     } finally {
       setLoginAuditLoading(false);
+    }
+  };
+
+  const disableLocationAccess = async () => {
+    setLocationLoading(true);
+    try {
+      const data = await updateProfile({ locationAccessEnabled: false });
+      setUser(data.user || { ...user, locationAccessEnabled: false });
+      toast.success("Location access turned off");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update location access");
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const enableLocationAccess = async () => {
+    setShowLocationPermissionModal(false);
+    if (!navigator.geolocation) {
+      toast.error("Location is not supported by this browser.");
+      return;
+    }
+
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const { data } = await API.patch("/users/me/location", {
+            lat: coords.latitude,
+            lng: coords.longitude,
+          });
+          setUser({
+            ...user,
+            currentLocation: data.currentLocation,
+            locationAccessEnabled: true,
+          });
+          toast.success("Location access enabled");
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Failed to save your location");
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      (error) => {
+        setLocationLoading(false);
+        toast.error(
+          error.code === error.PERMISSION_DENIED
+            ? "Location permission was not allowed."
+            : "Unable to access your current location.",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  };
+
+  const handleLocationToggle = () => {
+    if (user?.locationAccessEnabled) {
+      disableLocationAccess();
+    } else {
+      setShowLocationPermissionModal(true);
     }
   };
 
@@ -430,6 +493,17 @@ const Settings = () => {
           >
             <div className="divide-y divide-base-200/80 sm:space-y-3 sm:divide-y-0">
               <ToggleRow
+                icon={MapPin}
+                title="Location Access"
+                subtitle="Use your location for nearby job and city recommendations. You control when it is enabled."
+                active={Boolean(user?.locationAccessEnabled)}
+                activeText="Location access enabled"
+                inactiveText="Location access disabled"
+                loading={locationLoading}
+                onChange={handleLocationToggle}
+              />
+
+              <ToggleRow
                 icon={user?.loginAuditEnabled !== false ? History : EyeOff}
                 title="Login History"
                 subtitle="Allow secure login audit records for this account when admin security checks are active."
@@ -606,6 +680,18 @@ const Settings = () => {
       </div>
 
       {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLocationPermissionModal}
+        onClose={() => setShowLocationPermissionModal(false)}
+        onConfirm={enableLocationAccess}
+        title="Allow Location Access?"
+        message="ShorJob will ask your browser for your current location to show nearby jobs and cities. You can turn this off from Settings at any time."
+        confirmText="Continue"
+        cancelText="Not Now"
+        variant="info"
+        isLoading={locationLoading}
+      />
+
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

@@ -846,7 +846,7 @@ const JobApplicants = () => {
         ))}
       </div>
 
-      <div className="card bg-base-100 border border-base-300/60 p-4 mb-5">
+      <div data-filter-panel className="card bg-base-100 border border-base-300/60 p-4 mb-5">
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/35" />
@@ -913,7 +913,7 @@ const JobApplicants = () => {
       </div>
 
       {/* View Toggle + Filter */}
-      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+      <div data-filter-panel className="flex items-center justify-between gap-3 mb-4 flex-wrap rounded-xl border border-base-300/60 bg-base-100 p-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode("list")}

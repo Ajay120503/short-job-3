@@ -48,7 +48,7 @@ const getNearbyCityOptions = (jobs, savedCity) => {
     .map((job) => job.workplaceCity?.trim())
     .filter(Boolean);
   if (savedCity) names.unshift(savedCity.trim());
-  return [...new Map(names.map((name) => [name.toLowerCase(), name])).values()].slice(0, 8);
+  return [...new Map(names.map((name) => [name.toLowerCase(), name])).values()];
 };
 
 const Jobs = () => {
@@ -61,10 +61,38 @@ const Jobs = () => {
   const [city, setCity] = useState("");
   const [nearbyCities, setNearbyCities] = useState([]);
   const [radiusKm, setRadiusKm] = useState("25");
-  const [useLocation, setUseLocation] = useState(Boolean(user?.currentLocation?.lat));
+  const [customRadiusKm, setCustomRadiusKm] = useState("100");
+  const [useLocation, setUseLocation] = useState(Boolean(
+    user?.locationAccessEnabled && user?.currentLocation?.lat,
+  ));
   const [shortTypes, setShortTypes] = useState([]);
 
   const canPost = canCreateJobs(user);
+  const selectedRadiusKm = radiusKm === "custom" ? customRadiusKm : radiusKm;
+
+  useEffect(() => {
+    const lat = user?.currentLocation?.lat;
+    const lng = user?.currentLocation?.lng;
+    if (!user?.locationAccessEnabled || lat == null || lng == null) return;
+
+    const fetchNearbyCities = async () => {
+      try {
+        const { data } = await API.get('/jobs/nearby-cities', {
+          params: { lat, lng },
+        });
+        const cityNames = (data.cities || []).map((item) => item.name);
+        const savedCity = user?.currentLocation?.city || user?.city;
+        setNearbyCities(getNearbyCityOptions(
+          cityNames.map((name) => ({ workplaceCity: name })),
+          savedCity,
+        ));
+      } catch (err) {
+        console.error('Failed to fetch nearby cities:', err);
+      }
+    };
+
+    fetchNearbyCities();
+  }, [user?.city, user?.locationAccessEnabled, user?.currentLocation?.city, user?.currentLocation?.lat, user?.currentLocation?.lng]);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -73,7 +101,18 @@ const Jobs = () => {
         if (filter !== "all") params.isPaid = filter === "paid";
         if (city) params.city = city;
         if (shortTypes.length) params.shortJobType = shortTypes.join(",");
-        if (useLocation && radiusKm !== "any" && user?.currentLocation?.lat != null) Object.assign(params, { lat: user.currentLocation.lat, lng: user.currentLocation.lng, radiusKm });
+        if (
+          useLocation
+          && selectedRadiusKm !== "any"
+          && Number(selectedRadiusKm) > 0
+          && user?.currentLocation?.lat != null
+        ) {
+          Object.assign(params, {
+            lat: user.currentLocation.lat,
+            lng: user.currentLocation.lng,
+            radiusKm: Math.min(Number(selectedRadiusKm), 1000),
+          });
+        }
         const { data } = await API.get("/jobs", { params });
         const fetchedJobs = data.jobs || [];
         setJobs(fetchedJobs);
@@ -101,7 +140,7 @@ const Jobs = () => {
       }
     };
     fetchJobs();
-  }, [canPost, city, radiusKm, useLocation, shortTypes, filter, user?.city, user?.currentLocation?.city, user?.currentLocation?.lat, user?.currentLocation?.lng]);
+  }, [canPost, city, selectedRadiusKm, useLocation, shortTypes, filter, user?.city, user?.currentLocation?.city, user?.currentLocation?.lat, user?.currentLocation?.lng]);
 
   if (loading) {
     return (
@@ -167,7 +206,7 @@ const Jobs = () => {
         </div>
       </div>
 
-      <div className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+      <div data-filter-panel className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <label className="input input-bordered h-10 rounded-xl flex items-center gap-2">
             <Search className="h-4 w-4 text-base-content/35" />
@@ -205,18 +244,34 @@ const Jobs = () => {
             </button>
           </div>
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className={`mt-3 grid gap-2 ${radiusKm === "custom" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
           <select className="select select-bordered select-sm" value={city} disabled={nearbyCities.length === 0} onChange={(e) => setCity(e.target.value)}>
-            <option value="">{nearbyCities.length ? "Nearby cities" : "No nearby cities available"}</option>
+            <option value="">{nearbyCities.length ? "Cities within 100 km" : "No cities within 100 km"}</option>
             {nearbyCities.map((item) => <option key={item}>{item}</option>)}
           </select>
-          <select className="select select-bordered select-sm" value={radiusKm} disabled={!useLocation} onChange={(e) => setRadiusKm(e.target.value)}><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="any">Any distance</option></select>
+          <select className="select select-bordered select-sm" value={radiusKm} disabled={!useLocation} onChange={(e) => setRadiusKm(e.target.value)}><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="100">100 km</option><option value="custom">Custom distance…</option><option value="any">Any distance</option></select>
+          {radiusKm === "custom" && (
+            <label className="input input-bordered input-sm flex items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                max="1000"
+                step="1"
+                className="min-w-0 grow"
+                value={customRadiusKm}
+                onChange={(e) => setCustomRadiusKm(e.target.value)}
+                placeholder="Distance"
+                aria-label="Custom distance in kilometres"
+              />
+              <span className="text-xs text-base-content/50">km</span>
+            </label>
+          )}
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <label className="label cursor-pointer gap-2 p-0 text-xs"><input type="checkbox" className="toggle toggle-primary toggle-sm" checked={useLocation} disabled={!user?.currentLocation?.lat} onChange={(e) => setUseLocation(e.target.checked)} />Use my current location</label>
+          <label className="label cursor-pointer gap-2 p-0 text-xs"><input type="checkbox" className="toggle toggle-primary toggle-sm" checked={useLocation} disabled={!user?.locationAccessEnabled || !user?.currentLocation?.lat} onChange={(e) => setUseLocation(e.target.checked)} />Use my current location</label>
           <select className="select select-bordered select-sm" value="" onChange={(e) => { if (e.target.value && !shortTypes.includes(e.target.value)) setShortTypes((items) => [...items, e.target.value]); }}><option value="">Add job type…</option>{Object.entries(SHORT_JOB_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
           {shortTypes.map((item) => <button key={item} className="badge badge-primary badge-outline" onClick={() => setShortTypes((items) => items.filter((value) => value !== item))}>{SHORT_JOB_LABELS[item]} ×</button>)}
-          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setCity(""); setRadiusKm("25"); setUseLocation(false); setShortTypes([]); setSearchTerm(""); }}>Clear all filters</button>
+          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setCity(""); setRadiusKm("25"); setCustomRadiusKm("100"); setUseLocation(false); setShortTypes([]); setSearchTerm(""); }}>Clear all filters</button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-base-content/45">
           <SlidersHorizontal className="h-3.5 w-3.5" />

@@ -124,7 +124,7 @@ const AdminLoginRecords = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+      <div data-filter-panel className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
         <div className="grid gap-2 md:grid-cols-[1fr_160px_150px_150px]">
           <label className="input input-bordered input-sm flex items-center gap-2">
             <Search className="w-4 h-4 text-base-content/35" />

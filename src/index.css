@@ -171,6 +171,68 @@ select,
   outline: none;
 }
 
+/* Shared filters and native option controls */
+[data-filter-panel] {
+  position: relative;
+  isolation: isolate;
+  border-color: color-mix(in srgb, var(--color-base-content) 12%, transparent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 4%, transparent), transparent 42%),
+    var(--color-base-100);
+  box-shadow: 0 12px 32px -28px color-mix(in srgb, var(--color-base-content) 55%, transparent);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+[data-filter-panel]:focus-within {
+  border-color: color-mix(in srgb, var(--color-primary) 32%, transparent);
+  box-shadow: 0 16px 38px -28px color-mix(in srgb, var(--color-primary) 65%, transparent);
+}
+
+[data-filter-panel] :where(.input, .select) {
+  min-width: 0;
+  border-radius: 0.75rem;
+}
+
+[data-filter-panel] :where(.btn, .badge)[aria-pressed="true"] {
+  box-shadow: 0 6px 16px -10px var(--color-primary);
+}
+
+select.select {
+  cursor: pointer;
+  color-scheme: light;
+}
+
+select.select option,
+select.select optgroup {
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  font-weight: 500;
+}
+
+select.select option:checked {
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+}
+
+select.select:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+[data-theme="ShortJobDark"] select.select {
+  color-scheme: dark;
+}
+
+@media (max-width: 639px) {
+  [data-filter-panel] {
+    border-radius: 1rem;
+  }
+
+  [data-filter-panel] :where(.input, .select, .btn:not(.btn-circle)) {
+    min-height: 2.65rem;
+  }
+}
+
 .btn-primary {
   box-shadow: 0 5px 14px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }

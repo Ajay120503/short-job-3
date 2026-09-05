@@ -176,7 +176,7 @@ const AdminUsers = () => {
       </div>
 
       {/* Filters */}
-      <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+      <div data-filter-panel className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
       <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_170px_150px_44px]">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40" />

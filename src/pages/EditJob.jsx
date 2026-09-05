@@ -19,6 +19,7 @@ import {
 import API from "../utils/axios";
 import toast from "../utils/toast";
 import JobTimeField from "../components/job/JobTimeField";
+import ConfirmModal from "../components/common/ConfirmModal";
 import { calculateDurationHours, calculateEndTime } from "../utils/jobSchedule";
 import {
   getJobMapEmbedUrl,
@@ -59,6 +60,7 @@ const EditJob = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLocationConfirm, setShowLocationConfirm] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -233,7 +235,10 @@ const EditJob = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleUseCurrentLocation = () => {
+  const handleUseCurrentLocation = () => setShowLocationConfirm(true);
+
+  const confirmUseCurrentLocation = () => {
+    setShowLocationConfirm(false);
     if (!navigator.geolocation) {
       toast.error("Location is not supported in this browser.");
       return;
@@ -931,6 +936,16 @@ const EditJob = () => {
           </button>
         </div>
       </form>
+      <ConfirmModal
+        isOpen={showLocationConfirm}
+        onClose={() => setShowLocationConfirm(false)}
+        onConfirm={confirmUseCurrentLocation}
+        title="Use Your Current Location?"
+        message="ShorJob will ask your browser for location access and replace this job's workplace coordinates with your current location."
+        confirmText="Continue"
+        cancelText="Not Now"
+        variant="info"
+      />
     </div>
   );
 };

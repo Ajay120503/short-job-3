@@ -253,7 +253,7 @@ const Explore = () => {
       </div>
 
       {/* Search Bar + Filters */}
-      <div className="mb-5 space-y-3 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:mb-6 sm:p-4">
+      <div data-filter-panel className="mb-5 space-y-3 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:mb-6 sm:p-4">
         <form onSubmit={handleSearch}>
           <label className="input input-bordered flex items-center gap-2 rounded-xl px-4 py-2 shadow-sm transition-all focus-within:border-primary/50 focus-within:shadow-md">
             <Search className="w-4 h-4 text-base-content/30 flex-shrink-0" />
