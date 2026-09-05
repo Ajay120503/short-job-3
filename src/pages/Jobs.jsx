@@ -31,8 +31,6 @@ const ROLE_TYPE_LABELS = {
   other: "Other",
 };
 const SHORT_JOB_LABELS = { one_day_gig: "One-day gig", few_hours: "A few hours", weekend_only: "Weekend only", short_term: "Short term", ongoing_part_time: "Part-time", full_time: "Full-time", internship: "Internship", volunteer: "Volunteer" };
-const INDIAN_STATES = ["Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi"];
-
 const hasAppliedToJob = (job, userId) =>
   Boolean(
     userId &&
@@ -45,6 +43,13 @@ const hasAppliedToJob = (job, userId) =>
 
 const getUserId = (value) => (typeof value === "string" ? value : value?._id);
 const isOwnJob = (job, userId) => Boolean(userId && getUserId(job?.postedBy) === userId);
+const getNearbyCityOptions = (jobs, savedCity) => {
+  const names = jobs
+    .map((job) => job.workplaceCity?.trim())
+    .filter(Boolean);
+  if (savedCity) names.unshift(savedCity.trim());
+  return [...new Map(names.map((name) => [name.toLowerCase(), name])).values()].slice(0, 8);
+};
 
 const Jobs = () => {
   const { user } = useAuthStore();
@@ -54,7 +59,7 @@ const Jobs = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [city, setCity] = useState("");
-  const [state, setState] = useState("");
+  const [nearbyCities, setNearbyCities] = useState([]);
   const [radiusKm, setRadiusKm] = useState("25");
   const [useLocation, setUseLocation] = useState(Boolean(user?.currentLocation?.lat));
   const [shortTypes, setShortTypes] = useState([]);
@@ -66,12 +71,18 @@ const Jobs = () => {
       try {
         const params = {};
         if (filter !== "all") params.isPaid = filter === "paid";
-        if (city.trim()) params.city = city.trim();
-        if (state) params.state = state;
+        if (city) params.city = city;
         if (shortTypes.length) params.shortJobType = shortTypes.join(",");
         if (useLocation && radiusKm !== "any" && user?.currentLocation?.lat != null) Object.assign(params, { lat: user.currentLocation.lat, lng: user.currentLocation.lng, radiusKm });
         const { data } = await API.get("/jobs", { params });
-        setJobs(data.jobs || []);
+        const fetchedJobs = data.jobs || [];
+        setJobs(fetchedJobs);
+        if (!city) {
+          setNearbyCities(getNearbyCityOptions(
+            fetchedJobs,
+            user?.currentLocation?.city || user?.city,
+          ));
+        }
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
       } finally {
@@ -90,7 +101,7 @@ const Jobs = () => {
       }
     };
     fetchJobs();
-  }, [canPost, city, state, radiusKm, useLocation, shortTypes, filter, user?.currentLocation?.lat, user?.currentLocation?.lng]);
+  }, [canPost, city, radiusKm, useLocation, shortTypes, filter, user?.city, user?.currentLocation?.city, user?.currentLocation?.lat, user?.currentLocation?.lng]);
 
   if (loading) {
     return (
@@ -194,16 +205,18 @@ const Jobs = () => {
             </button>
           </div>
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          <input className="input input-bordered input-sm" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-          <select className="select select-bordered select-sm" value={state} onChange={(e) => setState(e.target.value)}><option value="">All states</option>{INDIAN_STATES.map((item) => <option key={item}>{item}</option>)}</select>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <select className="select select-bordered select-sm" value={city} disabled={nearbyCities.length === 0} onChange={(e) => setCity(e.target.value)}>
+            <option value="">{nearbyCities.length ? "Nearby cities" : "No nearby cities available"}</option>
+            {nearbyCities.map((item) => <option key={item}>{item}</option>)}
+          </select>
           <select className="select select-bordered select-sm" value={radiusKm} disabled={!useLocation} onChange={(e) => setRadiusKm(e.target.value)}><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="any">Any distance</option></select>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <label className="label cursor-pointer gap-2 p-0 text-xs"><input type="checkbox" className="toggle toggle-primary toggle-sm" checked={useLocation} disabled={!user?.currentLocation?.lat} onChange={(e) => setUseLocation(e.target.checked)} />Use my current location</label>
           <select className="select select-bordered select-sm" value="" onChange={(e) => { if (e.target.value && !shortTypes.includes(e.target.value)) setShortTypes((items) => [...items, e.target.value]); }}><option value="">Add job type…</option>{Object.entries(SHORT_JOB_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
           {shortTypes.map((item) => <button key={item} className="badge badge-primary badge-outline" onClick={() => setShortTypes((items) => items.filter((value) => value !== item))}>{SHORT_JOB_LABELS[item]} ×</button>)}
-          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setCity(""); setState(""); setRadiusKm("25"); setUseLocation(false); setShortTypes([]); setSearchTerm(""); }}>Clear all filters</button>
+          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setCity(""); setRadiusKm("25"); setUseLocation(false); setShortTypes([]); setSearchTerm(""); }}>Clear all filters</button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-base-content/45">
           <SlidersHorizontal className="h-3.5 w-3.5" />
