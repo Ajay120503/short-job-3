@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   Send,
-  ImagePlus,
+  Paperclip,
+  Smile,
+  Reply,
+  FileText,
+  CheckCheck,
   ArrowLeft,
   MessageCircle,
   Edit3,
@@ -17,6 +21,7 @@ import { useSocket } from "../context/SocketContext";
 import API from "../utils/axios";
 import ConfirmModal from "../components/common/ConfirmModal";
 import UserAvatar from "../components/common/UserAvatar";
+import MessageReaction from "../components/chat/MessageReaction";
 import {
   canUseSpecialStyle,
   getSpecialUserStyle,
@@ -39,12 +44,28 @@ const dedupeConversations = (items, currentUserId) => {
   });
 };
 
+const STICKERS = [
+  "👋",
+  "🙌",
+  "🎉",
+  "❤️",
+  "😂",
+  "🔥",
+  "👍",
+  "🙏",
+  "✨",
+  "🥳",
+  "💯",
+  "🚀",
+];
+
 const Chat = () => {
   const { id: selectedUserId } = useParams();
   const { user } = useAuthStore();
   const {
     socket,
     isUserOnline,
+    canViewPresence,
     emitTyping,
     emitStopTyping,
     joinConversation,
@@ -58,6 +79,13 @@ const Chat = () => {
   const [typingUsers, setTypingUsers] = useState({});
   const [editingMessage, setEditingMessage] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showStickers, setShowStickers] = useState(false);
+  const [sendingAttachment, setSendingAttachment] = useState(false);
+  const [conversationListWidth, setConversationListWidth] = useState(() => {
+    const saved = Number(localStorage.getItem("chatConversationListWidth"));
+    return Number.isFinite(saved) && saved >= 240 && saved <= 480 ? saved : 320;
+  });
 
   // Confirm modal states
   const [msgToDelete, setMsgToDelete] = useState(null);
@@ -65,6 +93,8 @@ const Chat = () => {
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
   const messagesEndRef = useRef(null);
   const editInputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const swipeStartRef = useRef(null);
 
   // Fetch conversations
   useEffect(() => {
@@ -72,8 +102,8 @@ const Chat = () => {
       try {
         const { data } = await API.get("/chat/conversations");
         setConversations(dedupeConversations(data.conversations, user?._id));
-      } catch {
-        /* ignore */
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Unable to load conversations");
       } finally {
         setLoading(false);
       }
@@ -111,8 +141,9 @@ const Chat = () => {
           `/chat/conversations/${activeConversation._id}/messages`
         );
         setMessages(data.messages || []);
-      } catch {
-        /* ignore */
+      } catch (err) {
+        setMessages([]);
+        toast.error(err.response?.data?.message || "Unable to load messages");
       }
     };
     fetchMessages();
@@ -147,6 +178,7 @@ const Chat = () => {
           if (prev.some((m) => m._id === message._id)) return prev;
           return [...prev, message];
         });
+        API.put(`/chat/messages/${message._id}/read`).catch(() => {});
       }
       API.get("/chat/conversations").then(({ data }) =>
         setConversations(dedupeConversations(data.conversations, user?._id))
@@ -191,11 +223,34 @@ const Chat = () => {
       setTypingUsers((prev) => ({ ...prev, [userId]: false }));
     };
 
+    const handleReaction = ({ messageId, reactions }) => {
+      setMessages((prev) =>
+        prev.map((message) =>
+          message._id === messageId ? { ...message, reactions } : message,
+        ),
+      );
+    };
+
+    const handleRead = ({ messageId, messageIds, userId }) => {
+      const ids = new Set(messageIds || (messageId ? [messageId] : []));
+      setMessages((prev) =>
+        prev.map((message) =>
+          ids.has(message._id) &&
+          !message.readBy?.some((id) => (id._id || id) === userId)
+            ? { ...message, readBy: [...(message.readBy || []), userId] }
+            : message,
+        ),
+      );
+    };
+
     s.on("receive_message", handleReceiveMessage);
     s.on("message_updated", handleMessageUpdated);
     s.on("message_deleted", handleMessageDeleted);
     s.on("is_typing", handleTyping);
     s.on("stopped_typing", handleStopTyping);
+    s.on("message_reaction", handleReaction);
+    s.on("message_read", handleRead);
+    s.on("messages_read", handleRead);
 
     return () => {
       s.off("receive_message", handleReceiveMessage);
@@ -203,6 +258,9 @@ const Chat = () => {
       s.off("message_deleted", handleMessageDeleted);
       s.off("is_typing", handleTyping);
       s.off("stopped_typing", handleStopTyping);
+      s.off("message_reaction", handleReaction);
+      s.off("message_read", handleRead);
+      s.off("messages_read", handleRead);
     };
   }, [socket?.current, user._id]);
 
@@ -230,12 +288,54 @@ const Chat = () => {
         conversationId: activeConversation._id,
         content: messageText.trim(),
         type: "text",
+        replyTo: replyingTo?._id,
       });
       setMessages((prev) => [...prev, data.message]);
       setMessageText("");
+      setReplyingTo(null);
       emitStopTyping(activeConversation._id, user._id);
     } catch {
       toast.error("Failed to send message");
+    }
+  };
+
+  const sendAttachment = async (file) => {
+    if (!file || !activeConversation) return;
+    const formData = new FormData();
+    formData.append("conversationId", activeConversation._id);
+    formData.append("file", file);
+    if (messageText.trim()) formData.append("content", messageText.trim());
+    if (replyingTo?._id) formData.append("replyTo", replyingTo._id);
+    setSendingAttachment(true);
+    try {
+      const { data } = await API.post("/chat/messages", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setMessages((prev) => [...prev, data.message]);
+      setMessageText("");
+      setReplyingTo(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send attachment");
+    } finally {
+      setSendingAttachment(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const sendSticker = async (sticker) => {
+    if (!activeConversation) return;
+    try {
+      const { data } = await API.post("/chat/messages", {
+        conversationId: activeConversation._id,
+        content: sticker,
+        type: "sticker",
+        replyTo: replyingTo?._id,
+      });
+      setMessages((prev) => [...prev, data.message]);
+      setReplyingTo(null);
+      setShowStickers(false);
+    } catch {
+      toast.error("Failed to send sticker");
     }
   };
 
@@ -333,18 +433,51 @@ const Chat = () => {
   const getOtherParticipant = (conv) => {
     return getOtherParticipantFromConversation(conv, user?._id);
   };
+  const isOtherUserTyping = Object.entries(typingUsers).some(
+    ([uid, isTyping]) => isTyping && uid !== user._id,
+  );
+  const typingUserName = getOtherParticipant(activeConversation)?.name || "User";
+
+  const startConversationListResize = (event) => {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = conversationListWidth;
+    let latestWidth = startWidth;
+    const handleMove = (moveEvent) => {
+      const nextWidth = Math.min(
+        480,
+        Math.max(240, startWidth + moveEvent.clientX - startX),
+      );
+      latestWidth = nextWidth;
+      setConversationListWidth(nextWidth);
+    };
+    const handleUp = () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      localStorage.setItem("chatConversationListWidth", String(latestWidth));
+    };
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp);
+  };
 
   return (
     <div className="flex h-full overflow-hidden bg-base-100">
       {/* Conversation List */}
       <div
+        style={{ "--conversation-list-width": `${conversationListWidth}px` }}
         className={`${
           activeConversation ? "hidden md:flex" : "flex"
-        } w-full flex-col border-r border-base-300/70 bg-base-100 md:w-80`}
+        } relative w-full flex-col border-r border-base-300/70 bg-base-100 md:w-[var(--conversation-list-width)] md:min-w-[240px] md:max-w-[480px]`}
       >
         <div className="border-b border-base-300/70 px-4 py-3.5">
           <h1 className="font-heading text-lg font-bold">Messages</h1>
-          <p className="mt-0.5 text-xs text-base-content/45">Your conversations</p>
+          <p className="mt-0.5 text-xs text-base-content/45">
+            Your conversations
+          </p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {loading ? (
@@ -380,10 +513,7 @@ const Chat = () => {
                   }`}
                 >
                   <div className="relative">
-                    <UserAvatar user={other} size={48} />
-                    {isUserOnline(other?._id) && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-base-100"></div>
-                    )}
+                    <UserAvatar user={other} size={48} showPresence={false} />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center justify-between">
@@ -414,6 +544,15 @@ const Chat = () => {
             })
           )}
         </div>
+        <button
+          type="button"
+          onPointerDown={startConversationListResize}
+          className="absolute inset-y-0 -right-1 z-30 hidden w-2 cursor-col-resize touch-none items-center justify-center md:flex"
+          aria-label="Resize conversation list"
+          title="Drag to resize conversation list"
+        >
+          <span className="h-10 w-0.5 rounded-full bg-base-content/15 transition-colors hover:bg-primary" />
+        </button>
       </div>
 
       {/* Chat Window */}
@@ -426,110 +565,131 @@ const Chat = () => {
             const specialStyle = getSpecialUserStyle(activeOther);
 
             return (
-          <div
-            className={`z-10 flex min-h-16 items-center justify-between border-b px-3 py-3 sm:px-5 ${
-              isSpecialOther
-                ? `${specialStyle.shell} border-base-300/60`
-                : "border-base-300/70 bg-base-100/95 backdrop-blur"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <button
-                className="btn btn-ghost btn-circle btn-sm md:hidden"
-                onClick={() => setActiveConversation(null)}
+              <div
+                className={`z-10 flex min-h-16 items-center justify-between border-b px-3 py-3 sm:px-5 ${
+                  isSpecialOther
+                    ? `${specialStyle.shell} border-base-300/60`
+                    : "border-base-300/70 bg-base-100/95 backdrop-blur"
+                }`}
               >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <Link
-                to={`/profile/${getOtherParticipant(activeConversation)?._id}`}
-                className="flex min-w-0 items-center gap-3 rounded-xl"
-              >
-                <UserAvatar
-                  user={getOtherParticipant(activeConversation)}
-                  size={40}
-                />
-                <div className="min-w-0">
-                  <p
-                    className={`truncate text-sm font-semibold ${
-                      isSpecialOther ? specialStyle.muted : ""
-                    }`}
+                <div className="flex items-center gap-3">
+                  <button
+                    className="btn btn-ghost btn-circle btn-sm md:hidden"
+                    onClick={() => setActiveConversation(null)}
                   >
-                    {activeOther?.name}
-                  </p>
-                  <p className="text-xs text-base-content/50">
-                    {isUserOnline(
-                      activeOther?._id
-                    ) ? (
-                      <span className="text-success">Online</span>
-                    ) : (
-                      "Offline"
-                    )}
-                  </p>
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <Link
+                    to={`/profile/${getOtherParticipant(activeConversation)?._id}`}
+                    className="flex min-w-0 items-center gap-3 rounded-xl"
+                  >
+                    <UserAvatar
+                      user={getOtherParticipant(activeConversation)}
+                      size={40}
+                      showPresence={false}
+                    />
+                    <div className="min-w-0">
+                      <p
+                        className={`truncate text-sm font-semibold ${
+                          isSpecialOther ? specialStyle.muted : ""
+                        }`}
+                      >
+                        {activeOther?.name}
+                      </p>
+                      <p className="text-xs text-base-content/50">
+                        {!canViewPresence ? (
+                          "Your online status is hidden"
+                        ) : activeOther?.showOnlineStatus === false ? (
+                          "Online status hidden"
+                        ) : isUserOnline(activeOther?._id) ? (
+                          <span className="text-success">Online</span>
+                        ) : (
+                          "Offline"
+                        )}
+                      </p>
+                    </div>
+                  </Link>
                 </div>
-              </Link>
-            </div>
-            {/* Chat actions dropdown */}
-            <div className="dropdown dropdown-end">
-              <button tabIndex={0} className="btn btn-ghost btn-circle btn-sm">
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-              <ul
-                tabIndex={0}
-                className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-xl border border-base-300 w-48 mt-2"
-              >
-                <li>
+                {/* Chat actions dropdown */}
+                <div className="dropdown dropdown-end">
                   <button
-                    onClick={() => setShowClearChatModal(true)}
-                    className="flex items-center gap-2 py-2"
+                    tabIndex={0}
+                    className="btn btn-ghost btn-circle btn-sm"
                   >
-                    <Eraser className="w-4 h-4" /> Clear Chat
+                    <MoreHorizontal className="w-5 h-5" />
                   </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setShowDeleteChatModal(true)}
-                    className="flex items-center gap-2 py-2 text-error"
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-xl border border-base-300 w-48 mt-2"
                   >
-                    <Trash2 className="w-4 h-4" /> Delete Chat
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
+                    <li>
+                      <button
+                        onClick={() => setShowClearChatModal(true)}
+                        className="flex items-center gap-2 py-2"
+                      >
+                        <Eraser className="w-4 h-4" /> Clear Chat
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => setShowDeleteChatModal(true)}
+                        className="flex items-center gap-2 py-2 text-error"
+                      >
+                        <Trash2 className="w-4 h-4" /> Delete Chat
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             );
           })()}
 
           {/* Messages */}
-          <div className="flex-1 space-y-1 overflow-y-auto bg-base-200/25 px-3 py-5 sm:px-6">
+          <div className="flex-1 space-y-1 overflow-x-hidden overflow-y-auto bg-base-200/25 px-3 py-5 sm:px-6">
             {messages.length === 0 ? (
               <div className="mx-auto mt-12 max-w-xs text-center">
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <MessageCircle className="h-6 w-6" />
                 </div>
                 <p className="font-semibold">Start the conversation</p>
-                <p className="mt-1 text-xs text-base-content/45">Send a friendly message to say hello.</p>
+                <p className="mt-1 text-xs text-base-content/45">
+                  Send a friendly message to say hello.
+                </p>
               </div>
             ) : (
               messages.map((msg) => {
                 const isMine =
                   msg.sender?._id === user._id || msg.sender === user._id;
                 const isDeleted = msg.type === "deleted";
-                const isSpecialSender = !isMine && canUseSpecialStyle(msg.sender);
-                const specialStyle = getSpecialUserStyle(msg.sender);
+                const isMedia = ["image", "file", "sticker"].includes(msg.type);
                 return (
                   <div
                     key={msg._id}
                     className={`chat ${
                       isMine ? "chat-end" : "chat-start"
                     } group py-0.5`}
+                    onPointerDown={(event) => {
+                      swipeStartRef.current = event.clientX;
+                    }}
+                    onPointerUp={(event) => {
+                      const start = swipeStartRef.current;
+                      const end = event.clientX;
+                      if (
+                        start != null &&
+                        end != null &&
+                        Math.abs(end - start) > 55 &&
+                        !isDeleted
+                      ) {
+                        setReplyingTo(msg);
+                      }
+                      swipeStartRef.current = null;
+                    }}
                   >
                     <div className="chat-image avatar">
-                      <UserAvatar user={msg.sender} size={32} />
+                      <UserAvatar user={msg.sender} size={32} showPresence={false} />
                     </div>
                     <div className="chat-header mb-1 flex items-center gap-2 px-1 text-[10px] text-base-content/45">
-                      <span
-                        className={isSpecialSender ? specialStyle.muted : ""}
-                      >
+                      <span>
                         {msg.sender?.name || "User"}
                       </span>
                       <time className="text-[10px]">
@@ -543,14 +703,42 @@ const Chat = () => {
                       )}
                     </div>
                     <div
-                      className={`chat-bubble relative max-w-[min(78vw,34rem)] whitespace-pre-wrap break-words px-2 py-1 text-sm leading-relaxed shadow-sm sm:max-w-[32rem] ${
+                      className={`relative max-w-[min(78vw,34rem)] whitespace-pre-wrap break-words text-sm leading-relaxed sm:max-w-[32rem] ${isMedia ? "" : "chat-bubble px-2 py-1 shadow-sm"} ${
                         isMine
-                          ? "chat-bubble-primary text-primary-content"
-                          : isSpecialSender
-                            ? `${specialStyle.soft} border border-base-300/60`
+                          ? isMedia
+                            ? "text-base-content"
+                            : "chat-bubble-primary text-primary-content"
+                          : isMedia
+                            ? ""
                             : "border border-base-300/60 bg-base-100 text-base-content"
                       } ${isDeleted ? "italic opacity-55" : ""}`}
                     >
+                      {msg.replyTo && !isDeleted && (
+                        <div
+                          className={`mb-1.5 min-w-36 overflow-hidden rounded-md border-l-[3px] px-2.5 py-1.5 text-left text-[11px] leading-tight ${
+                            isMine
+                              ? "border-primary-content/65 bg-black/15 text-primary-content"
+                              : "border-primary bg-base-200/90 text-base-content"
+                          } ${isMedia ? "shadow-sm" : ""}`}
+                        >
+                          <span
+                            className={`mb-1 block truncate font-semibold ${isMine ? "text-primary-content/90" : "text-primary"}`}
+                          >
+                            {msg.replyTo.sender?.name || "Message"}
+                          </span>
+                          <span
+                            className={`block max-w-64 truncate ${isMine ? "text-primary-content/75" : "text-base-content/60"}`}
+                          >
+                            {msg.replyTo.type === "image"
+                              ? "📷 Photo"
+                              : msg.replyTo.type === "file"
+                                ? `📎 ${msg.replyTo.fileName || "File"}`
+                                : msg.replyTo.type === "sticker"
+                                  ? `${msg.replyTo.content} Sticker`
+                                  : msg.replyTo.content}
+                          </span>
+                        </div>
+                      )}
                       {isDeleted ? (
                         <span className="text-xs italic">
                           This message was deleted
@@ -558,28 +746,67 @@ const Chat = () => {
                       ) : msg.type === "text" ? (
                         <span>{msg.content}</span>
                       ) : msg.type === "image" ? (
-                        <img
-                          src={msg.fileUrl}
-                          alt=""
-                          className="max-h-80 w-auto max-w-full rounded-xl object-cover"
-                        />
+                        <div className="overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
+                          <img
+                            src={msg.fileUrl}
+                            alt={msg.fileName || "Shared photo"}
+                            className="max-h-80 w-auto max-w-full object-cover"
+                          />
+                          {msg.content && (
+                            <p className="px-3 py-2 text-sm">{msg.content}</p>
+                          )}
+                        </div>
                       ) : msg.type === "file" ? (
                         <a
                           href={msg.fileUrl}
                           target="_blank"
-                          className="underline text-sm"
+                          rel="noreferrer"
+                          className="flex max-w-xs items-center gap-3 rounded-2xl border border-base-300/70 bg-base-100 p-3 text-sm shadow-sm hover:border-primary/40"
                         >
-                          {msg.fileName || "Download File"}
+                          <FileText className="h-8 w-8 shrink-0 text-primary" />
+                          <span className="min-w-0">
+                            <span className="block truncate font-semibold">
+                              {msg.fileName || "Download file"}
+                            </span>
+                            <span className="text-xs text-base-content/45">
+                              Open attachment
+                            </span>
+                          </span>
                         </a>
+                      ) : msg.type === "sticker" ? (
+                        <span className="block select-none text-6xl drop-shadow-sm">
+                          {msg.content}
+                        </span>
                       ) : (
                         <span>{msg.content}</span>
                       )}
                     </div>
-                    {isMine && !isDeleted && (
-                      <div className="chat-footer mt-0.5 flex min-h-5 items-center gap-1 px-1">
-                        <span className="text-[9px] text-base-content/45">
-                          {msg.readBy?.length > 1 ? "✓✓ Read" : "✓ Sent"}
-                        </span>
+                    {!isDeleted && (
+                      <div className={`chat-footer mt-1 flex min-h-7 max-w-[calc(100vw-4.75rem)] flex-nowrap items-center gap-1 px-1 sm:max-w-[32rem] ${isMine ? "justify-end" : "justify-start"}`}>
+                        {isMine && (
+                          <span
+                            className={`flex shrink-0 items-center text-[10px] ${msg.readBy?.length > 1 ? "text-info" : "text-base-content/45"}`}
+                            title={
+                              msg.readBy?.length > 1
+                                ? "Read"
+                                : msg.deliveredTo?.length > 1
+                                  ? "Delivered"
+                                  : "Sent"
+                            }
+                          >
+                            {msg.readBy?.length > 1 ||
+                            msg.deliveredTo?.length > 1 ? (
+                              <CheckCheck className="h-3.5 w-3.5" />
+                            ) : (
+                              <Check className="h-3.5 w-3.5" />
+                            )}
+                          </span>
+                        )}
+                        <MessageReaction
+                          messageId={msg._id}
+                          reactions={msg.reactions}
+                          isOwnMessage={isMine}
+                        />
                         {/* Edit/Delete dropdown */}
                         <div className="relative">
                           <button
@@ -588,14 +815,14 @@ const Chat = () => {
                                 menuOpenId === msg._id ? null : msg._id,
                               )
                             }
-                            className="btn btn-ghost btn-xs btn-square opacity-60 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+                            className="btn btn-ghost btn-xs btn-square shrink-0 opacity-60 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                             aria-label="Message actions"
                           >
                             <MoreHorizontal className="w-3 h-3" />
                           </button>
                           {menuOpenId === msg._id && (
                             <div className="absolute bottom-full right-0 mb-1 bg-base-100 shadow-lg rounded-xl border border-base-300 p-1 z-10 min-w-[120px]">
-                              {msg.type === "text" && (
+                              {isMine && msg.type === "text" && (
                                 <button
                                   onClick={() => startEdit(msg)}
                                   className="flex items-center gap-2 w-full px-3 py-2 text-xs rounded-lg hover:bg-base-200 transition-colors"
@@ -604,11 +831,22 @@ const Chat = () => {
                                 </button>
                               )}
                               <button
-                                onClick={() => setMsgToDelete(msg)}
-                                className="flex items-center gap-2 w-full px-3 py-2 text-xs rounded-lg hover:bg-error/10 text-error transition-colors"
+                                onClick={() => {
+                                  setReplyingTo(msg);
+                                  setMenuOpenId(null);
+                                }}
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs transition-colors hover:bg-base-200"
                               >
-                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                                <Reply className="h-3.5 w-3.5" /> Reply
                               </button>
+                              {isMine && (
+                                <button
+                                  onClick={() => setMsgToDelete(msg)}
+                                  className="flex items-center gap-2 w-full px-3 py-2 text-xs rounded-lg hover:bg-error/10 text-error transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -623,34 +861,32 @@ const Chat = () => {
                 );
               })
             )}
-            {/* Typing indicator */}
-            {Object.entries(typingUsers).some(
-              ([uid, isTyping]) => isTyping && uid !== user._id
-            ) && (
-              <div className="chat chat-start">
-                <div className="chat-image avatar">
-                  <div className="w-8 rounded-full bg-base-300"></div>
-                </div>
-                <div className="chat-bubble border border-base-300/60 bg-base-100 px-4 py-3 shadow-sm">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-base-content/40 rounded-full animate-bounce"></div>
-                    <div
-                      className="w-2 h-2 bg-base-content/40 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.15s" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-base-content/40 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.3s" }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
 
           {/* Message Input */}
           <div className="border-t border-base-300/70 bg-base-100 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-5">
+            {replyingTo && !editingMessage && (
+              <div className="mb-2 flex items-center justify-between rounded-xl border-l-4 border-primary bg-base-200/70 px-3 py-2 text-xs">
+                <div className="min-w-0">
+                  <span className="block font-semibold text-primary">
+                    Replying to {replyingTo.sender?.name || "message"}
+                  </span>
+                  <span className="block max-w-sm truncate text-base-content/55">
+                    {replyingTo.content ||
+                      replyingTo.fileName ||
+                      replyingTo.type}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  className="btn btn-ghost btn-xs btn-circle"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
             {editingMessage && (
               <div className="flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-primary/10">
                 <div className="flex items-center gap-2 text-xs text-primary">
@@ -676,15 +912,61 @@ const Chat = () => {
               }}
               className="flex items-center gap-2 rounded-2xl border border-base-300/80 bg-base-200/35 p-1.5 shadow-sm transition focus-within:border-primary/45 focus-within:bg-base-100 focus-within:ring-2 focus-within:ring-primary/10"
             >
-              <button type="button" className="btn btn-ghost btn-circle btn-sm shrink-0 text-base-content/55 hover:text-primary" aria-label="Attach image">
-                <ImagePlus className="w-5 h-5" />
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept="image/jpeg,image/png,image/gif,image/webp,.pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.zip"
+                onChange={(event) => sendAttachment(event.target.files?.[0])}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={sendingAttachment || Boolean(editingMessage)}
+                className="btn btn-ghost btn-circle btn-sm shrink-0 text-base-content/55 hover:text-primary"
+                aria-label="Attach photo or file"
+              >
+                {sendingAttachment ? (
+                  <span className="loading loading-spinner loading-xs" />
+                ) : (
+                  <Paperclip className="w-5 h-5" />
+                )}
               </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  disabled={Boolean(editingMessage)}
+                  onClick={() => setShowStickers((open) => !open)}
+                  className="btn btn-ghost btn-circle btn-sm text-base-content/55 hover:text-primary"
+                  aria-label="Send a sticker"
+                >
+                  <Smile className="h-5 w-5" />
+                </button>
+                {showStickers && (
+                  <div className="absolute bottom-full left-0 z-30 mb-3 grid w-60 grid-cols-4 gap-1 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl">
+                    {STICKERS.map((sticker) => (
+                      <button
+                        key={sticker}
+                        type="button"
+                        onClick={() => sendSticker(sticker)}
+                        className="flex h-12 items-center justify-center rounded-xl text-3xl transition hover:bg-base-200 hover:scale-110"
+                      >
+                        {sticker}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <input
                 ref={editInputRef}
                 type="text"
                 className="min-w-0 flex-1 border-0 bg-transparent px-1 text-sm outline-none placeholder:text-base-content/35"
                 placeholder={
-                  editingMessage ? "Edit message..." : "Type a message..."
+                  editingMessage
+                    ? "Edit message..."
+                    : isOtherUserTyping
+                      ? `${typingUserName} is typing…`
+                      : "Type a message..."
                 }
                 value={messageText}
                 onChange={(e) => {
@@ -697,7 +979,7 @@ const Chat = () => {
                 className={`btn btn-circle btn-sm shrink-0 shadow-sm ${
                   editingMessage ? "btn-success" : "btn-primary"
                 }`}
-                disabled={!messageText.trim()}
+                disabled={!messageText.trim() || sendingAttachment}
               >
                 {editingMessage ? (
                   <Check className="w-4 h-4" />
