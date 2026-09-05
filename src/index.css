@@ -815,6 +815,50 @@ select.select:disabled {
   letter-spacing: 0;
 }
 
+/* Navigation and unread counters need explicit contrast in every theme. */
+.count-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  height: 1rem;
+  padding-inline: 0.25rem;
+  border: 1px solid color-mix(in srgb, #ffffff 28%, transparent);
+  border-radius: 9999px;
+  color: #ffffff;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgb(15 23 42 / 22%);
+}
+
+.count-badge-notification {
+  background-color: #dc2626;
+}
+
+.count-badge-message {
+  background-color: #0f8589;
+}
+
+.count-badge-inline {
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding-inline: 0.4rem;
+  font-size: 0.6875rem;
+}
+
+[data-theme="ShortJobDark"] .count-badge-notification {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+[data-theme="ShortJobDark"] .count-badge-message {
+  background-color: #22aeb3;
+  color: #07191a;
+  border-color: rgb(255 255 255 / 35%);
+}
+
 .badge-ghost {
   background-color: color-mix(in srgb, var(--color-base-content) 8%, var(--color-base-100));
   border-color: color-mix(in srgb, var(--color-base-content) 14%, transparent);

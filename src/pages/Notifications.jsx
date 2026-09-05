@@ -145,8 +145,11 @@ const Notifications = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold font-heading">Notifications</h1>
-          <p className="text-sm text-base-content/40 mt-0.5">
-            {notifications.filter((n) => !n.isRead).length || 0} unread
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-base-content/65">
+            <span className="count-badge count-badge-notification count-badge-inline">
+              {notifications.filter((n) => !n.isRead).length || 0}
+            </span>
+            unread
           </p>
         </div>
         <div className="flex items-center gap-2">

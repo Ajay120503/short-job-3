@@ -473,7 +473,7 @@ const Chat = () => {
           activeConversation ? "hidden md:flex" : "flex"
         } relative w-full flex-col border-r border-base-300/70 bg-base-100 md:w-[var(--conversation-list-width)] md:min-w-[240px] md:max-w-[480px]`}
       >
-        <div className="border-b border-base-300/70 px-4 py-3.5">
+        <div className="flex h-16 shrink-0 flex-col justify-center border-b border-base-300/70 px-4">
           <h1 className="font-heading text-lg font-bold">Messages</h1>
           <p className="mt-0.5 text-xs text-base-content/45">
             Your conversations
@@ -535,7 +535,7 @@ const Chat = () => {
                     </p>
                   </div>
                   {(conv.unreadCounts?.[user?._id] || 0) > 0 && (
-                    <span className="badge badge-primary badge-sm">
+                    <span className="count-badge count-badge-message count-badge-inline">
                       {conv.unreadCounts[user._id]}
                     </span>
                   )}
@@ -566,7 +566,7 @@ const Chat = () => {
 
             return (
               <div
-                className={`z-10 flex min-h-16 items-center justify-between border-b px-3 py-3 sm:px-5 ${
+                className={`z-10 flex h-16 shrink-0 items-center justify-between border-b px-3 sm:px-5 ${
                   isSpecialOther
                     ? `${specialStyle.shell} border-base-300/60`
                     : "border-base-300/70 bg-base-100/95 backdrop-blur"

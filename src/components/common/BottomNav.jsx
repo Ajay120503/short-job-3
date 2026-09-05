@@ -64,7 +64,7 @@ const BottomNav = () => {
                       }`}
                     />
                     {item.badge > 0 && (
-                      <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                      <span className="count-badge count-badge-message absolute -right-2 -top-2">
                         {item.badge > 9 ? "9+" : item.badge}
                       </span>
                     )}
@@ -125,7 +125,7 @@ const BottomNav = () => {
                       }`}
                     />
                     {item.badge > 0 && (
-                      <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                      <span className="count-badge count-badge-message absolute -right-2 -top-2">
                         {item.badge > 9 ? "9+" : item.badge}
                       </span>
                     )}

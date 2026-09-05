@@ -55,7 +55,7 @@ const Navbar = () => {
         >
           <Bell className="w-5 h-5" />
           {notificationCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+            <span className="count-badge count-badge-notification absolute -right-0.5 -top-0.5 h-[18px] min-w-[18px]">
               {notificationCount > 9 ? "9+" : notificationCount}
             </span>
           )}
@@ -66,7 +66,7 @@ const Navbar = () => {
         >
           <MessageCircle className="w-5 h-5" />
           {messageCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+            <span className="count-badge count-badge-message absolute -right-0.5 -top-0.5 h-[18px] min-w-[18px]">
               {messageCount > 9 ? "9+" : messageCount}
             </span>
           )}

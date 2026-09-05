@@ -59,7 +59,7 @@ const MobileHeader = () => {
             >
               <Bell className="w-5 h-5" />
               {notificationCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                <span className="count-badge count-badge-notification absolute -right-0.5 -top-0.5">
                   {notificationCount > 9 ? "9+" : notificationCount}
                 </span>
               )}
@@ -129,7 +129,7 @@ const MobileHeader = () => {
                 <MessageCircle className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium">Chat</span>
                 {messageCount > 0 && (
-                  <span className="ml-auto bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  <span className="count-badge count-badge-message count-badge-inline ml-auto">
                     {messageCount > 9 ? "9+" : messageCount}
                   </span>
                 )}

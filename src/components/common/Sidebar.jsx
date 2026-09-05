@@ -53,12 +53,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
       icon: Bell,
       label: "Notifications",
       badge: notificationCount,
+      badgeClass: "count-badge-notification",
     },
     {
       to: "/chat",
       icon: MessageCircle,
       label: "Messages",
       badge: messageCount,
+      badgeClass: "count-badge-message",
     },
     { to: "/settings", icon: Settings, label: "Settings" },
     ...(isAdmin
@@ -182,7 +184,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             <div className="relative">
               <item.icon className="w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-105" />
               {collapsed && item.badge > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className={`count-badge absolute -right-1.5 -top-1.5 ${item.badgeClass}`}>
                   {item.badge > 9 ? "9+" : item.badge}
                 </span>
               )}
@@ -193,7 +195,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               {item.label}
             </span>
             {!collapsed && item.badge > 0 && (
-              <span className={`badge badge-xs badge-error text-white ${smoothTransition}`}>
+              <span className={`count-badge count-badge-inline ${item.badgeClass} ${smoothTransition}`}>
                 {item.badge}
               </span>
             )}
