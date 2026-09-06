@@ -6,9 +6,9 @@
   name: "ShortJob";
   default: true;
   color-scheme: "light";
-  --color-primary: #147F83;
+  --color-primary: #0da0a6;
   --color-primary-content: #ffffff;
-  --color-secondary: #147F83;
+  --color-secondary: #0da0a6;
   --color-secondary-content: #ffffff;
   --color-accent: #c2410c;
   --color-accent-content: #ffffff;
@@ -40,9 +40,9 @@
 @plugin "daisyui/theme" {
   name: "ShortJobDark";
   color-scheme: "dark";
-  --color-primary: #147F83;
+  --color-primary: #0da0a6;
   --color-primary-content: #ffffff;
-  --color-secondary: #147F83;
+  --color-secondary: #0da0a6;
   --color-secondary-content: #ffffff;
   --color-accent: #fb923c;
   --color-accent-content: #241005;
@@ -430,9 +430,9 @@ select.select:disabled {
 }
 
 .special-teal {
-  --special-text: #147F83;
+  --special-text: #0da0a6;
   --special-text-muted: #095c60;
-  --special-ring: #147F83;
+  --special-ring: #0da0a6;
 }
 
 .special-coral {
@@ -563,7 +563,7 @@ select.select:disabled {
   --special-border-hover: #43c7c1;
   --special-text: #61d7d2;
   --special-text-muted: #93e1dd;
-  --special-ring: #147F83;
+  --special-ring: #0da0a6;
   --special-marker-text: #031312;
 }
 
@@ -770,8 +770,8 @@ select.select:disabled {
 }
 
 .btn-primary {
-  border-color: #147F83;
-  background-color: #147F83;
+  border-color: #0da0a6;
+  background-color: #0da0a6;
   color: #ffffff;
   box-shadow: 0 12px 26px -18px rgba(20, 127, 131, 0.7);
 }
@@ -785,12 +785,12 @@ select.select:disabled {
 
 /* Stable logo colors: independent from component or theme utility precedence. */
 .shortjob-brand-mark {
-  background-color: #147F83 !important;
+  background-color: #0da0a6 !important;
   color: #ffffff !important;
 }
 
 .shortjob-brand-wordmark {
-  color: #147F83 !important;
+  color: #0da0a6 !important;
 }
 
 .shortjob-brand-emblem {
@@ -1029,8 +1029,8 @@ select.select:disabled {
 }
 
 [data-theme="ShortJobDark"] .btn-primary {
-  border-color: #147F83;
-  background: #147F83;
+  border-color: #0da0a6;
+  background: #0da0a6;
   color: #ffffff;
   box-shadow: 0 14px 30px -22px rgba(20, 127, 131, 0.9);
 }
@@ -1054,22 +1054,22 @@ select.select:disabled {
 }
 
 .public-brand-panel {
-  background: #147F83;
+  background: #0da0a6;
   color: #ffffff;
 }
 
 [data-theme="ShortJobDark"] .public-brand-panel {
-  background: #147F83;
+  background: #0da0a6;
   color: #f3fffc;
 }
 
 .landing-cta-panel {
-  background: #147F83;
+  background: #0da0a6;
   color: #ffffff;
 }
 
 [data-theme="ShortJobDark"] .landing-cta-panel {
-  background: #147F83;
+  background: #0da0a6;
   border-color: rgba(101, 198, 226, 0.24);
   color: #eefcf8;
   box-shadow:
@@ -1119,7 +1119,7 @@ select.select:disabled {
 
 [data-theme="ShortJobDark"] .landing-cta-primary {
   background-color: #ffffff;
-  color: #147F83;
+  color: #0da0a6;
   box-shadow: 0 16px 34px -24px rgba(0, 0, 0, 0.45);
 }
 

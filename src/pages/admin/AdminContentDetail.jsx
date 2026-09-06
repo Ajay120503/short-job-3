@@ -291,11 +291,11 @@ const AdminContentDetail = () => {
           {/* Images */}
           {content.image?.url && (
             <div className="mb-4 rounded-xl border border-base-300 bg-base-200/60 p-2">
-              <img
-                src={content.image.url}
-                alt={content.title || "Content image"}
-                className="w-full max-h-[420px] object-contain rounded-lg"
-              />
+              {content.mediaType === "video" ? (
+                <video src={content.image.url} controls className="w-full max-h-[420px] rounded-lg" />
+              ) : (
+                <img src={content.image.url} alt={content.title || "Content image"} className="w-full max-h-[420px] object-contain rounded-lg" />
+              )}
             </div>
           )}
 

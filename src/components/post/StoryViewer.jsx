@@ -32,6 +32,7 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
   // Auto-advance every 5 seconds
   useEffect(() => {
     if (!currentStory) return;
+    if (currentStory.mediaType === "video") return undefined;
     const timer = setTimeout(() => {
       if (currentIndex < stories.length - 1) {
         setCurrentIndex((prev) => prev + 1);
@@ -153,7 +154,16 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
 
       {/* Story content */}
       <div className="w-full h-full flex items-center justify-center p-4">
-        {currentStory.image?.url ? (
+        {currentStory.image?.url && currentStory.mediaType === "video" ? (
+          <video
+            src={currentStory.image.url}
+            controls
+            autoPlay
+            playsInline
+            onEnded={handleNext}
+            className="max-h-[80vh] max-w-full rounded-lg"
+          />
+        ) : currentStory.image?.url ? (
           <img
             src={currentStory.image.url}
             alt=""

@@ -17,6 +17,7 @@ import AuthLayout from "../components/auth/AuthLayout";
 import toast from "../utils/toast";
 import { getCreationError } from "../utils/creationErrors";
 import {
+  FOCUS_AREA_MAX_INPUT_LENGTH,
   PROFILE_LIMITS,
   PROFILE_LIST_MAX_INPUT_LENGTH,
   validateProfileText,
@@ -48,6 +49,11 @@ const calculateAge = (dateValue) => {
 const minimumAgeDate = (() => {
   const date = new Date();
   date.setFullYear(date.getFullYear() - 18);
+  return date.toISOString().split("T")[0];
+})();
+const maximumAgeDate = (() => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 60);
   return date.toISOString().split("T")[0];
 })();
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -128,7 +134,7 @@ const CompleteProfile = () => {
   };
 
   const validateStep = (targetStep = step) => {
-    const allProfileErrors = validateProfileText(formData);
+    const allProfileErrors = validateProfileText(formData, { mode: "complete" });
     const stepFields = targetStep === 0
       ? ["bio", "address", "city", "state", "linkedinUrl"]
       : targetStep === 1
@@ -145,8 +151,8 @@ const CompleteProfile = () => {
         if (age === "") nextErrors.dateOfBirth = "Choose a valid past date.";
         if (age !== "" && age < 18) {
           nextErrors.dateOfBirth = "You must be at least 18 years old to use ShortJob.";
-        } else if (age !== "" && age > 100) {
-          nextErrors.dateOfBirth = "Age must be 100 years or less.";
+        } else if (age !== "" && age > 60) {
+          nextErrors.dateOfBirth = "Age cannot be greater than 60.";
         }
       }
     }
@@ -166,12 +172,12 @@ const CompleteProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const age = calculateAge(formData.dateOfBirth);
-    if (age === "" || age < 18 || age > 100) {
+    if (age === "" || age < 18 || age > 60) {
       setErrors({
         dateOfBirth:
           age !== "" && age < 18
             ? "You must be at least 18 years old to use ShortJob."
-            : "Enter a valid date of birth for an age between 18 and 100.",
+            : "Enter a valid date of birth for an age between 18 and 60.",
       });
       setStep(0);
       toast.error("You must confirm that you are 18 or older.");
@@ -186,6 +192,7 @@ const CompleteProfile = () => {
     try {
       // 1. Save profile data via /api/users/:id (multipart for profile pic)
       const profileFormData = new FormData();
+      profileFormData.append("profileSetup", "true");
       profileFormData.append("name", user?.name || "");
       profileFormData.append("bio", formData.bio);
       profileFormData.append("address", formData.address);
@@ -346,6 +353,7 @@ const CompleteProfile = () => {
           <input
             type="date"
             className={`input input-bordered w-full input-sm ${errors.dateOfBirth ? "input-error" : ""}`}
+            min={maximumAgeDate}
             max={minimumAgeDate}
             required
             value={formData.dateOfBirth}
@@ -398,7 +406,7 @@ const CompleteProfile = () => {
             placeholder="City"
           value={formData.city}
           onChange={(e) => updateField("city", e.target.value)}
-          maxLength={PROFILE_LIMITS.city}
+          maxLength={10}
           />
           {errors.city && <FieldError>{errors.city}</FieldError>}
         </div>
@@ -412,7 +420,7 @@ const CompleteProfile = () => {
             placeholder="State"
           value={formData.state}
           onChange={(e) => updateField("state", e.target.value)}
-          maxLength={PROFILE_LIMITS.state}
+          maxLength={10}
           />
           {errors.state && <FieldError>{errors.state}</FieldError>}
         </div>
@@ -477,7 +485,7 @@ const CompleteProfile = () => {
           placeholder="e.g. Design, Operations, Marketing"
           value={formData.subject}
           onChange={(e) => updateField("subject", e.target.value)}
-          maxLength={PROFILE_LIMITS.subject}
+          maxLength={FOCUS_AREA_MAX_INPUT_LENGTH}
         />
         {errors.subject && <FieldError>{errors.subject}</FieldError>}
       </div>
@@ -546,7 +554,7 @@ const CompleteProfile = () => {
           placeholder="e.g. Product designer, Operations intern"
           value={formData.profession}
           onChange={(e) => updateField("profession", e.target.value)}
-          maxLength={PROFILE_LIMITS.profession}
+          maxLength={20}
         />
         {errors.profession && <FieldError>{errors.profession}</FieldError>}
       </div>
@@ -648,6 +656,7 @@ const CompleteProfile = () => {
           <option value="college">Network</option>
           <option value="university">Community</option>
           <option value="coaching">Program</option>
+          <option value="other">Other</option>
         </select>
       </div>
 

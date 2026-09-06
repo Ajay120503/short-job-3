@@ -10,8 +10,9 @@ import useAuthStore from "../../store/authStore";
 import { getAvailablePostTypes } from "../../utils/postTypeConfig";
 import { getCreationError } from "../../utils/creationErrors";
 import {
-  MAX_SHORT_CREATION_TEXT_LENGTH,
-  MIN_STANDALONE_CONTENT_LENGTH,
+  POST_TAG_MAX_ITEMS,
+  POST_TEXT_MAX_LENGTH,
+  POST_TEXT_MIN_LENGTH,
 } from "../../utils/creationLimits";
 
 const MAX_POST_IMAGES = 4;
@@ -60,16 +61,12 @@ const CreatePostModal = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const nextErrors = {};
-    if (!text.trim() && images.length === 0 && !["poll", "event", "resource_share"].includes(type)) {
-      nextErrors.form = "Please add text or images to your post.";
-    }
-    if (text.trim() && text.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
-      nextErrors.text = `Post text needs at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
-    }
-    if (text.length > MAX_SHORT_CREATION_TEXT_LENGTH) nextErrors.text = `Post text cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`;
+    if (!text.trim()) nextErrors.text = "Post text is required.";
+    else if (text.trim().length < POST_TEXT_MIN_LENGTH) nextErrors.text = `Post text needs at least ${POST_TEXT_MIN_LENGTH} characters.`;
+    else if (text.length > POST_TEXT_MAX_LENGTH) nextErrors.text = `Post text cannot exceed ${POST_TEXT_MAX_LENGTH} characters.`;
     const normalizedTags = [...new Set(tags.split(",").map((tag) => tag.trim()).filter(Boolean))];
-    if (normalizedTags.length > 10) nextErrors.tags = "Use no more than 10 tags.";
-    else if (normalizedTags.some((tag) => tag.length > 30)) nextErrors.tags = "Each tag must be 30 characters or fewer.";
+    if (normalizedTags.length > POST_TAG_MAX_ITEMS) nextErrors.tags = `Use no more than ${POST_TAG_MAX_ITEMS} tags.`;
+    else if (normalizedTags.some((tag) => tag.length < 3 || tag.length > 20)) nextErrors.tags = "Each tag must contain 3 to 20 characters.";
     if (!availableTypes.some((item) => item.value === type)) nextErrors.type = "Choose a post type available to your account.";
     const validPollOptions = pollOptions.map((item) => item.trim()).filter(Boolean);
     if (type === "poll") {
@@ -159,12 +156,13 @@ const CreatePostModal = ({ onClose }) => {
                 setText(e.target.value);
                 setErrors((prev) => ({ ...prev, text: "", form: "", server: "" }));
               }}
-              minLength={text ? MIN_STANDALONE_CONTENT_LENGTH : undefined}
-              maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
+              minLength={POST_TEXT_MIN_LENGTH}
+              maxLength={POST_TEXT_MAX_LENGTH}
+              required
             />
             <label className="label">
               <span className="label-text-alt text-base-content/40">
-                {text.length}/{MAX_SHORT_CREATION_TEXT_LENGTH}
+                {text.length}/{POST_TEXT_MAX_LENGTH}
               </span>
             </label>
             {errors.text && <FieldError>{errors.text}</FieldError>}
@@ -217,6 +215,7 @@ const CreatePostModal = ({ onClose }) => {
                 setTags(e.target.value);
                 setErrors((prev) => ({ ...prev, tags: "", server: "" }));
               }}
+              maxLength={218}
             />
             {errors.tags && <FieldError>{errors.tags}</FieldError>}
           </div>

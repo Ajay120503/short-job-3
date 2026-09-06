@@ -27,8 +27,9 @@ import {
   getJobWorkplaceLabel,
 } from "../utils/jobLocation";
 import {
-  MAX_SHORT_CREATION_TEXT_LENGTH,
-  MIN_STANDALONE_CONTENT_LENGTH,
+  JOB_DESCRIPTION_MAX_LENGTH,
+  JOB_TEXT_MAX_LENGTH,
+  JOB_TEXT_MIN_LENGTH,
 } from "../utils/creationLimits";
 
 const ROLE_TYPES = [
@@ -194,14 +195,26 @@ const EditJob = () => {
   const validateForm = () => {
     const nextErrors = {};
     if (!form.title.trim()) nextErrors.title = "Job title is required.";
-    else if (form.title.trim().length < MIN_STANDALONE_CONTENT_LENGTH) nextErrors.title = `Job title must contain at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
-    else if (form.title.trim().length > MAX_SHORT_CREATION_TEXT_LENGTH) nextErrors.title = `Job title cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`;
-    if (!form.description.trim()) nextErrors.description = "Description is required.";
-    else if (form.description.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
-      nextErrors.description = `Add at least ${MIN_STANDALONE_CONTENT_LENGTH} characters so applicants understand the role.`;
-    } else if (form.description.trim().length > 5000) {
-      nextErrors.description = "Description cannot exceed 5000 characters.";
-    }
+    else if (form.title.trim().length < JOB_TEXT_MIN_LENGTH) nextErrors.title = `Job title must contain at least ${JOB_TEXT_MIN_LENGTH} characters.`;
+    else if (form.title.trim().length > JOB_TEXT_MAX_LENGTH) nextErrors.title = `Job title cannot exceed ${JOB_TEXT_MAX_LENGTH} characters.`;
+    if (form.description.trim().length > JOB_DESCRIPTION_MAX_LENGTH) nextErrors.description = `Description cannot exceed ${JOB_DESCRIPTION_MAX_LENGTH} characters.`;
+    const requiredTextRules = {
+      institutionName: [50, "Organization name"],
+      workplaceName: [50, "Workplace name"],
+      workplaceAddress: [100, "Street address"],
+      workplaceCity: [50, "City"],
+      workplaceState: [50, "State"],
+      workplaceCountry: [50, "Country"],
+    };
+    Object.entries(requiredTextRules).forEach(([field, [max, label]]) => {
+      const length = form[field].trim().length;
+      if (!length) nextErrors[field] = `${label} is required.`;
+      else if (length < 3 || length > max) nextErrors[field] = `${label} must contain 3 to ${max} characters.`;
+    });
+    const qualifications = [...new Set(form.requiredQualifications.split(",").map((item) => item.trim()).filter(Boolean))];
+    if (qualifications.length > 5 || qualifications.some((item) => item.length < 3 || item.length > 20)) nextErrors.requiredQualifications = "Use up to 5 qualifications of 3 to 20 characters each.";
+    const skills = [...new Set(form.skillsRequired.split(",").map((item) => item.trim()).filter(Boolean))];
+    if (skills.length > 5 || skills.some((item) => item.length < 3 || item.length > 20)) nextErrors.skillsRequired = "Use up to 5 skills of 3 to 20 characters each.";
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
     if (!Number.isFinite(Number(form.durationValue)) || Number(form.durationValue) <= 0) nextErrors.durationValue = "Enter a positive duration.";
     if (!form.jobDate) nextErrors.jobDate = "Job date is required.";
@@ -214,14 +227,15 @@ const EditJob = () => {
     }
     if (form.jobDate && form.deadline && form.deadline > form.jobDate) nextErrors.deadline = "Deadline cannot be after the job date.";
     if (!form.contactEmail.trim()) nextErrors.contactEmail = "Contact email is required.";
-    if (form.contactEmail && !isValidEmail(form.contactEmail)) {
-      nextErrors.contactEmail = "Enter a valid email address.";
+    const emailLocalPart = form.contactEmail.trim().split("@")[0] || "";
+    if (form.contactEmail && (!isValidEmail(form.contactEmail) || emailLocalPart.length < 2 || emailLocalPart.length > 20)) {
+      nextErrors.contactEmail = "Enter a valid email with 2 to 20 characters before @.";
     }
     if (form.isPaid && (!form.stipend || Number(form.stipend) <= 0)) {
       nextErrors.stipend = "Enter a valid paid amount.";
     }
-    if (form.maxApplicants && Number(form.maxApplicants) < 1) {
-      nextErrors.maxApplicants = "Applicant limit must be at least 1.";
+    if (form.maxApplicants !== "" && (!Number.isInteger(Number(form.maxApplicants)) || Number(form.maxApplicants) < 0 || Number(form.maxApplicants) > 100)) {
+      nextErrors.maxApplicants = "Applicant limit must be a whole number between 0 and 100.";
     }
     const hasLat = String(form.coordinateLat).trim() !== "";
     const hasLng = String(form.coordinateLng).trim() !== "";
@@ -406,11 +420,11 @@ const EditJob = () => {
                 placeholder="e.g., Content Creator for training program"
                 value={form.title}
                 onChange={handleChange}
-                minLength={MIN_STANDALONE_CONTENT_LENGTH}
-                maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
+                minLength={JOB_TEXT_MIN_LENGTH}
+                maxLength={JOB_TEXT_MAX_LENGTH}
                 required
               />
-              <span className="label-text-alt text-base-content/40">{form.title.length}/{MAX_SHORT_CREATION_TEXT_LENGTH} characters</span>
+              <span className="label-text-alt text-base-content/40">{form.title.length}/{JOB_TEXT_MAX_LENGTH} characters</span>
               {errors.title && <FieldError>{errors.title}</FieldError>}
             </div>
 
@@ -419,7 +433,7 @@ const EditJob = () => {
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5" />
-                  Organization Name
+                  Organization Name <span className="text-error">*</span>
                 </span>
               </label>
               <input
@@ -429,6 +443,9 @@ const EditJob = () => {
                 placeholder="e.g., Delhi Public School"
                 value={form.institutionName}
                 onChange={handleChange}
+                minLength={3}
+                maxLength={50}
+                required
               />
             </div>
 
@@ -436,7 +453,7 @@ const EditJob = () => {
             <div className="form-control">
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm">
-                  Description <span className="text-error">*</span>
+                  Description (optional)
                 </span>
               </label>
               <textarea
@@ -445,7 +462,7 @@ const EditJob = () => {
                 placeholder="Describe the role, responsibilities, and expectations..."
                 value={form.description}
                 onChange={handleChange}
-                required
+                maxLength={JOB_DESCRIPTION_MAX_LENGTH}
               />
               {errors.description && (
                 <FieldError>{errors.description}</FieldError>
@@ -622,6 +639,9 @@ const EditJob = () => {
                   placeholder="Workplace name / branch"
                   value={form.workplaceName}
                   onChange={handleChange}
+                  minLength={3}
+                  maxLength={50}
+                  required
                 />
                 <input
                   type="text"
@@ -630,6 +650,9 @@ const EditJob = () => {
                   placeholder="Full street address"
                   value={form.workplaceAddress}
                   onChange={handleChange}
+                  minLength={3}
+                  maxLength={100}
+                  required
                 />
                 <input
                   type="text"
@@ -638,6 +661,9 @@ const EditJob = () => {
                   placeholder="City"
                   value={form.workplaceCity}
                   onChange={handleChange}
+                  minLength={3}
+                  maxLength={50}
+                  required
                 />
                 <input
                   type="text"
@@ -646,6 +672,9 @@ const EditJob = () => {
                   placeholder="State"
                   value={form.workplaceState}
                   onChange={handleChange}
+                  minLength={3}
+                  maxLength={50}
+                  required
                 />
                 <input
                   type="text"
@@ -654,6 +683,9 @@ const EditJob = () => {
                   placeholder="Country"
                   value={form.workplaceCountry}
                   onChange={handleChange}
+                  minLength={3}
+                  maxLength={50}
+                  required
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <input
@@ -769,9 +801,10 @@ const EditJob = () => {
               <textarea
                 name="requiredQualifications"
                 className="textarea textarea-bordered w-full text-sm min-h-[80px]"
-                placeholder="e.g., B.Ed, M.Sc, CTET qualified..."
+                placeholder="Up to 5, comma separated"
                 value={form.requiredQualifications}
                 onChange={handleChange}
+                maxLength={108}
               />
             </div>
 
@@ -789,6 +822,7 @@ const EditJob = () => {
                 placeholder="e.g., Communication, Python, Classroom Management (comma separated)"
                 value={form.skillsRequired}
                 onChange={handleChange}
+                maxLength={108}
               />
             </div>
           </div>
@@ -836,6 +870,7 @@ const EditJob = () => {
                 placeholder="hr@institution.com"
                 value={form.contactEmail}
                 onChange={handleChange}
+                maxLength={254}
                 required
               />
               {errors.contactEmail && (
@@ -858,6 +893,8 @@ const EditJob = () => {
                 value={form.maxApplicants}
                 onChange={handleChange}
                 min="0"
+                max="100"
+                step="1"
               />
               {errors.maxApplicants && (
                 <FieldError>{errors.maxApplicants}</FieldError>

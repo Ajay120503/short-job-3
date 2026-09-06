@@ -5,12 +5,11 @@ import API from "../utils/axios";
 import toast from "../utils/toast";
 import { getCreationError } from "../utils/creationErrors";
 import {
-  MAX_SHORT_CREATION_TEXT_LENGTH,
-  MIN_STANDALONE_CONTENT_LENGTH,
+  STORY_CAPTION_MAX_LENGTH,
 } from "../utils/creationLimits";
 
-const MAX_STORY_IMAGE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
+const MAX_STORY_MEDIA_SIZE = 5 * 1024 * 1024;
+const ALLOWED_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm", "video/quicktime"]);
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -27,13 +26,13 @@ const CreateStory = () => {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-        setErrors((prev) => ({ ...prev, image: "Upload a JPG, PNG, GIF, or WebP image." }));
+      if (!ALLOWED_MEDIA_TYPES.has(file.type)) {
+        setErrors((prev) => ({ ...prev, image: "Upload a JPG, PNG, GIF, WebP, MP4, WebM, or MOV file." }));
         e.target.value = "";
         return;
       }
-      if (file.size > MAX_STORY_IMAGE_SIZE) {
-        setErrors((prev) => ({ ...prev, image: "Story image must be under 5MB." }));
+      if (file.size > MAX_STORY_MEDIA_SIZE) {
+        setErrors((prev) => ({ ...prev, image: "Story media must be 5MB or smaller." }));
         e.target.value = "";
         return;
       }
@@ -58,11 +57,8 @@ const CreateStory = () => {
     if (!storyImage && !storyText.trim()) {
       nextErrors.form = "Please add an image or caption to your story.";
     }
-    if (storyText.trim() && storyText.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
-      nextErrors.storyText = `Story caption needs at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
-    }
-    if (storyText.length > MAX_SHORT_CREATION_TEXT_LENGTH) {
-      nextErrors.storyText = `Caption cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`;
+    if (storyText.length > STORY_CAPTION_MAX_LENGTH) {
+      nextErrors.storyText = `Caption cannot exceed ${STORY_CAPTION_MAX_LENGTH} characters.`;
     }
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
@@ -115,11 +111,11 @@ const CreateStory = () => {
           <div>
             {preview ? (
               <div className="relative">
-                <img
-                  src={preview}
-                  alt="Story preview"
-                  className="w-full max-h-64 object-cover rounded-xl"
-                />
+                {storyImage?.type.startsWith("video/") ? (
+                  <video src={preview} controls className="w-full max-h-64 object-contain rounded-xl" />
+                ) : (
+                  <img src={preview} alt="Story preview" className="w-full max-h-64 object-cover rounded-xl" />
+                )}
                 <button
                   type="button"
                   onClick={handleRemoveImage}
@@ -134,11 +130,11 @@ const CreateStory = () => {
                   <Image className="w-6 h-6 text-primary" />
                 </div>
                 <span className="text-sm text-base-content/50">
-                  Click to upload an image (max 5MB)
+                  Upload an image or video (max 5MB)
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
                   onChange={handleImageChange}
                   className="hidden"
                 />
@@ -164,12 +160,11 @@ const CreateStory = () => {
                 setStoryText(e.target.value);
                 setErrors((prev) => ({ ...prev, storyText: "", form: "", server: "" }));
               }}
-              minLength={storyText ? MIN_STANDALONE_CONTENT_LENGTH : undefined}
-              maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
+              maxLength={STORY_CAPTION_MAX_LENGTH}
             />
             <label className="label">
               <span className="label-text-alt text-base-content/40">
-                {storyText.length}/{MAX_SHORT_CREATION_TEXT_LENGTH}
+                {storyText.length}/{STORY_CAPTION_MAX_LENGTH}
               </span>
             </label>
             {errors.storyText && <FieldError>{errors.storyText}</FieldError>}

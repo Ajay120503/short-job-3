@@ -134,7 +134,9 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
       {/* Content preview */}
       <div className="grid gap-3 sm:grid-cols-[96px_minmax(0,1fr)]">
         <div className="w-full h-24 rounded-lg bg-base-200 border border-base-300/60 overflow-hidden flex items-center justify-center">
-          {mediaUrl ? (
+          {mediaUrl && item.mediaType === "video" ? (
+            <video src={mediaUrl} muted className="w-full h-full object-cover" />
+          ) : mediaUrl ? (
             <img
               src={mediaUrl}
               alt=""

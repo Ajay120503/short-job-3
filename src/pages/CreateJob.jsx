@@ -28,8 +28,13 @@ import {
 } from "../utils/jobLocation";
 import { getCreationError } from "../utils/creationErrors";
 import {
-  MAX_SHORT_CREATION_TEXT_LENGTH,
-  MIN_STANDALONE_CONTENT_LENGTH,
+  JOB_ADDRESS_MAX_LENGTH,
+  JOB_DESCRIPTION_MAX_LENGTH,
+  JOB_LIST_MAX_ITEMS,
+  JOB_TEXT_MAX_LENGTH,
+  JOB_TEXT_MIN_LENGTH,
+  LIST_ITEM_MAX_LENGTH,
+  LIST_ITEM_MIN_LENGTH,
 } from "../utils/creationLimits";
 
 const SHORT_JOB_TYPES = [
@@ -46,6 +51,10 @@ const LOCATIONS = [
 ];
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+const hasValidEmailLocalPart = (value) => {
+  const localPart = value.trim().split("@")[0] || "";
+  return localPart.length >= 2 && localPart.length <= 20;
+};
 const toLocalDateInput = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -142,17 +151,12 @@ const CreateJob = () => {
   const validateForm = () => {
     const nextErrors = {};
     if (!form.title.trim()) nextErrors.title = "Job title is required.";
-    else if (form.title.trim().length < MIN_STANDALONE_CONTENT_LENGTH) nextErrors.title = `Job title must contain at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
-    else if (form.title.trim().length > MAX_SHORT_CREATION_TEXT_LENGTH) nextErrors.title = `Job title cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`;
-    if (!form.description.trim()) nextErrors.description = "Description is required.";
-    else if (form.description.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
-      nextErrors.description = `Add at least ${MIN_STANDALONE_CONTENT_LENGTH} characters so applicants understand the role.`;
-    } else if (form.description.trim().length > 5000) {
-      nextErrors.description = "Description cannot exceed 5000 characters.";
-    }
+    else if (form.title.trim().length < JOB_TEXT_MIN_LENGTH) nextErrors.title = `Job title must contain at least ${JOB_TEXT_MIN_LENGTH} characters.`;
+    else if (form.title.trim().length > JOB_TEXT_MAX_LENGTH) nextErrors.title = `Job title cannot exceed ${JOB_TEXT_MAX_LENGTH} characters.`;
+    if (form.description.trim().length > JOB_DESCRIPTION_MAX_LENGTH) nextErrors.description = `Description cannot exceed ${JOB_DESCRIPTION_MAX_LENGTH} characters.`;
     const organizationName = form.institutionName.trim() || user?.institutionName?.trim();
     if (!organizationName) nextErrors.institutionName = "Organization name is required.";
-    else if (organizationName.length > 150) nextErrors.institutionName = "Organization name cannot exceed 150 characters.";
+    else if (organizationName.length < JOB_TEXT_MIN_LENGTH || organizationName.length > JOB_TEXT_MAX_LENGTH) nextErrors.institutionName = `Organization name must contain ${JOB_TEXT_MIN_LENGTH} to ${JOB_TEXT_MAX_LENGTH} characters.`;
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
     if (!Number.isFinite(Number(form.durationValue)) || Number(form.durationValue) <= 0) nextErrors.durationValue = "Enter a positive duration.";
     if (form.durationUnit === "hours" && Number(form.durationValue) > 24) nextErrors.durationValue = "Duration cannot exceed 24 hours.";
@@ -170,31 +174,33 @@ const CreateJob = () => {
     }
     if (form.jobDate && form.deadline && form.deadline > form.jobDate) nextErrors.deadline = "Deadline cannot be after the job date.";
     if (!form.contactEmail.trim()) nextErrors.contactEmail = "Contact email is required.";
-    if (form.contactEmail && !isValidEmail(form.contactEmail)) {
-      nextErrors.contactEmail = "Enter a valid email address.";
+    if (form.contactEmail && (!isValidEmail(form.contactEmail) || !hasValidEmailLocalPart(form.contactEmail))) {
+      nextErrors.contactEmail = "Enter a valid email with 2 to 20 characters before @.";
     }
     if (form.isPaid && (!form.stipend || Number(form.stipend) <= 0)) {
       nextErrors.stipend = "Enter a valid paid amount.";
     }
-    if (form.maxApplicants && Number(form.maxApplicants) < 1) {
-      nextErrors.maxApplicants = "Applicant limit must be at least 1.";
+    if (form.maxApplicants !== "" && (!Number.isInteger(Number(form.maxApplicants)) || Number(form.maxApplicants) < 0 || Number(form.maxApplicants) > 100)) {
+      nextErrors.maxApplicants = "Applicant limit must be a whole number between 0 and 100.";
     }
-    if (form.maxApplicants && (!Number.isInteger(Number(form.maxApplicants)) || Number(form.maxApplicants) > 100000)) {
-      nextErrors.maxApplicants = "Applicant limit must be a whole number up to 100,000.";
-    }
-    if (form.location !== "remote" && !form.workplaceCity.trim()) {
-      nextErrors.workplaceCity = "City is required for on-site and hybrid jobs.";
-    }
-    const limits = {
-      workplaceName: 150, workplaceAddress: 300, workplaceCity: 100,
-      workplaceState: 100, workplaceCountry: 100, requiredQualifications: 2000,
+    const requiredTextRules = {
+      workplaceName: [JOB_TEXT_MAX_LENGTH, "Workplace name"],
+      workplaceAddress: [JOB_ADDRESS_MAX_LENGTH, "Street address"],
+      workplaceCity: [JOB_TEXT_MAX_LENGTH, "City"],
+      workplaceState: [JOB_TEXT_MAX_LENGTH, "State"],
+      workplaceCountry: [JOB_TEXT_MAX_LENGTH, "Country"],
     };
-    Object.entries(limits).forEach(([field, limit]) => {
-      if (form[field].trim().length > limit) nextErrors[field] = `Maximum ${limit} characters allowed.`;
+    Object.entries(requiredTextRules).forEach(([field, [max, label]]) => {
+      const length = form[field].trim().length;
+      if (!length) nextErrors[field] = `${label} is required.`;
+      else if (length < JOB_TEXT_MIN_LENGTH || length > max) nextErrors[field] = `${label} must contain ${JOB_TEXT_MIN_LENGTH} to ${max} characters.`;
     });
+    const qualifications = [...new Set(form.requiredQualifications.split(",").map((item) => item.trim()).filter(Boolean))];
+    if (qualifications.length > JOB_LIST_MAX_ITEMS) nextErrors.requiredQualifications = `Add no more than ${JOB_LIST_MAX_ITEMS} qualifications.`;
+    else if (qualifications.some((item) => item.length < LIST_ITEM_MIN_LENGTH || item.length > LIST_ITEM_MAX_LENGTH)) nextErrors.requiredQualifications = `Each qualification must contain ${LIST_ITEM_MIN_LENGTH} to ${LIST_ITEM_MAX_LENGTH} characters.`;
     const skills = [...new Set(form.skillsRequired.split(",").map((skill) => skill.trim()).filter(Boolean))];
-    if (skills.length > 20) nextErrors.skillsRequired = "Add no more than 20 skills.";
-    else if (skills.some((skill) => skill.length > 50)) nextErrors.skillsRequired = "Each skill must be 50 characters or fewer.";
+    if (skills.length > JOB_LIST_MAX_ITEMS) nextErrors.skillsRequired = `Add no more than ${JOB_LIST_MAX_ITEMS} skills.`;
+    else if (skills.some((skill) => skill.length < LIST_ITEM_MIN_LENGTH || skill.length > LIST_ITEM_MAX_LENGTH)) nextErrors.skillsRequired = `Each skill must contain ${LIST_ITEM_MIN_LENGTH} to ${LIST_ITEM_MAX_LENGTH} characters.`;
     const hasLat = String(form.coordinateLat).trim() !== "";
     const hasLng = String(form.coordinateLng).trim() !== "";
     if (hasLat !== hasLng) {
@@ -401,11 +407,11 @@ const CreateJob = () => {
                 placeholder="e.g., Content Creator for training program"
                 value={form.title}
                 onChange={handleChange}
-                minLength={MIN_STANDALONE_CONTENT_LENGTH}
-                maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
+                minLength={JOB_TEXT_MIN_LENGTH}
+                maxLength={JOB_TEXT_MAX_LENGTH}
                 required
               />
-              <span className="label-text-alt text-base-content/40">{form.title.length}/{MAX_SHORT_CREATION_TEXT_LENGTH} characters</span>
+              <span className="label-text-alt text-base-content/40">{form.title.length}/{JOB_TEXT_MAX_LENGTH} characters</span>
               {errors.title && <FieldError>{errors.title}</FieldError>}
             </div>
 
@@ -424,7 +430,8 @@ const CreateJob = () => {
                 placeholder="e.g., Delhi Public School"
                 value={form.institutionName}
                 onChange={handleChange}
-                maxLength={150}
+                minLength={JOB_TEXT_MIN_LENGTH}
+                maxLength={JOB_TEXT_MAX_LENGTH}
                 required
               />
               {errors.institutionName && <FieldError>{errors.institutionName}</FieldError>}
@@ -434,7 +441,7 @@ const CreateJob = () => {
             <div className="form-control">
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm">
-                  Description <span className="text-error">*</span>
+                  Description <OptionalMark />
                 </span>
               </label>
               <textarea
@@ -443,8 +450,7 @@ const CreateJob = () => {
                 placeholder="Describe the role, responsibilities, and expectations..."
                 value={form.description}
                 onChange={handleChange}
-                maxLength={5000}
-                required
+                maxLength={JOB_DESCRIPTION_MAX_LENGTH}
               />
               {errors.description && (
                 <FieldError>{errors.description}</FieldError>
@@ -611,24 +617,24 @@ const CreateJob = () => {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="form-control sm:col-span-2">
-                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Workplace name <OptionalMark /></span></label>
-                  <input type="text" name="workplaceName" className={`input input-bordered h-11 text-sm ${errors.workplaceName ? "input-error" : ""}`} placeholder="Office, institution, or branch" value={form.workplaceName} onChange={handleChange} maxLength={150} />
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Workplace name <RequiredMark /></span></label>
+                  <input type="text" name="workplaceName" className={`input input-bordered h-11 text-sm ${errors.workplaceName ? "input-error" : ""}`} placeholder="Office, institution, or branch" value={form.workplaceName} onChange={handleChange} minLength={3} maxLength={50} required />
                 </div>
                 <div className="form-control sm:col-span-2">
-                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Street address <OptionalMark /></span></label>
-                  <input type="text" name="workplaceAddress" className={`input input-bordered h-11 text-sm ${errors.workplaceAddress ? "input-error" : ""}`} placeholder="Building, street, and area" value={form.workplaceAddress} onChange={handleChange} maxLength={300} />
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Street address <RequiredMark /></span></label>
+                  <input type="text" name="workplaceAddress" className={`input input-bordered h-11 text-sm ${errors.workplaceAddress ? "input-error" : ""}`} placeholder="Building, street, and area" value={form.workplaceAddress} onChange={handleChange} minLength={3} maxLength={100} required />
                 </div>
                 <div className="form-control">
-                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">City {form.location === "remote" ? <OptionalMark /> : <RequiredMark />}</span></label>
-                  <input type="text" name="workplaceCity" className={`input input-bordered h-11 text-sm ${errors.workplaceCity ? "input-error" : ""}`} placeholder="City" value={form.workplaceCity} onChange={handleChange} maxLength={100} required={form.location !== "remote"} />
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">City <RequiredMark /></span></label>
+                  <input type="text" name="workplaceCity" className={`input input-bordered h-11 text-sm ${errors.workplaceCity ? "input-error" : ""}`} placeholder="City" value={form.workplaceCity} onChange={handleChange} minLength={3} maxLength={50} required />
                 </div>
                 <div className="form-control">
-                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">State <OptionalMark /></span></label>
-                  <input type="text" name="workplaceState" className={`input input-bordered h-11 text-sm ${errors.workplaceState ? "input-error" : ""}`} placeholder="State" value={form.workplaceState} onChange={handleChange} maxLength={100} />
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">State <RequiredMark /></span></label>
+                  <input type="text" name="workplaceState" className={`input input-bordered h-11 text-sm ${errors.workplaceState ? "input-error" : ""}`} placeholder="State" value={form.workplaceState} onChange={handleChange} minLength={3} maxLength={50} required />
                 </div>
                 <div className="form-control">
-                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Country <OptionalMark /></span></label>
-                  <input type="text" name="workplaceCountry" className={`input input-bordered h-11 text-sm ${errors.workplaceCountry ? "input-error" : ""}`} placeholder="Country" value={form.workplaceCountry} onChange={handleChange} maxLength={100} />
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Country <RequiredMark /></span></label>
+                  <input type="text" name="workplaceCountry" className={`input input-bordered h-11 text-sm ${errors.workplaceCountry ? "input-error" : ""}`} placeholder="Country" value={form.workplaceCountry} onChange={handleChange} minLength={3} maxLength={50} required />
                 </div>
                 <div className="form-control">
                   <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Coordinates <OptionalMark /></span></label>
@@ -758,10 +764,10 @@ const CreateJob = () => {
               <textarea
                 name="requiredQualifications"
                 className={`textarea textarea-bordered w-full text-sm min-h-[80px] ${errors.requiredQualifications ? "textarea-error" : ""}`}
-                placeholder="e.g., B.Ed, M.Sc, CTET qualified..."
+                placeholder="Up to 5, comma separated (e.g., B.Ed, M.Sc)"
                 value={form.requiredQualifications}
                 onChange={handleChange}
-                maxLength={2000}
+                maxLength={108}
               />
               {errors.requiredQualifications && <FieldError>{errors.requiredQualifications}</FieldError>}
             </div>
@@ -780,6 +786,7 @@ const CreateJob = () => {
                 placeholder="e.g., Communication, Python, Classroom Management (comma separated)"
                 value={form.skillsRequired}
                 onChange={handleChange}
+                maxLength={108}
               />
               {errors.skillsRequired && <FieldError>{errors.skillsRequired}</FieldError>}
             </div>
@@ -807,7 +814,6 @@ const CreateJob = () => {
                 className={`input input-bordered w-full h-12 text-sm ${errors.deadline ? "input-error" : ""}`}
                 value={form.deadline}
                 onChange={handleChange}
-                maxLength={254}
                 min={todayInputValue}
                 required
               />
@@ -829,6 +835,7 @@ const CreateJob = () => {
                 placeholder="hr@institution.com"
                 value={form.contactEmail}
                 onChange={handleChange}
+                maxLength={254}
                 required
               />
               {errors.contactEmail && (
@@ -851,7 +858,7 @@ const CreateJob = () => {
                 value={form.maxApplicants}
                 onChange={handleChange}
                 min="0"
-                max="100000"
+                max="100"
                 step="1"
               />
               <span className="mt-1 text-[11px] text-base-content/40">Leave empty or enter 0 for unlimited applicants.</span>

@@ -615,7 +615,7 @@ const Chat = () => {
                   }`}
                 >
                   <div className="relative">
-                    <UserAvatar user={other} size={48} showPresence={false} />
+                    <UserAvatar user={other} size={48} showPresence={false} showAdminBadge={false} />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center justify-between">
@@ -689,6 +689,7 @@ const Chat = () => {
                       user={getOtherParticipant(activeConversation)}
                       size={40}
                       showPresence={false}
+                      showAdminBadge={false}
                     />
                     <div className="min-w-0">
                       <p
@@ -804,7 +805,7 @@ const Chat = () => {
                     }}
                   >
                     <div className="chat-image avatar">
-                      <UserAvatar user={msg.sender} size={32} showPresence={false} />
+                      <UserAvatar user={msg.sender} size={32} showPresence={false} showAdminBadge={false} />
                     </div>
                     <div className="chat-header mb-1 flex items-center gap-2 px-1 text-[10px] text-base-content/45">
                       <span>

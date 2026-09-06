@@ -12,7 +12,7 @@ import {
 } from "../utils/profileValidation";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-const MAX_RESUME_SIZE = 10 * 1024 * 1024;
+const MAX_RESUME_SIZE = 5 * 1024 * 1024;
 const ALLOWED_PROFILE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 
 const calculateAge = (dateValue) => {
@@ -35,6 +35,11 @@ const calculateAge = (dateValue) => {
 const minimumAgeDate = (() => {
   const date = new Date();
   date.setFullYear(date.getFullYear() - 18);
+  return date.toISOString().split("T")[0];
+})();
+const maximumAgeDate = (() => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 60);
   return date.toISOString().split("T")[0];
 })();
 
@@ -121,14 +126,13 @@ const EditProfile = () => {
   const handleResumeChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const allowed = file.type === "application/pdf" || ALLOWED_PROFILE_IMAGE_TYPES.has(file.type);
-    if (!allowed) {
-      setErrors((prev) => ({ ...prev, resume: "Upload a PDF or image file." }));
+    if (file.type !== "application/pdf") {
+      setErrors((prev) => ({ ...prev, resume: "Upload a PDF file only." }));
       e.target.value = "";
       return;
     }
     if (file.size > MAX_RESUME_SIZE) {
-      setErrors((prev) => ({ ...prev, resume: "CV must be under 10MB." }));
+      setErrors((prev) => ({ ...prev, resume: "CV must be 5MB or smaller." }));
       return;
     }
     setErrors((prev) => ({ ...prev, resume: "" }));
@@ -142,8 +146,8 @@ const EditProfile = () => {
       if (calculatedAge === "") nextErrors.dateOfBirth = "Choose a valid past date.";
       if (calculatedAge !== "" && calculatedAge < 18) {
         nextErrors.dateOfBirth = "You must be at least 18 years old to use ShortJob.";
-      } else if (calculatedAge !== "" && calculatedAge > 100) {
-        nextErrors.dateOfBirth = "Age must be 100 years or less.";
+      } else if (calculatedAge !== "" && calculatedAge > 60) {
+        nextErrors.dateOfBirth = "Age cannot be greater than 60.";
       }
     }
 
@@ -283,6 +287,7 @@ const EditProfile = () => {
                 className={`input input-bordered w-full input-sm text-sm ${errors.name ? "input-error" : ""}`}
                 value={form.name}
                 onChange={handleChange}
+                minLength={3}
                 maxLength={PROFILE_LIMITS.name}
                 required
               />
@@ -322,7 +327,8 @@ const EditProfile = () => {
                   value={form.age}
                   readOnly
                   min="18"
-                  max="100"
+                  max="60"
+                  required
                   placeholder="Auto"
                 />
                 <p className="mt-1 text-[11px] text-base-content/40">
@@ -341,7 +347,9 @@ const EditProfile = () => {
                   className={`input input-bordered w-full input-sm text-sm ${errors.dateOfBirth ? "input-error" : ""}`}
                   value={form.dateOfBirth}
                   onChange={handleChange}
+                  min={maximumAgeDate}
                   max={minimumAgeDate}
+                  required
                 />
                 {errors.dateOfBirth && (
                   <FieldError>{errors.dateOfBirth}</FieldError>
@@ -668,7 +676,7 @@ const EditProfile = () => {
               <input
                 type="file"
                 className="hidden"
-                accept=".pdf,image/*"
+                accept="application/pdf"
                 onChange={handleResumeChange}
               />
             </label>

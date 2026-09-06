@@ -11,8 +11,8 @@ import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
 import { getAvailablePostTypes } from "../utils/postTypeConfig";
 import {
-  MAX_SHORT_CREATION_TEXT_LENGTH,
-  MIN_STANDALONE_CONTENT_LENGTH,
+  POST_TEXT_MAX_LENGTH,
+  POST_TEXT_MIN_LENGTH,
 } from "../utils/creationLimits";
 
 const EditPost = () => {
@@ -69,19 +69,32 @@ const EditPost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text.trim() && existingImages.length === 0 && newImages.length === 0) {
-      toast.error("Please add text or images to your post.");
+    if (!text.trim()) {
+      toast.error("Post text is required.");
       return;
     }
     if (
       text.trim()
-      && text.trim().length < MIN_STANDALONE_CONTENT_LENGTH
+      && text.trim().length < POST_TEXT_MIN_LENGTH
     ) {
-      toast.error(`Post text needs at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`);
+      toast.error(`Post text needs at least ${POST_TEXT_MIN_LENGTH} characters.`);
       return;
     }
-    if (text.length > MAX_SHORT_CREATION_TEXT_LENGTH) {
-      toast.error(`Post text cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`);
+    if (text.length > POST_TEXT_MAX_LENGTH) {
+      toast.error(`Post text cannot exceed ${POST_TEXT_MAX_LENGTH} characters.`);
+      return;
+    }
+    const normalizedTags = [...new Set(tags.split(",").map((tag) => tag.trim()).filter(Boolean))];
+    if (normalizedTags.length > 10 || normalizedTags.some((tag) => tag.length < 3 || tag.length > 20)) {
+      toast.error("Use up to 10 tags of 3 to 20 characters each.");
+      return;
+    }
+    if (existingImages.length + newImages.length > 4) {
+      toast.error("A post can contain up to 4 images.");
+      return;
+    }
+    if (newImages.some((file) => !["image/jpeg", "image/png", "image/gif", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024)) {
+      toast.error("Upload JPG, PNG, GIF, or WebP images up to 5MB each.");
       return;
     }
 
@@ -150,13 +163,14 @@ const EditPost = () => {
               placeholder="What's on your mind?"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              minLength={text ? MIN_STANDALONE_CONTENT_LENGTH : undefined}
-              maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
+              minLength={POST_TEXT_MIN_LENGTH}
+              maxLength={POST_TEXT_MAX_LENGTH}
+              required
               autoFocus
             />
             <label className="label">
               <span className="label-text-alt text-base-content/40">
-                {text.length}/{MAX_SHORT_CREATION_TEXT_LENGTH}
+                {text.length}/{POST_TEXT_MAX_LENGTH}
               </span>
             </label>
           </div>
@@ -196,6 +210,7 @@ const EditPost = () => {
               placeholder="Tags (comma separated, e.g. React, Node.js)"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
+              maxLength={218}
             />
           </div>
 
@@ -241,7 +256,7 @@ const EditPost = () => {
               <input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
                 multiple
                 onChange={(e) => setNewImages([...e.target.files])}
               />

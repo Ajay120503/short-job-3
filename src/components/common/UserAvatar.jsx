@@ -17,6 +17,7 @@ import {
  * - showBadges: whether to show optional profile/opportunity badges (default false)
  * - showIndicator: whether to show the open-to-opportunities badge when badges are enabled (default true)
  * - showPresence: whether to show online/offline status dot (default true)
+ * - showAdminBadge: whether to show the admin marker (default true)
  * - ringClass: custom ring classes to override the default indicator ring
  */
 const UserAvatar = ({
@@ -26,11 +27,12 @@ const UserAvatar = ({
   showBadges = false,
   showIndicator = true,
   showPresence = true,
+  showAdminBadge = true,
   ringClass = "",
 }) => {
   const socketContext = useSocket();
   const isOpen = showBadges && showIndicator && user?.openToOpportunities;
-  const isAdmin = isPlatformAdmin(user);
+  const isAdmin = showAdminBadge && isPlatformAdmin(user);
   const adminLabel = user?.isSuperAdmin ? "Platform Owner" : "Admin";
   const AdminIcon = user?.isSuperAdmin ? ShieldCheck : Shield;
   const isSpecial = showBadges && canUseSpecialStyle(user);

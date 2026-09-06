@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
               name: 'ShortJob',
               short_name: 'ShortJob',
               description: 'Academic Social Network - Where Academic Careers Begin',
-              theme_color: '#147F83',
+              theme_color: '#0da0a6',
               background_color: '#F7FBFA',
               display: 'standalone',
               start_url: '/',
