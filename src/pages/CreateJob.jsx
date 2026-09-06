@@ -54,14 +54,15 @@ const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "im
 
 const CreateJob = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
+  const [isResolvingLocation, setIsResolvingLocation] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
     description: "",
-    institutionName: "",
+    institutionName: user?.institutionName || user?.currentCompany || "",
     roleType: "other",
     shortJobType: "one_day_gig",
     durationValue: "",
@@ -73,17 +74,17 @@ const CreateJob = () => {
     currency: "INR",
     stipend: "",
     location: "onsite",
-    workplaceName: "",
-    workplaceAddress: "",
-    workplaceCity: "",
-    workplaceState: "",
+    workplaceName: user?.currentCompany || user?.institutionName || "",
+    workplaceAddress: user?.address || "",
+    workplaceCity: user?.city || user?.currentLocation?.city || "",
+    workplaceState: user?.state || user?.currentLocation?.state || "",
     workplaceCountry: "India",
     coordinateLat: "",
     coordinateLng: "",
     requiredQualifications: "",
     skillsRequired: "",
     deadline: "",
-    contactEmail: "",
+    contactEmail: user?.email || "",
     maxApplicants: "",
   });
 
@@ -219,12 +220,15 @@ const CreateJob = () => {
       return;
     }
 
+    setIsResolvingLocation(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const lat = Number(position.coords.latitude.toFixed(6));
+        const lng = Number(position.coords.longitude.toFixed(6));
         setForm((prev) => ({
           ...prev,
-          coordinateLat: position.coords.latitude.toFixed(6),
-          coordinateLng: position.coords.longitude.toFixed(6),
+          coordinateLat: String(lat),
+          coordinateLng: String(lng),
         }));
         setErrors((prev) => ({
           ...prev,
@@ -232,9 +236,32 @@ const CreateJob = () => {
           coordinateLng: "",
           coordinates: "",
         }));
-        toast.success("Workplace map location added.");
+        try {
+          const { data } = await API.patch("/users/me/location", { lat, lng });
+          const resolved = data.currentLocation || {};
+          setForm((prev) => ({
+            ...prev,
+            workplaceCity: resolved.city || prev.workplaceCity,
+            workplaceState: resolved.state || prev.workplaceState,
+          }));
+          setUser({
+            ...user,
+            currentLocation: resolved,
+            locationAccessEnabled: true,
+          });
+          toast.success(
+            resolved.city || resolved.state
+              ? "Location, city, and state added."
+              : "Map location added. Enter the city and state if needed.",
+          );
+        } catch {
+          toast.error("Map coordinates were added, but the city and state could not be detected.");
+        } finally {
+          setIsResolvingLocation(false);
+        }
       },
       (error) => {
+        setIsResolvingLocation(false);
         const messages = {
           1: "Location permission was denied. Allow it in browser settings or enter the location manually.",
           2: "Your current location is unavailable. Enter the workplace manually.",
@@ -348,6 +375,7 @@ const CreateJob = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {errors.server && <ErrorSummary message={errors.server} />}
+        <FormRequirementHint />
         {/* Basic Info Card */}
         <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
           <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
@@ -381,7 +409,7 @@ const CreateJob = () => {
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5" />
-                  Organization Name
+                  Organization Name <RequiredMark />
                 </span>
               </label>
               <input
@@ -392,6 +420,7 @@ const CreateJob = () => {
                 value={form.institutionName}
                 onChange={handleChange}
                 maxLength={150}
+                required
               />
               {errors.institutionName && <FieldError>{errors.institutionName}</FieldError>}
             </div>
@@ -430,6 +459,7 @@ const CreateJob = () => {
                 className="select select-bordered w-full h-12 text-sm"
                 value={form.shortJobType}
                 onChange={handleChange}
+                required
               >
                 {SHORT_JOB_TYPES.map(([value, label]) => (
                   <option key={value} value={value}>
@@ -445,7 +475,7 @@ const CreateJob = () => {
               <div className="form-control">
                 <label className="label pb-1">
                   <span className="label-text text-sm font-medium">
-                    Duration *
+                    Duration <RequiredMark />
                   </span>
                 </label>
                 <input
@@ -458,6 +488,7 @@ const CreateJob = () => {
                   onChange={handleChange}
                   className={`input input-bordered ${errors.durationValue ? "input-error" : ""}`}
                   placeholder="4"
+                  required
                 />
                 {errors.durationValue && (
                   <FieldError>{errors.durationValue}</FieldError>
@@ -465,13 +496,14 @@ const CreateJob = () => {
               </div>
               <div className="form-control">
                 <label className="label pb-1">
-                  <span className="label-text text-sm font-medium">Unit</span>
+                  <span className="label-text text-sm font-medium">Unit <RequiredMark /></span>
                 </label>
                 <select
                   name="durationUnit"
                   value={form.durationUnit}
                   onChange={handleChange}
                   className="select select-bordered"
+                  required
                 >
                   <option value="hours">Hours</option>
                   <option value="days">Days</option>
@@ -484,7 +516,7 @@ const CreateJob = () => {
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="form-control sm:col-span-2">
-                  <label className="label pb-1"><span className="label-text text-xs font-semibold">Job date *</span></label>
+                  <label className="label pb-1"><span className="label-text text-xs font-semibold">Job date <RequiredMark /></span></label>
                   <div className="relative">
                     <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
                     <input name="jobDate" type="date" min={todayInputValue} value={form.jobDate} onChange={handleChange} className={`input input-bordered h-12 w-full rounded-xl pl-10 ${errors.jobDate ? "input-error" : ""}`} required />
@@ -526,7 +558,7 @@ const CreateJob = () => {
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5" />
-                  Location
+                  Work Mode <RequiredMark />
                 </span>
               </label>
               <select
@@ -534,6 +566,7 @@ const CreateJob = () => {
                 className={`select select-bordered w-full h-12 text-sm ${errors.location ? "select-error" : ""}`}
                 value={form.location}
                 onChange={handleChange}
+                required
               >
                 {LOCATIONS.map((l) => (
                   <option key={l.value} value={l.value}>
@@ -560,65 +593,47 @@ const CreateJob = () => {
                   type="button"
                   className="btn btn-ghost btn-xs gap-1.5"
                   onClick={handleUseCurrentLocation}
+                  disabled={isResolvingLocation}
                 >
-                  <LocateFixed className="w-3.5 h-3.5" />
-                  Use current
+                  {isResolvingLocation ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    <LocateFixed className="w-3.5 h-3.5" />
+                  )}
+                  {isResolvingLocation ? "Detecting..." : "Use current"}
                 </button>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <input
-                  type="text"
-                  name="workplaceName"
-                  className={`input input-bordered h-11 text-sm sm:col-span-2 ${errors.workplaceName ? "input-error" : ""}`}
-                  placeholder="Workplace name / branch"
-                  value={form.workplaceName}
-                  onChange={handleChange}
-                  maxLength={150}
-                />
-                <input
-                  type="text"
-                  name="workplaceAddress"
-                  className={`input input-bordered h-11 text-sm sm:col-span-2 ${errors.workplaceAddress ? "input-error" : ""}`}
-                  placeholder="Full street address"
-                  value={form.workplaceAddress}
-                  onChange={handleChange}
-                  maxLength={300}
-                />
-                <input
-                  type="text"
-                  name="workplaceCity"
-                  className={`input input-bordered h-11 text-sm ${errors.workplaceCity ? "input-error" : ""}`}
-                  placeholder="City"
-                  value={form.workplaceCity}
-                  onChange={handleChange}
-                  maxLength={100}
-                />
-                <input
-                  type="text"
-                  name="workplaceState"
-                  className={`input input-bordered h-11 text-sm ${errors.workplaceState ? "input-error" : ""}`}
-                  placeholder="State"
-                  value={form.workplaceState}
-                  onChange={handleChange}
-                  maxLength={100}
-                />
-                <input
-                  type="text"
-                  name="workplaceCountry"
-                  className={`input input-bordered h-11 text-sm ${errors.workplaceCountry ? "input-error" : ""}`}
-                  placeholder="Country"
-                  value={form.workplaceCountry}
-                  onChange={handleChange}
-                  maxLength={100}
-                />
-                <div className="grid grid-cols-2 gap-2">
+                <div className="form-control sm:col-span-2">
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Workplace name <OptionalMark /></span></label>
+                  <input type="text" name="workplaceName" className={`input input-bordered h-11 text-sm ${errors.workplaceName ? "input-error" : ""}`} placeholder="Office, institution, or branch" value={form.workplaceName} onChange={handleChange} maxLength={150} />
+                </div>
+                <div className="form-control sm:col-span-2">
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Street address <OptionalMark /></span></label>
+                  <input type="text" name="workplaceAddress" className={`input input-bordered h-11 text-sm ${errors.workplaceAddress ? "input-error" : ""}`} placeholder="Building, street, and area" value={form.workplaceAddress} onChange={handleChange} maxLength={300} />
+                </div>
+                <div className="form-control">
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">City {form.location === "remote" ? <OptionalMark /> : <RequiredMark />}</span></label>
+                  <input type="text" name="workplaceCity" className={`input input-bordered h-11 text-sm ${errors.workplaceCity ? "input-error" : ""}`} placeholder="City" value={form.workplaceCity} onChange={handleChange} maxLength={100} required={form.location !== "remote"} />
+                </div>
+                <div className="form-control">
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">State <OptionalMark /></span></label>
+                  <input type="text" name="workplaceState" className={`input input-bordered h-11 text-sm ${errors.workplaceState ? "input-error" : ""}`} placeholder="State" value={form.workplaceState} onChange={handleChange} maxLength={100} />
+                </div>
+                <div className="form-control">
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Country <OptionalMark /></span></label>
+                  <input type="text" name="workplaceCountry" className={`input input-bordered h-11 text-sm ${errors.workplaceCountry ? "input-error" : ""}`} placeholder="Country" value={form.workplaceCountry} onChange={handleChange} maxLength={100} />
+                </div>
+                <div className="form-control">
+                  <label className="label py-0 pb-1"><span className="label-text text-xs font-medium">Coordinates <OptionalMark /></span></label>
+                  <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     step="any"
                     name="coordinateLat"
                     className={`input input-bordered h-11 text-sm ${errors.coordinateLat ? "input-error" : ""}`}
-                    placeholder="Latitude"
+                    placeholder="Latitude (optional)"
                     value={form.coordinateLat}
                     onChange={handleChange}
                   />
@@ -627,10 +642,11 @@ const CreateJob = () => {
                     step="any"
                     name="coordinateLng"
                     className={`input input-bordered h-11 text-sm ${errors.coordinateLng ? "input-error" : ""}`}
-                    placeholder="Longitude"
+                    placeholder="Longitude (optional)"
                     value={form.coordinateLng}
                     onChange={handleChange}
                   />
+                  </div>
                 </div>
               </div>
               {(errors.workplaceName ||
@@ -698,7 +714,7 @@ const CreateJob = () => {
                 <div className="form-control">
                   <label className="label pb-1">
                     <span className="label-text font-medium text-sm flex items-center gap-1.5">
-                      Stipend / Salary
+                      Stipend / Salary <RequiredMark />
                     </span>
                   </label>
                   <div className="flex gap-2">
@@ -710,6 +726,7 @@ const CreateJob = () => {
                       value={form.stipend}
                       onChange={handleChange}
                       min="0"
+                      required
                     />
                     <select
                       name="currency"
@@ -730,7 +747,7 @@ const CreateJob = () => {
             <div className="form-control">
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm">
-                  Required Qualifications
+                  Required Qualifications <OptionalMark />
                 </span>
               </label>
               <textarea
@@ -748,7 +765,7 @@ const CreateJob = () => {
             <div className="form-control">
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm">
-                  Skills Required
+                  Skills Required <OptionalMark />
                 </span>
               </label>
               <input
@@ -818,7 +835,7 @@ const CreateJob = () => {
             <div className="form-control">
               <label className="label pb-1">
                 <span className="label-text font-medium text-sm">
-                  Max Applicants (0 = unlimited)
+                  Max Applicants <OptionalMark />
                 </span>
               </label>
               <input
@@ -832,6 +849,7 @@ const CreateJob = () => {
                 max="100000"
                 step="1"
               />
+              <span className="mt-1 text-[11px] text-base-content/40">Leave empty or enter 0 for unlimited applicants.</span>
               {errors.maxApplicants && (
                 <FieldError>{errors.maxApplicants}</FieldError>
               )}
@@ -916,6 +934,19 @@ const FieldError = ({ children }) => (
 const ErrorSummary = ({ message }) => (
   <div role="alert" className="alert alert-error text-sm">
     <span>{message}</span>
+  </div>
+);
+
+const RequiredMark = () => <span className="text-error" aria-hidden="true">*</span>;
+
+const OptionalMark = () => (
+  <span className="font-normal text-base-content/40">(optional)</span>
+);
+
+const FormRequirementHint = () => (
+  <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-base-300/70 bg-base-100 px-4 py-3 text-xs text-base-content/60">
+    <span><RequiredMark /> Required fields</span>
+    <span>Unmarked fields are optional. Profile details are filled automatically and remain editable.</span>
   </div>
 );
 

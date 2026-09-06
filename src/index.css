@@ -175,6 +175,15 @@ select,
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
+/* Keep required-field indicators consistent on forms that use native validation. */
+.form-control:has(input:required, textarea:required, select:required)
+  > .label
+  .label-text:not(:has(.text-error))::after {
+  content: " *";
+  color: var(--color-error);
+  font-weight: 600;
+}
+
 :where(.input, .select, .textarea):focus,
 :where(.input, .select, .textarea):focus-within {
   border-color: var(--color-primary);

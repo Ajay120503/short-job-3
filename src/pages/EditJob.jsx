@@ -527,7 +527,7 @@ const EditJob = () => {
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="form-control sm:col-span-2">
-                  <label className="label pb-1"><span className="label-text text-xs font-semibold">Job date *</span></label>
+                  <label className="label pb-1"><span className="label-text text-xs font-semibold">Job date <span className="text-error">*</span></span></label>
                   <div className="relative">
                     <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
                     <input name="jobDate" type="date" min={todayInputValue} value={form.jobDate} onChange={handleChange} className={`input input-bordered h-12 w-full rounded-xl pl-10 ${errors.jobDate ? "input-error" : ""}`} required />

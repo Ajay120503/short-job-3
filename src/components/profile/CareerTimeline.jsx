@@ -342,7 +342,7 @@ const TimelineEditor = ({
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
               <label className="form-control">
-                <span className="label-text mb-1 text-[11px] font-medium">Year *</span>
+                <span className="label-text mb-1 text-[11px] font-medium">Year <span className="text-error">*</span></span>
                 <input
                 className="input input-bordered input-sm w-full"
                 placeholder="2026"
@@ -373,7 +373,7 @@ const TimelineEditor = ({
               </select>
               </label>
               <label className="form-control sm:col-span-2">
-                <span className="label-text mb-1 text-[11px] font-medium">Title *</span>
+                <span className="label-text mb-1 text-[11px] font-medium">Title <span className="text-error">*</span></span>
                 <input
                 className="input input-bordered input-sm sm:col-span-2"
                 placeholder="e.g. Joined as Product Designer"
