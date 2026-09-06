@@ -38,14 +38,14 @@ const MessageReaction = ({ messageId, reactions, isOwnMessage = false }) => {
           {grouped.map(({ emoji, count }) => (
             <button
               key={emoji}
-              className="flex h-6 min-w-8 flex-none cursor-pointer items-center justify-center gap-0.5 whitespace-nowrap rounded-full border border-base-300 bg-base-100 px-1.5 text-[11px] font-medium leading-none shadow-sm transition hover:border-primary/40 hover:bg-primary/10 active:scale-95 sm:h-7 sm:min-w-9 sm:gap-1 sm:px-2 sm:text-xs"
+              className="message-reaction-pill flex h-6 min-w-8 flex-none cursor-pointer items-center justify-center gap-0.5 whitespace-nowrap rounded-full border border-base-300 bg-base-100 px-1.5 text-[11px] font-medium leading-none shadow-sm transition hover:border-primary/40 hover:bg-primary/10 active:scale-95 sm:h-7 sm:min-w-9 sm:gap-1 sm:px-2 sm:text-xs"
               onClick={() => handleReact(emoji)}
             >
               {emoji} {count}
             </button>
           ))}
           <button
-            className="flex size-6 min-h-6 min-w-6 flex-none cursor-pointer items-center justify-center rounded-full border border-base-300 bg-base-100 p-0 text-xs leading-none shadow-sm transition hover:border-primary/40 hover:bg-primary/10 active:scale-95 sm:size-7 sm:min-h-7 sm:min-w-7 sm:text-sm"
+            className="message-reaction-add flex size-6 min-h-6 min-w-6 flex-none cursor-pointer items-center justify-center rounded-full border border-base-300 bg-base-100 p-0 text-xs leading-none shadow-sm transition hover:border-primary/40 hover:bg-primary/10 active:scale-95 sm:size-7 sm:min-h-7 sm:min-w-7 sm:text-sm"
             aria-label="Add another reaction"
             ref={triggerRef}
             onClick={togglePicker}
@@ -58,7 +58,7 @@ const MessageReaction = ({ messageId, reactions, isOwnMessage = false }) => {
       {/* Show + button even without reactions */}
       {grouped.length === 0 && (
         <button
-          className="flex size-6 min-h-6 min-w-6 flex-none cursor-pointer items-center justify-center rounded-full border border-base-300 bg-base-100 p-0 text-xs leading-none opacity-60 shadow-sm transition hover:border-primary/40 hover:bg-primary/10 hover:opacity-100 active:scale-95 sm:size-7 sm:min-h-7 sm:min-w-7 sm:text-sm sm:opacity-0 sm:group-hover:opacity-100"
+          className="message-reaction-add flex size-6 min-h-6 min-w-6 flex-none cursor-pointer items-center justify-center rounded-full border border-base-300 bg-base-100 p-0 text-xs leading-none opacity-60 shadow-sm transition hover:border-primary/40 hover:bg-primary/10 hover:opacity-100 active:scale-95 sm:size-7 sm:min-h-7 sm:min-w-7 sm:text-sm sm:opacity-0 sm:group-hover:opacity-100"
           aria-label="Add reaction"
           ref={triggerRef}
           onClick={togglePicker}
@@ -78,7 +78,7 @@ const MessageReaction = ({ messageId, reactions, isOwnMessage = false }) => {
             <button
               key={emoji}
               onClick={() => handleReact(emoji)}
-              className="flex size-8 min-h-8 min-w-8 flex-none items-center justify-center rounded-full p-0 text-lg leading-none transition-transform hover:scale-110 hover:bg-base-200 active:scale-95 sm:size-9 sm:min-h-9 sm:min-w-9 sm:text-xl"
+              className="message-reaction-picker-button flex size-8 min-h-8 min-w-8 flex-none items-center justify-center rounded-full p-0 text-lg leading-none transition-transform hover:scale-110 hover:bg-base-200 active:scale-95 sm:size-9 sm:min-h-9 sm:min-w-9 sm:text-xl"
               aria-label={`React with ${emoji}`}
             >
               {emoji}

@@ -465,7 +465,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex h-full overflow-hidden bg-base-100">
+    <div className="chat-page flex h-full overflow-hidden bg-base-100">
       {/* Conversation List */}
       <div
         style={{ "--conversation-list-width": `${conversationListWidth}px` }}
@@ -865,7 +865,7 @@ const Chat = () => {
           </div>
 
           {/* Message Input */}
-          <div className="border-t border-base-300/70 bg-base-100 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-5">
+          <div className="shrink-0 border-t border-base-300/70 bg-base-100 px-2 py-1.5 sm:px-5 sm:py-3">
             {replyingTo && !editingMessage && (
               <div className="mb-2 flex items-center justify-between rounded-xl border-l-4 border-primary bg-base-200/70 px-3 py-2 text-xs">
                 <div className="min-w-0">

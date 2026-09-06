@@ -279,6 +279,48 @@ select.select:disabled {
 
 @media (max-width: 1023px) {
   .app-main { padding-bottom: calc(4.75rem + env(safe-area-inset-bottom)); }
+  .app-main:has(> .chat-page) {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 639px) {
+  .message-reaction-add {
+    inline-size: 1.5rem !important;
+    block-size: 1.5rem !important;
+    min-inline-size: 1.5rem !important;
+    min-block-size: 1.5rem !important;
+    max-inline-size: 1.5rem !important;
+    max-block-size: 1.5rem !important;
+    flex: 0 0 1.5rem !important;
+    aspect-ratio: 1 / 1;
+    padding: 0 !important;
+    border-radius: 9999px !important;
+    line-height: 1 !important;
+  }
+
+  .message-reaction-pill {
+    block-size: 1.5rem !important;
+    min-block-size: 1.5rem !important;
+    max-block-size: 1.5rem !important;
+    flex: 0 0 auto !important;
+    border-radius: 9999px !important;
+    line-height: 1 !important;
+  }
+
+  .message-reaction-picker-button {
+    inline-size: 2rem !important;
+    block-size: 2rem !important;
+    min-inline-size: 2rem !important;
+    min-block-size: 2rem !important;
+    max-inline-size: 2rem !important;
+    max-block-size: 2rem !important;
+    flex: 0 0 2rem !important;
+    aspect-ratio: 1 / 1;
+    padding: 0 !important;
+    border-radius: 9999px !important;
+    line-height: 1 !important;
+  }
 }
 
 /* Custom scrollbar */
