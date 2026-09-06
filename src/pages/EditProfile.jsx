@@ -133,12 +133,6 @@ const EditProfile = () => {
 
   const validateForm = () => {
     const nextErrors = validateProfileText(form, { includeName: true });
-    if (!form.name.trim()) nextErrors.name = "Full name is required.";
-    else if (form.name.trim().length < 2) {
-      nextErrors.name = "Full name must contain at least 2 characters.";
-    } else if (form.name.trim().length > 100) {
-      nextErrors.name = "Full name cannot exceed 100 characters.";
-    }
     if (form.dateOfBirth) {
       const calculatedAge = calculateAge(form.dateOfBirth);
       if (calculatedAge === "") nextErrors.dateOfBirth = "Choose a valid past date.";
@@ -277,7 +271,7 @@ const EditProfile = () => {
             <div className="form-control">
               <label className="label py-0 pb-1">
                 <span className="label-text text-xs font-medium">
-                  Full Name *
+                  Full Name
                 </span>
               </label>
               <input
@@ -288,6 +282,10 @@ const EditProfile = () => {
                 maxLength={PROFILE_LIMITS.name}
                 required
               />
+              <span className="label-text-alt text-base-content/40">
+                {form.name.length}/{PROFILE_LIMITS.name} characters · letters
+                and standard name punctuation only
+              </span>
               {errors.name && <FieldError>{errors.name}</FieldError>}
             </div>
             <div className="form-control">
@@ -304,7 +302,7 @@ const EditProfile = () => {
                 placeholder="Tell us about yourself..."
               />
               <span className="label-text-alt text-base-content/40">
-                {form.bio.length}/200
+                {form.bio.length}/{PROFILE_LIMITS.bio} characters
               </span>
               {errors.bio && <FieldError>{errors.bio}</FieldError>}
             </div>
@@ -360,7 +358,9 @@ const EditProfile = () => {
                 maxLength={PROFILE_LIMITS.profession}
                 placeholder="e.g. Part-time Tutor"
               />
-              {errors.profession && <FieldError>{errors.profession}</FieldError>}
+              {errors.profession && (
+                <FieldError>{errors.profession}</FieldError>
+              )}
             </div>
             <div className="form-control rounded-lg bg-base-200/50 p-3">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -431,7 +431,9 @@ const EditProfile = () => {
                 maxLength={PROFILE_LIMITS.previousWork}
                 placeholder="Previous roles, organizations, internships, or projects..."
               />
-              {errors.previousWork && <FieldError>{errors.previousWork}</FieldError>}
+              {errors.previousWork && (
+                <FieldError>{errors.previousWork}</FieldError>
+              )}
             </div>
           </div>
         </div>
@@ -456,7 +458,9 @@ const EditProfile = () => {
                 maxLength={PROFILE_LIMITS.institutionName}
                 placeholder="e.g. IIT Delhi"
               />
-              {errors.institutionName && <FieldError>{errors.institutionName}</FieldError>}
+              {errors.institutionName && (
+                <FieldError>{errors.institutionName}</FieldError>
+              )}
             </div>
             <div className="form-control">
               <label className="label py-0 pb-1">
@@ -543,7 +547,9 @@ const EditProfile = () => {
                 maxLength={2019}
                 placeholder="B.Tech, M.Sc"
               />
-              {errors.qualifications && <FieldError>{errors.qualifications}</FieldError>}
+              {errors.qualifications && (
+                <FieldError>{errors.qualifications}</FieldError>
+              )}
             </div>
           </div>
         </div>

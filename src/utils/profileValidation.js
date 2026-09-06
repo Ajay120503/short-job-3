@@ -1,5 +1,7 @@
+import { getPersonNameError, PERSON_NAME_MAX_LENGTH } from "./textValidation";
+
 export const PROFILE_LIMITS = {
-  name: 100,
+  name: PERSON_NAME_MAX_LENGTH,
   bio: 200,
   institutionName: 150,
   subject: 100,
@@ -34,6 +36,11 @@ export const validateProfileText = (form, { includeName = false } = {}) => {
       errors[field] = `${labels[field] || field} cannot exceed ${limit} characters.`;
     }
   });
+
+  if (includeName) {
+    const nameError = getPersonNameError(form.name);
+    if (nameError) errors.name = nameError;
+  }
 
   Object.entries(listRules).forEach(([field, [maxItems, maxLength, label]]) => {
     if (form[field] == null) return;

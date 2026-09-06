@@ -13,6 +13,11 @@ import {
 import useAuthStore from "../store/authStore";
 import AuthLayout from "../components/auth/AuthLayout";
 import toast from "../utils/toast";
+import {
+  getPersonNameError,
+  PERSON_NAME_MAX_LENGTH,
+  PERSON_NAME_MIN_LENGTH,
+} from "../utils/textValidation";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -31,9 +36,8 @@ const Register = () => {
 
   const validate = () => {
     const nextErrors = {};
-    if (!form.name.trim()) nextErrors.name = "Full name is required.";
-    else if (form.name.trim().length < 2) nextErrors.name = "Name must contain at least 2 characters.";
-    if (form.name.trim().length > 100) nextErrors.name = "Name is too long.";
+    const nameError = getPersonNameError(form.name);
+    if (nameError) nextErrors.name = nameError;
     if (!form.email.trim()) nextErrors.email = "Email is required.";
     if (form.email.trim().length > 254) nextErrors.email = "Email cannot exceed 254 characters.";
     if (form.email && !emailPattern.test(form.email.trim())) {
@@ -113,8 +117,9 @@ const Register = () => {
           placeholder="Your name"
           error={errors.name}
           autoComplete="name"
-          minLength={2}
-          maxLength={100}
+          minLength={PERSON_NAME_MIN_LENGTH}
+          maxLength={PERSON_NAME_MAX_LENGTH}
+          hint={`${form.name.length}/${PERSON_NAME_MAX_LENGTH} characters`}
         />
         <AuthInput
           icon={Mail}
@@ -235,6 +240,7 @@ const AuthInput = ({
   value,
   onChange,
   error,
+  hint,
   action,
   type = "text",
   ...props
@@ -257,7 +263,11 @@ const AuthInput = ({
       />
       {action}
     </div>
-    {error && <p className="mt-1 text-xs font-medium text-error">{error}</p>}
+    {error ? (
+      <p className="mt-1 text-xs font-medium text-error">{error}</p>
+    ) : hint ? (
+      <p className="mt-1 text-right text-xs text-base-content/40">{hint}</p>
+    ) : null}
   </div>
 );
 
