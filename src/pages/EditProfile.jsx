@@ -134,7 +134,9 @@ const EditProfile = () => {
   const validateForm = () => {
     const nextErrors = validateProfileText(form, { includeName: true });
     if (!form.name.trim()) nextErrors.name = "Full name is required.";
-    if (form.name.trim().length > 100) {
+    else if (form.name.trim().length < 2) {
+      nextErrors.name = "Full name must contain at least 2 characters.";
+    } else if (form.name.trim().length > 100) {
       nextErrors.name = "Full name cannot exceed 100 characters.";
     }
     if (form.dateOfBirth) {

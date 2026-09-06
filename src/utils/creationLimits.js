@@ -1,0 +1,1 @@
+export const MIN_STANDALONE_CONTENT_LENGTH = 20;

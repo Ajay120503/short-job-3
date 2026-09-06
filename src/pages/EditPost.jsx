@@ -10,6 +10,7 @@ import API from "../utils/axios";
 import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
 import { getAvailablePostTypes } from "../utils/postTypeConfig";
+import { MIN_STANDALONE_CONTENT_LENGTH } from "../utils/creationLimits";
 
 const EditPost = () => {
   const navigate = useNavigate();
@@ -67,6 +68,15 @@ const EditPost = () => {
     e.preventDefault();
     if (!text.trim() && existingImages.length === 0 && newImages.length === 0) {
       toast.error("Please add text or images to your post.");
+      return;
+    }
+    if (
+      text.trim().length < MIN_STANDALONE_CONTENT_LENGTH
+      && existingImages.length === 0
+      && newImages.length === 0
+      && !["poll", "event", "resource_share"].includes(type)
+    ) {
+      toast.error(`Text-only posts need at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`);
       return;
     }
 

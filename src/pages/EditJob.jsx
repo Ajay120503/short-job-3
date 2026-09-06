@@ -26,6 +26,7 @@ import {
   getJobMapLink,
   getJobWorkplaceLabel,
 } from "../utils/jobLocation";
+import { MIN_STANDALONE_CONTENT_LENGTH } from "../utils/creationLimits";
 
 const ROLE_TYPES = [
   { value: "teacher", label: "Creator" },
@@ -190,10 +191,13 @@ const EditJob = () => {
   const validateForm = () => {
     const nextErrors = {};
     if (!form.title.trim()) nextErrors.title = "Job title is required.";
-    if (form.title.trim().length > 120) nextErrors.title = "Job title is too long.";
+    else if (form.title.trim().length < 3) nextErrors.title = "Job title must contain at least 3 characters.";
+    else if (form.title.trim().length > 200) nextErrors.title = "Job title cannot exceed 200 characters.";
     if (!form.description.trim()) nextErrors.description = "Description is required.";
-    if (form.description.trim().length < 30) {
-      nextErrors.description = "Add at least 30 characters so applicants understand the role.";
+    else if (form.description.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
+      nextErrors.description = `Add at least ${MIN_STANDALONE_CONTENT_LENGTH} characters so applicants understand the role.`;
+    } else if (form.description.trim().length > 5000) {
+      nextErrors.description = "Description cannot exceed 5000 characters.";
     }
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
     if (!Number.isFinite(Number(form.durationValue)) || Number(form.durationValue) <= 0) nextErrors.durationValue = "Enter a positive duration.";

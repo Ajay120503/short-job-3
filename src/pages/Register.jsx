@@ -32,6 +32,7 @@ const Register = () => {
   const validate = () => {
     const nextErrors = {};
     if (!form.name.trim()) nextErrors.name = "Full name is required.";
+    else if (form.name.trim().length < 2) nextErrors.name = "Name must contain at least 2 characters.";
     if (form.name.trim().length > 100) nextErrors.name = "Name is too long.";
     if (!form.email.trim()) nextErrors.email = "Email is required.";
     if (form.email.trim().length > 254) nextErrors.email = "Email cannot exceed 254 characters.";
@@ -112,6 +113,8 @@ const Register = () => {
           placeholder="Your name"
           error={errors.name}
           autoComplete="name"
+          minLength={2}
+          maxLength={100}
         />
         <AuthInput
           icon={Mail}

@@ -4,6 +4,7 @@ import { ArrowLeft, X, Image, Send } from "lucide-react";
 import API from "../utils/axios";
 import toast from "../utils/toast";
 import { getCreationError } from "../utils/creationErrors";
+import { MIN_STANDALONE_CONTENT_LENGTH } from "../utils/creationLimits";
 
 const MAX_STORY_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
@@ -53,6 +54,9 @@ const CreateStory = () => {
     const nextErrors = {};
     if (!storyImage && !storyText.trim()) {
       nextErrors.form = "Please add an image or caption to your story.";
+    }
+    if (!storyImage && storyText.trim() && storyText.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
+      nextErrors.storyText = `Text-only stories need at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
     }
     if (storyText.length > 200) {
       nextErrors.storyText = "Caption cannot exceed 200 characters.";

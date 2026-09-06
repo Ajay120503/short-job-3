@@ -9,6 +9,7 @@ import toast from "../../utils/toast";
 import useAuthStore from "../../store/authStore";
 import { getAvailablePostTypes } from "../../utils/postTypeConfig";
 import { getCreationError } from "../../utils/creationErrors";
+import { MIN_STANDALONE_CONTENT_LENGTH } from "../../utils/creationLimits";
 
 const MAX_POST_IMAGES = 4;
 const MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -58,6 +59,9 @@ const CreatePostModal = ({ onClose }) => {
     const nextErrors = {};
     if (!text.trim() && images.length === 0 && !["poll", "event", "resource_share"].includes(type)) {
       nextErrors.form = "Please add text or images to your post.";
+    }
+    if (text.trim() && text.trim().length < MIN_STANDALONE_CONTENT_LENGTH && images.length === 0 && !["poll", "event", "resource_share"].includes(type)) {
+      nextErrors.text = `Text-only posts need at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
     }
     if (text.length > 2000) nextErrors.text = "Post text cannot exceed 2000 characters.";
     const normalizedTags = [...new Set(tags.split(",").map((tag) => tag.trim()).filter(Boolean))];
