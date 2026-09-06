@@ -18,7 +18,7 @@ React + Vite frontend for the ShortJob professional community platform.
 - Warm teal/coral design system with light, dark, and system theme modes shared across feed, jobs, explore, profile, admin, chat, settings, and auth pages.
 - Responsive mobile layout with fuller screen width, compact spacing, bottom navigation, and user avatar profile icon.
 - Smooth collapsible sidebar behavior for larger screens.
-- Responsive global search icon with a full-screen mobile surface and grouped people, job, post, and page results.
+- Responsive global search icon with a full-screen mobile surface and grouped people, conversations, jobs, posts, creation actions, settings subsections, and role-authorized page results.
 - Global search uses a document-level portal, debounced/cancelled requests, keyboard dismissal, scroll locking, safe areas, and exact destination routes.
 - Only one desktop global-search trigger is shown: left sidebar when the right rail is hidden, right rail at `2xl` widths.
 - Mobile header dropdown includes Explore People.

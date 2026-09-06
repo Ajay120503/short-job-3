@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
   CheckCircle2,
@@ -18,7 +18,6 @@ import {
   Type,
   UserRound,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import ConfirmModal from "../components/common/ConfirmModal";
 import UserAvatar from "../components/common/UserAvatar";
@@ -73,6 +72,7 @@ const FONT_PREVIEW_STYLES = {
 };
 
 const SectionCard = ({
+  id,
   icon: Icon,
   title,
   description,
@@ -89,7 +89,7 @@ const SectionCard = ({
           : "bg-primary/10 text-primary";
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
+    <section id={id} className="scroll-mt-20 overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
       <div className="flex items-start gap-3 border border-base-200/70 bg-base-200/20 px-3 py-3 sm:p-5">
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11 ${toneClass}`}
@@ -111,6 +111,7 @@ const SectionCard = ({
 };
 
 const ToggleRow = ({
+  id,
   icon: Icon,
   title,
   subtitle,
@@ -131,7 +132,7 @@ const ToggleRow = ({
         : "bg-primary/10 text-primary";
 
   return (
-    <div className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:p-4">
+    <div id={id} className="scroll-mt-20 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <div
@@ -185,6 +186,7 @@ const Settings = () => {
   const { user, logout, deleteAccount, isLoading, updateProfile, setUser } =
     useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [opportunityLoading, setOpportunityLoading] = useState(false);
   const [presenceLoading, setPresenceLoading] = useState(false);
@@ -196,6 +198,14 @@ const Settings = () => {
   const [appFontMode, setAppFontMode] = useState(getStoredFontMode);
   const specialStyle = getSpecialUserStyle(user);
   const canStyleProfile = canUseSpecialStyle(user);
+
+  useEffect(() => {
+    if (!location.hash) return;
+    const targetId = decodeURIComponent(location.hash.slice(1));
+    window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [location.hash]);
 
   const handleOpportunityToggle = async () => {
     setOpportunityLoading(true);
@@ -390,6 +400,7 @@ const Settings = () => {
       <div className="grid min-w-0 gap-3 sm:gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="order-2 min-w-0 space-y-3 sm:space-y-4 2xl:order-1">
           <SectionCard
+            id="appearance-settings"
             icon={
               appThemeMode === "dark"
                 ? Moon
@@ -493,6 +504,7 @@ const Settings = () => {
           >
             <div className="divide-y divide-base-200/80 sm:space-y-3 sm:divide-y-0">
               <ToggleRow
+                id="location-settings"
                 icon={MapPin}
                 title="Location Access"
                 subtitle="Use your location for nearby job and city recommendations. You control when it is enabled."
@@ -504,6 +516,7 @@ const Settings = () => {
               />
 
               <ToggleRow
+                id="login-audit-settings"
                 icon={user?.loginAuditEnabled !== false ? History : EyeOff}
                 title="Login History"
                 subtitle="Allow secure login audit records for this account when admin security checks are active."
@@ -526,6 +539,7 @@ const Settings = () => {
 
               {canApplyToJobs(user) && (
                 <ToggleRow
+                  id="opportunity-settings"
                   icon={BriefcaseBusiness}
                   title="Open to Opportunities"
                   subtitle="Show a briefcase signal on your avatar and let job posters know you are available."
@@ -540,6 +554,7 @@ const Settings = () => {
               )}
 
               <ToggleRow
+                id="online-status-settings"
                 icon={user?.showOnlineStatus !== false ? Eye : EyeOff}
                 title="Online Status"
                 subtitle="When enabled, others can see your online dot and you can see theirs."
@@ -647,6 +662,7 @@ const Settings = () => {
           </section>
 
           <SectionCard
+            id="account-settings"
             icon={LogOut}
             title="Account Actions"
             description="Session and account controls."
@@ -662,6 +678,7 @@ const Settings = () => {
           </SectionCard>
 
           <SectionCard
+            id="danger-zone-settings"
             icon={Trash2}
             title="Danger Zone"
             description="Permanently delete your account and all associated data."

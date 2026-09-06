@@ -8,15 +8,22 @@ import {
   Home,
   LoaderCircle,
   MessageCircle,
+  Palette,
+  PlusCircle,
   Search,
   Settings,
+  Shield,
+  Sparkles,
   User,
+  Users,
   X,
 } from "lucide-react";
 import API from "../../utils/axios";
 import UserAvatar from "./UserAvatar";
+import useAuthStore from "../../store/authStore";
+import { isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";
 
-const APP_DESTINATIONS = [
+const GENERAL_DESTINATIONS = [
   {
     title: "Feed",
     subtitle: "Posts from your community",
@@ -53,6 +60,28 @@ const APP_DESTINATIONS = [
     path: "/settings",
     icon: Settings,
   },
+  { title: "Create post", subtitle: "Publish a new community post", path: "/posts/create", icon: PlusCircle },
+  { title: "Create story", subtitle: "Share a new story", path: "/stories/create", icon: Sparkles },
+  { title: "Create job", subtitle: "Post a new job or opportunity", path: "/jobs/create", icon: Briefcase },
+  { title: "Appearance settings", subtitle: "Theme, dark mode, and application font", path: "/settings#appearance-settings", icon: Palette },
+  { title: "Location settings", subtitle: "Location permission and nearby jobs", path: "/settings#location-settings", icon: Settings },
+  { title: "Online status settings", subtitle: "Control presence and visibility", path: "/settings#online-status-settings", icon: Settings },
+  { title: "Opportunity settings", subtitle: "Open to Opportunities visibility", path: "/settings#opportunity-settings", icon: Briefcase },
+  { title: "Login history", subtitle: "Personal login audit records", path: "/settings/login-history", icon: Shield },
+  { title: "Login audit setting", subtitle: "Enable or disable personal login records", path: "/settings#login-audit-settings", icon: Shield },
+  { title: "Account actions", subtitle: "Logout and account controls", path: "/settings#account-settings", icon: Settings },
+  { title: "Delete account", subtitle: "Open the account danger zone", path: "/settings#danger-zone-settings", icon: Settings },
+];
+
+const ADMIN_DESTINATIONS = [
+  { title: "Admin dashboard", subtitle: "Moderation and platform overview", path: "/admin", icon: Shield },
+  { title: "Manage users", subtitle: "Review platform user accounts", path: "/admin/users", icon: Users },
+  { title: "Moderation queue", subtitle: "Review posts, jobs, and stories", path: "/admin/queue", icon: Shield },
+];
+
+const SUPER_ADMIN_DESTINATIONS = [
+  { title: "Admin settings", subtitle: "Platform security and moderation settings", path: "/admin/settings", icon: Settings },
+  { title: "Login audit records", subtitle: "Super-admin security audit records", path: "/admin/login-records", icon: Shield },
 ];
 
 const getPostTitle = (post) => {
@@ -65,28 +94,36 @@ const getPostTitle = (post) => {
 };
 
 const GlobalSearch = ({ className = "" }) => {
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [results, setResults] = useState({ users: [], jobs: [], posts: [] });
+  const [results, setResults] = useState({ users: [], jobs: [], posts: [], chats: [] });
+
+  const availableDestinations = useMemo(() => [
+    ...GENERAL_DESTINATIONS,
+    ...(isAdminUser(user) ? ADMIN_DESTINATIONS : []),
+    ...(isSuperAdminUser(user) ? SUPER_ADMIN_DESTINATIONS : []),
+  ], [user]);
 
   const pageResults = useMemo(() => {
     const words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
     if (!words.length) return [];
-    return APP_DESTINATIONS.filter((item) => {
+    return availableDestinations.filter((item) => {
       const searchable = `${item.title} ${item.subtitle}`.toLowerCase();
       return words.every((word) => searchable.includes(word));
     });
-  }, [query]);
+  }, [availableDestinations, query]);
 
   const hasResults =
     pageResults.length ||
     results.users.length ||
     results.jobs.length ||
-    results.posts.length;
+    results.posts.length ||
+    results.chats.length;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -116,10 +153,10 @@ const GlobalSearch = ({ className = "" }) => {
           params: { q: searchTerm },
           signal: controller.signal,
         });
-        setResults(data.results || { users: [], jobs: [], posts: [] });
+        setResults(data.results || { users: [], jobs: [], posts: [], chats: [] });
       } catch (requestError) {
         if (requestError.code !== "ERR_CANCELED") {
-          setResults({ users: [], jobs: [], posts: [] });
+          setResults({ users: [], jobs: [], posts: [], chats: [] });
           setError("Search is temporarily unavailable");
         }
       } finally {
@@ -136,7 +173,7 @@ const GlobalSearch = ({ className = "" }) => {
   const closeSearch = () => {
     setOpen(false);
     setQuery("");
-    setResults({ users: [], jobs: [], posts: [] });
+    setResults({ users: [], jobs: [], posts: [], chats: [] });
     setError("");
   };
 
@@ -149,7 +186,7 @@ const GlobalSearch = ({ className = "" }) => {
     const value = event.target.value;
     setQuery(value);
     if (value.trim().length < 2) {
-      setResults({ users: [], jobs: [], posts: [] });
+      setResults({ users: [], jobs: [], posts: [], chats: [] });
       setError("");
       setLoading(false);
     }
@@ -236,6 +273,17 @@ const GlobalSearch = ({ className = "" }) => {
                       {pageResults.map((item) => (
                         <PageResult
                           key={item.path}
+                          item={item}
+                          onOpen={openResult}
+                        />
+                      ))}
+                    </ResultGroup>
+                  )}
+                  {results.chats.length > 0 && (
+                    <ResultGroup title="Conversations">
+                      {results.chats.map((item) => (
+                        <ChatResult
+                          key={item._id}
                           item={item}
                           onOpen={openResult}
                         />
@@ -345,6 +393,21 @@ const UserResult = ({ item, onOpen }) => (
           .join(" · ") || "ShortJob user"}
       </span>
     </span>
+  </ResultButton>
+);
+
+const ChatResult = ({ item, onOpen }) => (
+  <ResultButton path={`/chat/${item.participant?._id}`} onOpen={onOpen}>
+    <UserAvatar user={item.participant} size={40} showPresence={false} />
+    <span className="min-w-0 flex-1">
+      <span className="block truncate text-sm font-semibold">
+        {item.participant?.name || "Conversation"}
+      </span>
+      <span className="block truncate text-xs text-base-content/45">
+        {item.lastMessage || item.participant?.institutionName || "Open conversation"}
+      </span>
+    </span>
+    <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
   </ResultButton>
 );
 
