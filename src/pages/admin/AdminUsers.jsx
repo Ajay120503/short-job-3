@@ -63,7 +63,7 @@ const UserMobileCard = ({ user }) => (
             {getUserRoleLabel(user)}
           </span>
           {user.isSuperAdmin ? (
-            <span className="badge badge-xs badge-primary">Super Admin</span>
+            <span className="badge badge-xs badge-primary">Platform Owner</span>
           ) : user.isAdmin ? (
             <span className="badge badge-xs badge-info">Admin</span>
           ) : null}

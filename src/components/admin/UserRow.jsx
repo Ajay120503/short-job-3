@@ -133,7 +133,7 @@ const UserRow = ({ user, onUpdate }) => {
             <span className="badge badge-success badge-sm">Active</span>
           )}
           {user.isSuperAdmin ? (
-            <span className="badge badge-primary badge-sm">Super Admin</span>
+            <span className="badge badge-primary badge-sm">Platform Owner</span>
           ) : user.isAdmin ? (
             <span className="badge badge-info badge-sm">Admin</span>
           ) : null}

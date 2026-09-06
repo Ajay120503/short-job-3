@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Shield } from "lucide-react";
+import { BriefcaseBusiness, Shield, ShieldCheck } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
 import { isPlatformAdmin } from "../../utils/userSignals";
 import {
@@ -14,7 +14,7 @@ import {
  * - user: { name, profilePic: { url }, openToOpportunities }
  * - size: pixel size of the avatar (default 40)
  * - className: additional classes for the wrapper
- * - showBadges: whether to show admin/opportunity avatar badges (default false)
+ * - showBadges: whether to show optional profile/opportunity badges (default false)
  * - showIndicator: whether to show the open-to-opportunities badge when badges are enabled (default true)
  * - showPresence: whether to show online/offline status dot (default true)
  * - ringClass: custom ring classes to override the default indicator ring
@@ -30,7 +30,9 @@ const UserAvatar = ({
 }) => {
   const socketContext = useSocket();
   const isOpen = showBadges && showIndicator && user?.openToOpportunities;
-  const isAdmin = showBadges && isPlatformAdmin(user);
+  const isAdmin = isPlatformAdmin(user);
+  const adminLabel = user?.isSuperAdmin ? "Platform Owner" : "Admin";
+  const AdminIcon = user?.isSuperAdmin ? ShieldCheck : Shield;
   const isSpecial = showBadges && canUseSpecialStyle(user);
   const specialStyle = getSpecialUserStyle(user);
   const userId = user?._id || user?.id;
@@ -58,7 +60,7 @@ const UserAvatar = ({
   const presenceSize = Math.max(size * 0.22, 9);
   const inset = Math.max(size * 0.01, 0);
   const titleParts = [
-    isAdmin ? "Platform admin" : "",
+    isAdmin ? adminLabel : "",
     isOpen ? "Open to opportunities" : "",
     showPresenceDot ? (isOnline ? "Online" : "Offline") : "",
   ].filter(Boolean);
@@ -114,9 +116,10 @@ const UserAvatar = ({
             right: -Math.max(size * 0.02, 1),
             top: -Math.max(size * 0.02, 1),
           }}
-          title="Platform admin"
+          title={adminLabel}
+          aria-label={adminLabel}
         >
-          <Shield
+          <AdminIcon
             strokeWidth={2.5}
             style={{
               width: badgeIconSize,

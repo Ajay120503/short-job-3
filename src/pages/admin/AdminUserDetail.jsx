@@ -269,7 +269,7 @@ const AdminUserDetail = () => {
                   <h2 className="truncate text-xl font-bold">{profile.name}</h2>
                   {canViewPlatformControls &&
                     (profile.isSuperAdmin ? (
-                      <span className="badge badge-primary badge-sm">Super Admin</span>
+                      <span className="badge badge-primary badge-sm">Platform Owner</span>
                     ) : profile.isAdmin ? (
                       <span className="badge badge-info badge-sm">Admin</span>
                     ) : null)}

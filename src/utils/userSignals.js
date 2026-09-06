@@ -23,7 +23,7 @@ export const getUserSignal = (user) => {
   if (isPlatformAdmin(user)) {
     return {
       key: "admin",
-      label: user?.isSuperAdmin ? "Super Admin" : "Admin",
+      label: user?.isSuperAdmin ? "Platform Owner" : "Admin",
       className: "special-style special-indigo special-label truncate",
     };
   }

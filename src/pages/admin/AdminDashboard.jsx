@@ -154,7 +154,7 @@ const AdminUserCard = ({ item }) => (
             {getUserRoleLabel(item)}
           </span>
           {item.isSuperAdmin ? (
-            <span className="badge badge-xs badge-primary">Super Admin</span>
+            <span className="badge badge-xs badge-primary">Platform Owner</span>
           ) : item.isAdmin ? (
             <span className="badge badge-xs badge-info">Admin</span>
           ) : null}

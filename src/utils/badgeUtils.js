@@ -165,6 +165,10 @@ export const getActiveBadges = (user) => {
 export const getUserRoleLabel = (user) => {
   if (!user) return "User";
 
+  // Effective platform access takes priority over an older identity badge.
+  if (user.isSuperAdmin) return "Platform Owner";
+  if (user.isAdmin) return "Admin";
+
   // Check badges first
   if (user.badges) {
     const active = user.badges.filter((b) => b.isActive !== false);
