@@ -4,9 +4,12 @@ import { Camera, X, Upload } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
 import toast from "../utils/toast";
+import { getCreationError } from "../utils/creationErrors";
+import { PROFILE_LIMITS, validateProfileText } from "../utils/profileValidation";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const MAX_RESUME_SIZE = 10 * 1024 * 1024;
+const ALLOWED_PROFILE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 
 const calculateAge = (dateValue) => {
   if (!dateValue) return "";
@@ -74,14 +77,15 @@ const EditProfile = () => {
       [name]: nextValue,
       ...(name === "dateOfBirth" ? { age: calculateAge(nextValue) } : {}),
     }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    setErrors((prev) => ({ ...prev, [name]: "", server: "" }));
   };
 
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, profilePic: "Please choose an image file." }));
+    if (!ALLOWED_PROFILE_IMAGE_TYPES.has(file.type)) {
+      setErrors((prev) => ({ ...prev, profilePic: "Upload a JPG, PNG, GIF, or WebP image." }));
+      e.target.value = "";
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
@@ -96,8 +100,9 @@ const EditProfile = () => {
   const handleInstitutionPicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, institutionPic: "Please choose an image file." }));
+    if (!ALLOWED_PROFILE_IMAGE_TYPES.has(file.type)) {
+      setErrors((prev) => ({ ...prev, institutionPic: "Upload a JPG, PNG, GIF, or WebP image." }));
+      e.target.value = "";
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
@@ -112,9 +117,10 @@ const EditProfile = () => {
   const handleResumeChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const allowed = file.type === "application/pdf" || file.type.startsWith("image/");
+    const allowed = file.type === "application/pdf" || ALLOWED_PROFILE_IMAGE_TYPES.has(file.type);
     if (!allowed) {
       setErrors((prev) => ({ ...prev, resume: "Upload a PDF or image file." }));
+      e.target.value = "";
       return;
     }
     if (file.size > MAX_RESUME_SIZE) {
@@ -126,14 +132,10 @@ const EditProfile = () => {
   };
 
   const validateForm = () => {
-    const nextErrors = {};
+    const nextErrors = validateProfileText(form, { includeName: true });
     if (!form.name.trim()) nextErrors.name = "Full name is required.";
     if (form.name.trim().length > 100) {
       nextErrors.name = "Full name cannot exceed 100 characters.";
-    }
-    if (form.bio.length > 200) nextErrors.bio = "Bio cannot exceed 200 characters.";
-    if (form.address.length > 300) {
-      nextErrors.address = "Address cannot exceed 300 characters.";
     }
     if (form.dateOfBirth) {
       const calculatedAge = calculateAge(form.dateOfBirth);
@@ -143,18 +145,6 @@ const EditProfile = () => {
       } else if (calculatedAge !== "" && calculatedAge > 100) {
         nextErrors.dateOfBirth = "Age must be 100 years or less.";
       }
-    }
-    if (form.experience !== "" && Number(form.experience) < 0) {
-      nextErrors.experience = "Experience cannot be negative.";
-    }
-    if (form.linkedinUrl && !/^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedinUrl.trim())) {
-      nextErrors.linkedinUrl = "Enter a valid LinkedIn URL.";
-    }
-    if (form.isCurrentlyWorking && !form.currentPosition.trim()) {
-      nextErrors.currentPosition = "Current position is required when currently working.";
-    }
-    if (form.isCurrentlyWorking && !form.currentCompany.trim()) {
-      nextErrors.currentCompany = "Current workplace is required when currently working.";
     }
 
     setErrors(nextErrors);
@@ -184,12 +174,13 @@ const EditProfile = () => {
       toast.success("Profile updated!");
       navigate(`/profile/${user._id}`);
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to update profile.";
-      const fieldErrors = err.response?.data?.errors;
+      const result = getCreationError(err, "The profile could not be updated.");
+      const fieldErrors = result.errors;
+      setErrors((prev) => ({ ...prev, ...fieldErrors, server: result.message }));
       if (fieldErrors?.age) {
         setErrors((prev) => ({ ...prev, dateOfBirth: fieldErrors.age }));
       }
-      toast.error(message);
+      toast.error(result.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -200,6 +191,7 @@ const EditProfile = () => {
       <h1 className="text-2xl font-bold font-heading mb-6">Edit Profile</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {errors.server && <ErrorSummary message={errors.server} />}
         {/* Profile Picture */}
         <div className="card bg-base-100 border border-base-300/50 p-4">
           <h3 className="font-semibold text-sm mb-3">Profile Picture</h3>
@@ -237,7 +229,7 @@ const EditProfile = () => {
               <input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
                 onChange={handleProfilePicChange}
               />
             </label>
@@ -266,7 +258,7 @@ const EditProfile = () => {
               <input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
                 onChange={handleInstitutionPicChange}
               />
             </label>
@@ -291,6 +283,7 @@ const EditProfile = () => {
                 className={`input input-bordered w-full input-sm text-sm ${errors.name ? "input-error" : ""}`}
                 value={form.name}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.name}
                 required
               />
               {errors.name && <FieldError>{errors.name}</FieldError>}
@@ -359,11 +352,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="profession"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.profession ? "input-error" : ""}`}
                 value={form.profession}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.profession}
                 placeholder="e.g. Part-time Tutor"
               />
+              {errors.profession && <FieldError>{errors.profession}</FieldError>}
             </div>
             <div className="form-control rounded-lg bg-base-200/50 p-3">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -392,6 +387,7 @@ const EditProfile = () => {
                     className={`input input-bordered w-full input-sm text-sm ${errors.currentPosition ? "input-error" : ""}`}
                     value={form.currentPosition}
                     onChange={handleChange}
+                    maxLength={PROFILE_LIMITS.currentPosition}
                     placeholder="e.g. Product Trainer"
                   />
                   {errors.currentPosition && (
@@ -409,6 +405,7 @@ const EditProfile = () => {
                     className={`input input-bordered w-full input-sm text-sm ${errors.currentCompany ? "input-error" : ""}`}
                     value={form.currentCompany}
                     onChange={handleChange}
+                    maxLength={PROFILE_LIMITS.currentCompany}
                     placeholder="e.g. DPS Pune"
                   />
                   {errors.currentCompany && (
@@ -425,12 +422,14 @@ const EditProfile = () => {
               </label>
               <textarea
                 name="previousWork"
-                className="textarea textarea-bordered w-full textarea-sm text-sm"
+                className={`textarea textarea-bordered w-full textarea-sm text-sm ${errors.previousWork ? "textarea-error" : ""}`}
                 rows={3}
                 value={form.previousWork}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.previousWork}
                 placeholder="Previous roles, organizations, internships, or projects..."
               />
+              {errors.previousWork && <FieldError>{errors.previousWork}</FieldError>}
             </div>
           </div>
         </div>
@@ -449,11 +448,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="institutionName"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.institutionName ? "input-error" : ""}`}
                 value={form.institutionName}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.institutionName}
                 placeholder="e.g. IIT Delhi"
               />
+              {errors.institutionName && <FieldError>{errors.institutionName}</FieldError>}
             </div>
             <div className="form-control">
               <label className="label py-0 pb-1">
@@ -481,11 +482,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="subject"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.subject ? "input-error" : ""}`}
                 value={form.subject}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.subject}
                 placeholder="e.g. Mathematics"
               />
+              {errors.subject && <FieldError>{errors.subject}</FieldError>}
             </div>
             <div className="form-control">
               <label className="label py-0 pb-1">
@@ -500,6 +503,7 @@ const EditProfile = () => {
                 value={form.experience}
                 onChange={handleChange}
                 min="0"
+                max="80"
               />
               {errors.experience && (
                 <FieldError>{errors.experience}</FieldError>
@@ -515,11 +519,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="skills"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.skills ? "input-error" : ""}`}
                 value={form.skills}
                 onChange={handleChange}
+                maxLength={1019}
                 placeholder="Python, Teaching"
               />
+              {errors.skills && <FieldError>{errors.skills}</FieldError>}
             </div>
             <div className="form-control">
               <label className="label py-0 pb-1">
@@ -529,11 +535,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="qualifications"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.qualifications ? "input-error" : ""}`}
                 value={form.qualifications}
                 onChange={handleChange}
+                maxLength={2019}
                 placeholder="B.Tech, M.Sc"
               />
+              {errors.qualifications && <FieldError>{errors.qualifications}</FieldError>}
             </div>
           </div>
         </div>
@@ -548,11 +556,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="city"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.city ? "input-error" : ""}`}
                 value={form.city}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.city}
                 placeholder="e.g. Mumbai"
               />
+              {errors.city && <FieldError>{errors.city}</FieldError>}
             </div>
             <div className="form-control">
               <label className="label py-0 pb-1">
@@ -560,11 +570,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="state"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.state ? "input-error" : ""}`}
                 value={form.state}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.state}
                 placeholder="e.g. Maharashtra"
               />
+              {errors.state && <FieldError>{errors.state}</FieldError>}
             </div>
             <div className="form-control col-span-2">
               <label className="label py-0 pb-1">
@@ -594,6 +606,7 @@ const EditProfile = () => {
                 className={`input input-bordered w-full input-sm text-sm ${errors.linkedinUrl ? "input-error" : ""}`}
                 value={form.linkedinUrl}
                 onChange={handleChange}
+                maxLength={PROFILE_LIMITS.linkedinUrl}
                 placeholder="https://linkedin.com/in/yourprofile"
               />
               {errors.linkedinUrl && (
@@ -608,11 +621,13 @@ const EditProfile = () => {
               </label>
               <input
                 name="interests"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.interests ? "input-error" : ""}`}
                 value={form.interests}
                 onChange={handleChange}
+                maxLength={1019}
                 placeholder="Research, Sports, Music"
               />
+              {errors.interests && <FieldError>{errors.interests}</FieldError>}
             </div>
           </div>
         </div>
@@ -668,6 +683,10 @@ const EditProfile = () => {
 
 const FieldError = ({ children }) => (
   <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
+
+const ErrorSummary = ({ message }) => (
+  <div role="alert" className="alert alert-error text-sm"><span>{message}</span></div>
 );
 
 export default EditProfile;

@@ -13,8 +13,6 @@ import {
   Bookmark,
   Trash2,
   MoreHorizontal,
-  Users,
-  X,
   Building2,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
@@ -46,48 +44,7 @@ const Profile = () => {
   const [postsLoading, setPostsLoading] = useState(false);
   const [jobsLoading, setJobsLoading] = useState(false);
 
-  const [showFollowersModal, setShowFollowersModal] = useState(false);
-  const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [followersList, setFollowersList] = useState([]);
-  const [followingList, setFollowingList] = useState([]);
-  const [loadingFollowers, setLoadingFollowers] = useState(false);
-  const [loadingFollowing, setLoadingFollowing] = useState(false);
-
   const isOwnProfile = currentUser?._id === id;
-
-  const fetchFollowers = useCallback(async () => {
-    setLoadingFollowers(true);
-    try {
-      const { data } = await API.get(`/users/${id}/followers`);
-      setFollowersList(data.followers || []);
-    } catch {
-      /* silently fail */
-    } finally {
-      setLoadingFollowers(false);
-    }
-  }, [id]);
-
-  const fetchFollowing = useCallback(async () => {
-    setLoadingFollowing(true);
-    try {
-      const { data } = await API.get(`/users/${id}/following`);
-      setFollowingList(data.following || []);
-    } catch {
-      /* silently fail */
-    } finally {
-      setLoadingFollowing(false);
-    }
-  }, [id]);
-
-  const handleOpenFollowers = () => {
-    setShowFollowersModal(true);
-    fetchFollowers();
-  };
-
-  const handleOpenFollowing = () => {
-    setShowFollowingModal(true);
-    fetchFollowing();
-  };
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -125,9 +82,13 @@ const Profile = () => {
   }, [id]);
 
   useEffect(() => {
-    fetchProfile();
-    fetchUserPosts();
-    fetchUserJobs();
+    const loadProfileContent = async () => {
+      await Promise.resolve();
+      fetchProfile();
+      fetchUserPosts();
+      fetchUserJobs();
+    };
+    loadProfileContent();
   }, [id, fetchProfile, fetchUserPosts, fetchUserJobs]);
 
   const handleFollow = async () => {
@@ -340,25 +301,23 @@ const Profile = () => {
                 <span className={mutedTextClass}>posts</span>
               </div>
               <span className="h-4 w-px bg-base-content/15" />
-              <button
-                type="button"
-                onClick={handleOpenFollowers}
+              <Link
+                to={`/profile/${id}/followers`}
                 className="flex items-baseline gap-1.5 rounded-md transition-colors hover:text-primary"
                 title="View followers"
               >
                 <span className="font-bold text-base">{followerCount}</span>
                 <span className={mutedTextClass}>followers</span>
-              </button>
+              </Link>
               <span className="h-4 w-px bg-base-content/15" />
-              <button
-                type="button"
-                onClick={handleOpenFollowing}
+              <Link
+                to={`/profile/${id}/following`}
                 className="flex items-baseline gap-1.5 rounded-md transition-colors hover:text-primary"
                 title="View following"
               >
                 <span className="font-bold text-base">{followingCount}</span>
                 <span className={mutedTextClass}>following</span>
-              </button>
+              </Link>
             </div>
 
             {/* Badges */}
@@ -901,81 +860,6 @@ const Profile = () => {
         </div>
       )}
 
-      {/* ============ FOLLOWERS MODAL ============ */}
-      {showFollowersModal && (
-        <div
-          className="z-app-modal fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={() => setShowFollowersModal(false)}
-        >
-          <div
-            className="bg-base-100 rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-base-200 shrink-0">
-              <h3 className="font-bold font-heading text-lg flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                Followers
-                <span className="text-sm font-normal text-base-content/40">
-                  ({followerCount})
-                </span>
-              </h3>
-              <button
-                onClick={() => setShowFollowersModal(false)}
-                className="btn btn-ghost btn-circle btn-sm"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3">
-              {loadingFollowers ? (
-                <div className="space-y-3 p-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full skeleton"></div>
-                      <div className="flex-1 space-y-1.5">
-                        <div className="h-3.5 w-28 skeleton rounded"></div>
-                        <div className="h-2.5 w-16 skeleton rounded"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : followersList.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-base-content/20 mx-auto mb-3" />
-                  <p className="text-sm text-base-content/40 font-medium">
-                    No followers yet
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {followersList.map((follower) => (
-                    <Link
-                      key={follower._id}
-                      to={`/profile/${follower._id}`}
-                      onClick={() => setShowFollowersModal(false)}
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-colors"
-                    >
-                      <UserAvatar user={follower} size={40} showBadges />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate">
-                          {follower.name}
-                        </p>
-                        <p className="text-xs text-base-content/50 capitalize">
-                          {getUserRoleLabel(follower)}
-                          {follower.institutionName
-                            ? ` · ${follower.institutionName}`
-                            : ""}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ============ DELETE POST CONFIRM MODAL ============ */}
       <ConfirmModal
         isOpen={!!postToDelete}
@@ -1000,80 +884,6 @@ const Profile = () => {
         variant="danger"
       />
 
-      {/* ============ FOLLOWING MODAL ============ */}
-      {showFollowingModal && (
-        <div
-          className="z-app-modal fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={() => setShowFollowingModal(false)}
-        >
-          <div
-            className="bg-base-100 rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-base-200 shrink-0">
-              <h3 className="font-bold font-heading text-lg flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                Following
-                <span className="text-sm font-normal text-base-content/40">
-                  ({followingCount})
-                </span>
-              </h3>
-              <button
-                onClick={() => setShowFollowingModal(false)}
-                className="btn btn-ghost btn-circle btn-sm"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3">
-              {loadingFollowing ? (
-                <div className="space-y-3 p-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full skeleton"></div>
-                      <div className="flex-1 space-y-1.5">
-                        <div className="h-3.5 w-28 skeleton rounded"></div>
-                        <div className="h-2.5 w-16 skeleton rounded"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : followingList.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-base-content/20 mx-auto mb-3" />
-                  <p className="text-sm text-base-content/40 font-medium">
-                    Not following anyone yet
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {followingList.map((followed) => (
-                    <Link
-                      key={followed._id}
-                      to={`/profile/${followed._id}`}
-                      onClick={() => setShowFollowingModal(false)}
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-colors"
-                    >
-                      <UserAvatar user={followed} size={40} showBadges />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate">
-                          {followed.name}
-                        </p>
-                        <p className="text-xs text-base-content/50 capitalize">
-                          {getUserRoleLabel(followed)}
-                          {followed.institutionName
-                            ? ` · ${followed.institutionName}`
-                            : ""}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

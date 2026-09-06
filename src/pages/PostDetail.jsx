@@ -124,6 +124,10 @@ const PostDetail = () => {
 
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
+    if (commentText.trim().length > 500) {
+      toast.error("Comments cannot exceed 500 characters.");
+      return;
+    }
     setAddingComment(true);
     try {
       const endpoint = replyTo
@@ -133,8 +137,8 @@ const PostDetail = () => {
       setCommentText("");
       setReplyTo(null);
       fetchComments();
-    } catch {
-      toast.error("Failed to add comment");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add comment");
     } finally {
       setAddingComment(false);
     }
@@ -375,6 +379,7 @@ const PostDetail = () => {
                   className="textarea textarea-bordered min-h-10 flex-1 resize-none rounded-2xl text-sm leading-relaxed focus:outline-none focus:border-primary/50"
                   placeholder="Write a comment..."
                   value={commentText}
+                  maxLength={500}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -383,6 +388,9 @@ const PostDetail = () => {
                     }
                   }}
                 />
+                {commentText.length >= 450 && (
+                  <span className="pb-2 text-[10px] tabular-nums text-base-content/40">{commentText.length}/500</span>
+                )}
                 <button
                   onClick={handleAddComment}
                   className="btn btn-primary btn-sm btn-circle shrink-0"

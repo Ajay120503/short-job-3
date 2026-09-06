@@ -15,6 +15,8 @@ import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
 import AuthLayout from "../components/auth/AuthLayout";
 import toast from "../utils/toast";
+import { getCreationError } from "../utils/creationErrors";
+import { PROFILE_LIMITS, validateProfileText } from "../utils/profileValidation";
 
 const steps = [
   { key: "details", label: "Your details" },
@@ -45,6 +47,7 @@ const minimumAgeDate = (() => {
   return date.toISOString().split("T")[0];
 })();
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 
 /**
  * Profile completion wizard after OTP/email verification.
@@ -95,12 +98,14 @@ const CompleteProfile = () => {
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, profilePic: "Please choose an image file." }));
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      setErrors((prev) => ({ ...prev, profilePic: "Upload a JPG, PNG, GIF, or WebP image." }));
+      e.target.value = "";
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
       setErrors((prev) => ({ ...prev, profilePic: "Profile photo must be under 5MB." }));
+      e.target.value = "";
       return;
     }
     setErrors((prev) => ({ ...prev, profilePic: "" }));
@@ -115,16 +120,20 @@ const CompleteProfile = () => {
       [field]: value,
       ...(field === "dateOfBirth" ? { age: calculateAge(value) } : {}),
     }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
+    setErrors((prev) => ({ ...prev, [field]: "", server: "" }));
   };
 
   const validateStep = (targetStep = step) => {
-    const nextErrors = {};
+    const allProfileErrors = validateProfileText(formData);
+    const stepFields = targetStep === 0
+      ? ["bio", "address", "city", "state", "linkedinUrl"]
+      : targetStep === 1
+        ? ["subject", "skills", "qualifications", "experience", "profession", "currentPosition", "currentCompany", "previousWork"]
+        : ["institutionName"];
+    const nextErrors = Object.fromEntries(
+      Object.entries(allProfileErrors).filter(([field]) => stepFields.includes(field)),
+    );
     if (targetStep === 0) {
-      if (formData.bio.length > 200) nextErrors.bio = "Bio cannot exceed 200 characters.";
-      if (formData.address.length > 300) {
-        nextErrors.address = "Address cannot exceed 300 characters.";
-      }
       if (!formData.dateOfBirth) {
         nextErrors.dateOfBirth = "Date of birth is required to confirm you are 18 or older.";
       } else {
@@ -135,20 +144,6 @@ const CompleteProfile = () => {
         } else if (age !== "" && age > 100) {
           nextErrors.dateOfBirth = "Age must be 100 years or less.";
         }
-      }
-      if (formData.linkedinUrl && !/^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(formData.linkedinUrl.trim())) {
-        nextErrors.linkedinUrl = "Enter a valid LinkedIn URL.";
-      }
-    }
-    if (targetStep === 1) {
-      if (Number(formData.experience) < 0) {
-        nextErrors.experience = "Experience cannot be negative.";
-      }
-      if (formData.isCurrentlyWorking && !formData.currentPosition.trim()) {
-        nextErrors.currentPosition = "Current position is required.";
-      }
-      if (formData.isCurrentlyWorking && !formData.currentCompany.trim()) {
-        nextErrors.currentCompany = "Current workplace is required.";
       }
     }
     setErrors(nextErrors);
@@ -225,10 +220,15 @@ const CompleteProfile = () => {
       toast.success("Profile completed successfully!");
       navigate("/feed");
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          "Failed to complete profile. Please try again.",
-      );
+      const result = getCreationError(err, "The profile could not be completed.");
+      const mappedErrors = { ...result.errors, server: result.message };
+      if (mappedErrors.age) mappedErrors.dateOfBirth = mappedErrors.age;
+      setErrors(mappedErrors);
+      const firstField = Object.keys(result.errors)[0];
+      if (["bio", "address", "city", "state", "linkedinUrl", "age", "dateOfBirth"].includes(firstField)) setStep(0);
+      else if (["subject", "skills", "qualifications", "experience", "profession", "currentPosition", "currentCompany", "previousWork"].includes(firstField)) setStep(1);
+      else if (firstField) setStep(2);
+      toast.error(result.message);
     } finally {
       setLoading(false);
     }
@@ -302,7 +302,7 @@ const CompleteProfile = () => {
             <input
               type="file"
               className="hidden"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/gif,image/webp"
               onChange={handleProfilePicChange}
             />
           </label>
@@ -390,11 +390,13 @@ const CompleteProfile = () => {
           </label>
           <input
             type="text"
-            className="input input-bordered w-full input-sm"
+            className={`input input-bordered w-full input-sm ${errors.city ? "input-error" : ""}`}
             placeholder="City"
-            value={formData.city}
-            onChange={(e) => updateField("city", e.target.value)}
+          value={formData.city}
+          onChange={(e) => updateField("city", e.target.value)}
+          maxLength={PROFILE_LIMITS.city}
           />
+          {errors.city && <FieldError>{errors.city}</FieldError>}
         </div>
         <div className="form-control">
           <label className="label pb-1">
@@ -402,11 +404,13 @@ const CompleteProfile = () => {
           </label>
           <input
             type="text"
-            className="input input-bordered w-full input-sm"
+            className={`input input-bordered w-full input-sm ${errors.state ? "input-error" : ""}`}
             placeholder="State"
-            value={formData.state}
-            onChange={(e) => updateField("state", e.target.value)}
+          value={formData.state}
+          onChange={(e) => updateField("state", e.target.value)}
+          maxLength={PROFILE_LIMITS.state}
           />
+          {errors.state && <FieldError>{errors.state}</FieldError>}
         </div>
       </div>
 
@@ -423,6 +427,7 @@ const CompleteProfile = () => {
           placeholder="https://linkedin.com/in/yourprofile"
           value={formData.linkedinUrl}
           onChange={(e) => updateField("linkedinUrl", e.target.value)}
+          maxLength={PROFILE_LIMITS.linkedinUrl}
         />
         {errors.linkedinUrl && <FieldError>{errors.linkedinUrl}</FieldError>}
       </div>
@@ -464,11 +469,13 @@ const CompleteProfile = () => {
         </label>
         <input
           type="text"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.subject ? "input-error" : ""}`}
           placeholder="e.g. Design, Operations, Marketing"
           value={formData.subject}
           onChange={(e) => updateField("subject", e.target.value)}
+          maxLength={PROFILE_LIMITS.subject}
         />
+        {errors.subject && <FieldError>{errors.subject}</FieldError>}
       </div>
 
       <div className="form-control">
@@ -479,11 +486,13 @@ const CompleteProfile = () => {
         </label>
         <input
           type="text"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.skills ? "input-error" : ""}`}
           placeholder="e.g. Python, Design, React"
           value={formData.skills}
           onChange={(e) => updateField("skills", e.target.value)}
+          maxLength={1019}
         />
+        {errors.skills && <FieldError>{errors.skills}</FieldError>}
       </div>
 
       <div className="form-control">
@@ -494,11 +503,13 @@ const CompleteProfile = () => {
         </label>
         <input
           type="text"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.qualifications ? "input-error" : ""}`}
           placeholder="e.g. B.Tech, M.Sc"
           value={formData.qualifications}
           onChange={(e) => updateField("qualifications", e.target.value)}
+          maxLength={2019}
         />
+        {errors.qualifications && <FieldError>{errors.qualifications}</FieldError>}
       </div>
 
       <div className="form-control">
@@ -512,6 +523,7 @@ const CompleteProfile = () => {
           className={`input input-bordered w-full input-sm ${errors.experience ? "input-error" : ""}`}
           placeholder="0"
           min="0"
+          max="80"
           value={formData.experience}
           onChange={(e) =>
             updateField("experience", parseInt(e.target.value) || 0)
@@ -526,11 +538,13 @@ const CompleteProfile = () => {
         </label>
         <input
           type="text"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.profession ? "input-error" : ""}`}
           placeholder="e.g. Product designer, Operations intern"
           value={formData.profession}
           onChange={(e) => updateField("profession", e.target.value)}
+          maxLength={PROFILE_LIMITS.profession}
         />
+        {errors.profession && <FieldError>{errors.profession}</FieldError>}
       </div>
 
       <div className="rounded-2xl border border-base-300/60 bg-base-200/30 p-4 space-y-4">
@@ -562,6 +576,7 @@ const CompleteProfile = () => {
                 placeholder="e.g. Assistant Manager"
                 value={formData.currentPosition}
                 onChange={(e) => updateField("currentPosition", e.target.value)}
+                maxLength={PROFILE_LIMITS.currentPosition}
               />
               {errors.currentPosition && <FieldError>{errors.currentPosition}</FieldError>}
             </div>
@@ -577,6 +592,7 @@ const CompleteProfile = () => {
                 placeholder="e.g. Acme Studio"
                 value={formData.currentCompany}
                 onChange={(e) => updateField("currentCompany", e.target.value)}
+                maxLength={PROFILE_LIMITS.currentCompany}
               />
               {errors.currentCompany && <FieldError>{errors.currentCompany}</FieldError>}
             </div>
@@ -591,11 +607,13 @@ const CompleteProfile = () => {
           </label>
           <textarea
             rows={3}
-            className="textarea textarea-bordered w-full text-sm"
+            className={`textarea textarea-bordered w-full text-sm ${errors.previousWork ? "textarea-error" : ""}`}
             placeholder="Previous roles, organizations, internships, or projects..."
             value={formData.previousWork}
             onChange={(e) => updateField("previousWork", e.target.value)}
+            maxLength={PROFILE_LIMITS.previousWork}
           />
+          {errors.previousWork && <FieldError>{errors.previousWork}</FieldError>}
         </div>
       </div>
     </div>
@@ -637,11 +655,13 @@ const CompleteProfile = () => {
         </label>
         <input
           type="text"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.institutionName ? "input-error" : ""}`}
           placeholder="e.g. Acme Studio"
           value={formData.institutionName}
           onChange={(e) => updateField("institutionName", e.target.value)}
+          maxLength={PROFILE_LIMITS.institutionName}
         />
+        {errors.institutionName && <FieldError>{errors.institutionName}</FieldError>}
       </div>
     </div>
   );
@@ -656,6 +676,7 @@ const CompleteProfile = () => {
       {renderStepIndicator()}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {errors.server && <ErrorSummary message={errors.server} />}
         {step === 0 && renderDetailsStep()}
         {step === 1 && renderEducationStep()}
         {step === 2 && renderInstitutionStep()}
@@ -730,6 +751,10 @@ const SectionTitle = ({ icon: Icon, title, description }) => (
 
 const FieldError = ({ children }) => (
   <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
+
+const ErrorSummary = ({ message }) => (
+  <div role="alert" className="alert alert-error text-sm"><span>{message}</span></div>
 );
 
 export default CompleteProfile;

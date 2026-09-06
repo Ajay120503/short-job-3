@@ -17,7 +17,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setError("");
     const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail || !emailPattern.test(normalizedEmail)) {
+    if (!normalizedEmail || normalizedEmail.length > 254 || !emailPattern.test(normalizedEmail)) {
       setError("Enter a valid email address.");
       return;
     }
@@ -74,6 +74,7 @@ const ForgotPassword = () => {
                   setError("");
                 }}
                 required
+                maxLength={254}
               />
             </div>
             {error && <p className="mt-1 text-xs font-medium text-error">{error}</p>}

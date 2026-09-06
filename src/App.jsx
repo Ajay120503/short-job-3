@@ -45,6 +45,7 @@ import CreatePost from "./pages/CreatePost";
 import EditPost from "./pages/EditPost";
 import CreateStory from "./pages/CreateStory";
 import Profile from "./pages/Profile";
+import ProfileConnections from "./pages/ProfileConnections";
 import EditProfile from "./pages/EditProfile";
 import Chat from "./pages/Chat";
 import Notifications from "./pages/Notifications";
@@ -250,6 +251,10 @@ function App() {
                             element={<Navigate to="/edit-profile#age" replace />}
                           />
                           <Route path="/profile/:id" element={<Profile />} />
+                          <Route
+                            path="/profile/:id/:type"
+                            element={<ProfileConnections />}
+                          />
                           <Route
                             path="/edit-profile"
                             element={<EditProfile />}

@@ -225,6 +225,10 @@ const Feed = () => {
   // Add comment
   const handleAddComment = async () => {
     if (!commentText.trim() || !commentPost) return;
+    if (commentText.trim().length > 500) {
+      toast.error("Comments cannot exceed 500 characters.");
+      return;
+    }
     try {
       const endpoint = replyTo
         ? `/comments/${replyTo}/reply`
@@ -763,6 +767,7 @@ const Feed = () => {
                     replyTo ? "Write a reply..." : "Write a comment..."
                   }
                   value={commentText}
+                  maxLength={500}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -772,6 +777,9 @@ const Feed = () => {
                   }}
                   autoFocus
                 />
+                {commentText.length >= 450 && (
+                  <span className="pb-2 text-[10px] tabular-nums text-base-content/40">{commentText.length}/500</span>
+                )}
                 <button
                   type="submit"
                   className="btn btn-primary btn-circle btn-sm mb-0.5 flex-shrink-0 shadow-sm"

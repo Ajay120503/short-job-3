@@ -40,6 +40,9 @@ const ResetPassword = () => {
     if (!form.newPassword || form.newPassword.length < 6) {
       nextErrors.newPassword = "Password must be at least 6 characters.";
     }
+    if (form.newPassword.length > 128) {
+      nextErrors.newPassword = "Password cannot exceed 128 characters.";
+    }
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -91,6 +94,7 @@ const ResetPassword = () => {
           placeholder="your@email.com"
           error={errors.email}
           autoComplete="email"
+          maxLength={254}
         />
         <AuthInput
           icon={ShieldCheck}
@@ -111,6 +115,7 @@ const ResetPassword = () => {
           placeholder="At least 6 characters"
           error={errors.newPassword}
           autoComplete="new-password"
+          maxLength={128}
           action={
             <button
               type="button"

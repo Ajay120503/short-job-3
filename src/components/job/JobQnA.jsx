@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { MessageCircleQuestion, MoreHorizontal, Send, Trash2 } from "lucide-react";
 import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
@@ -13,8 +13,10 @@ const JobQnA = ({ jobId, isJobPoster }) => {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [renderedAt] = useState(() => Date.now());
 
-  const fetchQnA = async () => {
+  const fetchQnA = useCallback(async () => {
     try {
       const { data } = await API.get(`/jobs/${jobId}`);
       setQuestions(data.job?.qna || []);
@@ -23,15 +25,26 @@ const JobQnA = ({ jobId, isJobPoster }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobId]);
 
   useEffect(() => {
-    fetchQnA();
-  }, [jobId]);
+    const load = async () => {
+      await Promise.resolve();
+      fetchQnA();
+    };
+    load();
+  }, [fetchQnA]);
 
   const handleAsk = async (e) => {
     e.preventDefault();
-    if (!newQuestion.trim()) return;
+    if (!newQuestion.trim()) {
+      setFieldErrors((current) => ({ ...current, question: "Question is required." }));
+      return;
+    }
+    if (newQuestion.trim().length > 500) {
+      setFieldErrors((current) => ({ ...current, question: "Question cannot exceed 500 characters." }));
+      return;
+    }
     setSubmitting(true);
     try {
       const { data } = await API.post(`/jobs/${jobId}/qna`, {
@@ -40,6 +53,7 @@ const JobQnA = ({ jobId, isJobPoster }) => {
       });
       setQuestions(data.qna || []);
       setNewQuestion("");
+      setFieldErrors((current) => ({ ...current, question: "" }));
       setIsAnonymous(false);
       toast.success("Question posted!");
     } catch (err) {
@@ -51,12 +65,17 @@ const JobQnA = ({ jobId, isJobPoster }) => {
 
   const handleAnswer = async (qnaId, answer) => {
     if (!answer.trim()) return;
+    if (answer.trim().length > 2000) {
+      setFieldErrors((current) => ({ ...current, [qnaId]: "Answer cannot exceed 2000 characters." }));
+      return;
+    }
     try {
       const { data } = await API.post(`/jobs/${jobId}/qna/${qnaId}/answer`, {
         answer,
       });
       setQuestions(data.qna || []);
       setAnswers((prev) => ({ ...prev, [qnaId]: "" }));
+      setFieldErrors((current) => ({ ...current, [qnaId]: "" }));
       toast.success("Answer posted!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to post answer");
@@ -78,7 +97,7 @@ const JobQnA = ({ jobId, isJobPoster }) => {
 
   const timeAgo = (dateStr) => {
     if (!dateStr) return "";
-    const diff = Date.now() - new Date(dateStr).getTime();
+    const diff = renderedAt - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return "just now";
     if (mins < 60) return `${mins}m ago`;
@@ -164,12 +183,14 @@ const JobQnA = ({ jobId, isJobPoster }) => {
                       className="input input-bordered input-xs flex-1 text-xs"
                       placeholder="Type an answer..."
                       value={answers[q._id] || ""}
-                      onChange={(e) =>
+                      maxLength={2000}
+                      onChange={(e) => {
                         setAnswers((prev) => ({
                           ...prev,
                           [q._id]: e.target.value,
-                        }))
-                      }
+                        }));
+                        setFieldErrors((current) => ({ ...current, [q._id]: "" }));
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter")
                           handleAnswer(q._id, answers[q._id]);
@@ -182,6 +203,7 @@ const JobQnA = ({ jobId, isJobPoster }) => {
                       <Send className="w-3 h-3" />
                     </button>
                   </div>
+                  {fieldErrors[q._id] && <p className="mt-1 text-xs text-error">{fieldErrors[q._id]}</p>}
                 </div>
               ) : (
                 <p className="text-xs text-base-content/40 ml-4 italic">
@@ -202,7 +224,11 @@ const JobQnA = ({ jobId, isJobPoster }) => {
               className="input input-bordered input-sm flex-1 text-sm"
               placeholder="Ask a question..."
               value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
+              maxLength={500}
+              onChange={(e) => {
+                setNewQuestion(e.target.value);
+                setFieldErrors((current) => ({ ...current, question: "" }));
+              }}
             />
             <button
               type="submit"
@@ -216,6 +242,7 @@ const JobQnA = ({ jobId, isJobPoster }) => {
               )}
             </button>
           </div>
+          {fieldErrors.question && <p className="text-xs text-error">{fieldErrors.question}</p>}
           <label className="flex items-center gap-2 text-xs text-base-content/50 cursor-pointer">
             <input
               type="checkbox"

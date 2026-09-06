@@ -34,6 +34,7 @@ const Register = () => {
     if (!form.name.trim()) nextErrors.name = "Full name is required.";
     if (form.name.trim().length > 100) nextErrors.name = "Name is too long.";
     if (!form.email.trim()) nextErrors.email = "Email is required.";
+    if (form.email.trim().length > 254) nextErrors.email = "Email cannot exceed 254 characters.";
     if (form.email && !emailPattern.test(form.email.trim())) {
       nextErrors.email = "Enter a valid email address.";
     }
@@ -41,6 +42,7 @@ const Register = () => {
     if (form.password && form.password.length < 6) {
       nextErrors.password = "Password must be at least 6 characters.";
     }
+    if (form.password.length > 128) nextErrors.password = "Password cannot exceed 128 characters.";
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -120,6 +122,7 @@ const Register = () => {
           placeholder="your@email.com"
           error={errors.email}
           autoComplete="email"
+          maxLength={254}
         />
         <AuthInput
           icon={Lock}
@@ -130,6 +133,7 @@ const Register = () => {
           placeholder="At least 6 characters"
           error={errors.password}
           autoComplete="new-password"
+          maxLength={128}
           action={
             <button
               type="button"

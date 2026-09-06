@@ -31,6 +31,10 @@ const Login = () => {
       setFormError("Email and password are required.");
       return;
     }
+    if (email.trim().length > 254 || password.length > 128) {
+      setFormError("Check your email and password lengths and try again.");
+      return;
+    }
     try {
       const data = await login(email, password);
       if (data.requiresLoginAudit) {
@@ -136,6 +140,7 @@ const Login = () => {
                   setFormError("");
                 }}
                 required
+                maxLength={254}
               />
             </div>
           </div>
@@ -156,6 +161,7 @@ const Login = () => {
                   setFormError("");
                 }}
                 required
+                maxLength={128}
               />
               <button
                 type="button"

@@ -121,6 +121,14 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
       toast.error("Milestone links must start with http:// or https://.");
       return;
     }
+    if (cleaned.length > 20) {
+      toast.error("A timeline can contain up to 20 milestones.");
+      return;
+    }
+    if (cleaned.some((entry) => entry.title.length > 150 || entry.institution.length > 150 || entry.skills.length > 12 || entry.skills.some((skill) => skill.length > 50))) {
+      toast.error("Keep titles and organizations under 150 characters and use up to 12 short skills.");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -370,6 +378,7 @@ const TimelineEditor = ({
                 className="input input-bordered input-sm sm:col-span-2"
                 placeholder="e.g. Joined as Product Designer"
                 value={entry.title}
+                maxLength={150}
                 onChange={(e) => updateDraft(index, "title", e.target.value)}
               />
               </label>
@@ -391,6 +400,7 @@ const TimelineEditor = ({
                 className="input input-bordered input-sm w-full"
                 placeholder="Organization or place"
                 value={entry.institution}
+                maxLength={150}
                 onChange={(e) =>
                   updateDraft(index, "institution", e.target.value)
                 }
@@ -407,11 +417,11 @@ const TimelineEditor = ({
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <label className="form-control">
                 <span className="label-text mb-1 text-[11px] font-medium">Skills used</span>
-                <input className="input input-bordered input-sm w-full" placeholder="React, Leadership, Research" value={Array.isArray(entry.skills) ? entry.skills.join(", ") : entry.skills || ""} onChange={(e) => updateDraft(index, "skills", e.target.value)} />
+                <input className="input input-bordered input-sm w-full" placeholder="React, Leadership, Research" maxLength={611} value={Array.isArray(entry.skills) ? entry.skills.join(", ") : entry.skills || ""} onChange={(e) => updateDraft(index, "skills", e.target.value)} />
               </label>
               <label className="form-control">
                 <span className="label-text mb-1 text-[11px] font-medium">Proof or project link</span>
-                <input type="url" className="input input-bordered input-sm w-full" placeholder="https://..." value={entry.link || ""} onChange={(e) => updateDraft(index, "link", e.target.value)} />
+                <input type="url" className="input input-bordered input-sm w-full" placeholder="https://..." maxLength={500} value={entry.link || ""} onChange={(e) => updateDraft(index, "link", e.target.value)} />
               </label>
             </div>
           </div>
@@ -419,7 +429,7 @@ const TimelineEditor = ({
       </div>
 
       <div className="modal-action m-0 flex-col-reverse justify-between gap-2 border-t border-base-300/60 px-4 py-3 sm:flex-row sm:px-5">
-        <button type="button" onClick={addDraft} className="btn btn-ghost btn-sm gap-2">
+        <button type="button" onClick={addDraft} disabled={draft.length >= 20} className="btn btn-ghost btn-sm gap-2">
           <Plus className="w-4 h-4" /> Add Entry
         </button>
         <button type="button"

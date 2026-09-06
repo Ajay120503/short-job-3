@@ -27,6 +27,19 @@ import {
   getSpecialUserStyle,
 } from "../utils/specialUserStyles";
 import toast from "../utils/toast";
+import { getCreationError } from "../utils/creationErrors";
+
+const MAX_MESSAGE_LENGTH = 4000;
+const MAX_CHAT_FILE_SIZE = 20 * 1024 * 1024;
+const CHAT_FILE_TYPES = new Set([
+  "image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf",
+  "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain", "text/csv", "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/zip",
+  "application/x-zip-compressed",
+]);
 
 const getOtherParticipantFromConversation = (conversation, currentUserId) =>
   conversation?.participants?.find((participant) => participant._id !== currentUserId) ||
@@ -85,6 +98,7 @@ const Chat = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [showStickers, setShowStickers] = useState(false);
   const [sendingAttachment, setSendingAttachment] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [conversationListWidth, setConversationListWidth] = useState(() => {
     const saved = Number(localStorage.getItem("chatConversationListWidth"));
     return Number.isFinite(saved) && saved >= 240 && saved <= 480 ? saved : 320;
@@ -337,8 +351,13 @@ const Chat = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!messageText.trim() || !activeConversation) return;
+    if (!messageText.trim() || !activeConversation || sendingMessage) return;
+    if (messageText.trim().length > MAX_MESSAGE_LENGTH) {
+      toast.error(`Messages cannot exceed ${MAX_MESSAGE_LENGTH.toLocaleString()} characters.`);
+      return;
+    }
 
+    setSendingMessage(true);
     try {
       const { data } = await API.post("/chat/messages", {
         conversationId: activeConversation._id,
@@ -350,13 +369,36 @@ const Chat = () => {
       setMessageText("");
       setReplyingTo(null);
       emitStopTyping(activeConversation._id, user._id);
-    } catch {
-      toast.error("Failed to send message");
+    } catch (error) {
+      const result = getCreationError(error, "The message could not be sent.");
+      toast.error(result.message);
+    } finally {
+      setSendingMessage(false);
     }
   };
 
   const sendAttachment = async (file) => {
     if (!file || !activeConversation) return;
+    if (!CHAT_FILE_TYPES.has(file.type)) {
+      toast.error("This file type is not supported in chat.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (file.size === 0) {
+      toast.error("The selected file is empty.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (file.size > MAX_CHAT_FILE_SIZE) {
+      toast.error("Attachments must be under 20MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (file.name.length > 255) {
+      toast.error("The file name is too long. Rename it and try again.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
     const formData = new FormData();
     formData.append("conversationId", activeConversation._id);
     formData.append("file", file);
@@ -397,6 +439,10 @@ const Chat = () => {
 
   const handleEditMessage = async (msgId, newContent) => {
     if (!newContent.trim()) return;
+    if (newContent.trim().length > MAX_MESSAGE_LENGTH) {
+      toast.error(`Messages cannot exceed ${MAX_MESSAGE_LENGTH.toLocaleString()} characters.`);
+      return;
+    }
     try {
       const { data } = await API.put(`/chat/messages/${msgId}`, {
         content: newContent.trim(),
@@ -1041,19 +1087,27 @@ const Chat = () => {
                       : "Type a message..."
                 }
                 value={messageText}
+                maxLength={MAX_MESSAGE_LENGTH}
                 onChange={(e) => {
                   setMessageText(e.target.value);
                   if (!editingMessage) handleTyping();
                 }}
               />
+              {messageText.length >= 3600 && (
+                <span className={`shrink-0 text-[10px] tabular-nums ${messageText.length >= MAX_MESSAGE_LENGTH ? "text-error" : "text-base-content/40"}`}>
+                  {messageText.length}/{MAX_MESSAGE_LENGTH}
+                </span>
+              )}
               <button
                 type="submit"
                 className={`btn btn-circle btn-sm shrink-0 shadow-sm ${
                   editingMessage ? "btn-success" : "btn-primary"
                 }`}
-                disabled={!messageText.trim() || sendingAttachment}
+                disabled={!messageText.trim() || sendingAttachment || sendingMessage}
               >
-                {editingMessage ? (
+                {sendingMessage ? (
+                  <span className="loading loading-spinner loading-xs" />
+                ) : editingMessage ? (
                   <Check className="w-4 h-4" />
                 ) : (
                   <Send className="w-4 h-4" />

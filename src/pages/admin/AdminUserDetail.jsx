@@ -515,6 +515,7 @@ const AdminUserDetail = () => {
               rows={3}
               placeholder="Add moderation notes about this user..."
               value={notes}
+              maxLength={2000}
               onChange={(e) => setNotes(e.target.value)}
             />
             <button
