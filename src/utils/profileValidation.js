@@ -1,24 +1,28 @@
 import { getPersonNameError, PERSON_NAME_MAX_LENGTH } from "./textValidation";
 
+export const PROFILE_TEXT_MIN_LENGTH = 5;
+export const PROFILE_TEXT_MAX_LENGTH = 20;
+export const PROFILE_LIST_MAX_INPUT_LENGTH = 438;
+
 export const PROFILE_LIMITS = {
   name: PERSON_NAME_MAX_LENGTH,
-  bio: 200,
-  institutionName: 150,
-  subject: 100,
-  address: 300,
-  city: 100,
-  state: 100,
+  bio: PROFILE_TEXT_MAX_LENGTH,
+  institutionName: PROFILE_TEXT_MAX_LENGTH,
+  subject: PROFILE_TEXT_MAX_LENGTH,
+  address: PROFILE_TEXT_MAX_LENGTH,
+  city: PROFILE_TEXT_MAX_LENGTH,
+  state: PROFILE_TEXT_MAX_LENGTH,
   linkedinUrl: 500,
-  profession: 120,
-  currentPosition: 120,
-  currentCompany: 150,
-  previousWork: 1000,
+  profession: PROFILE_TEXT_MAX_LENGTH,
+  currentPosition: PROFILE_TEXT_MAX_LENGTH,
+  currentCompany: PROFILE_TEXT_MAX_LENGTH,
+  previousWork: PROFILE_TEXT_MAX_LENGTH,
 };
 
 const listRules = {
-  skills: [20, 50, "skill"],
-  qualifications: [20, 100, "qualification"],
-  interests: [20, 50, "interest"],
+  skills: [20, PROFILE_TEXT_MIN_LENGTH, PROFILE_TEXT_MAX_LENGTH, "skill"],
+  qualifications: [20, PROFILE_TEXT_MIN_LENGTH, PROFILE_TEXT_MAX_LENGTH, "qualification"],
+  interests: [20, PROFILE_TEXT_MIN_LENGTH, PROFILE_TEXT_MAX_LENGTH, "interest"],
 };
 
 export const validateProfileText = (form, { includeName = false } = {}) => {
@@ -32,7 +36,10 @@ export const validateProfileText = (form, { includeName = false } = {}) => {
 
   Object.entries(PROFILE_LIMITS).forEach(([field, limit]) => {
     if (field === "name" && !includeName) return;
-    if (String(form[field] || "").trim().length > limit) {
+    const length = String(form[field] || "").trim().length;
+    if (field !== "name" && field !== "linkedinUrl" && length > 0 && length < PROFILE_TEXT_MIN_LENGTH) {
+      errors[field] = `${labels[field] || field} must contain at least ${PROFILE_TEXT_MIN_LENGTH} characters.`;
+    } else if (length > limit) {
       errors[field] = `${labels[field] || field} cannot exceed ${limit} characters.`;
     }
   });
@@ -42,10 +49,11 @@ export const validateProfileText = (form, { includeName = false } = {}) => {
     if (nameError) errors.name = nameError;
   }
 
-  Object.entries(listRules).forEach(([field, [maxItems, maxLength, label]]) => {
+  Object.entries(listRules).forEach(([field, [maxItems, minLength, maxLength, label]]) => {
     if (form[field] == null) return;
     const values = [...new Set(String(form[field]).split(",").map((item) => item.trim()).filter(Boolean))];
     if (values.length > maxItems) errors[field] = `Add no more than ${maxItems} ${label}s.`;
+    else if (values.some((value) => value.length < minLength)) errors[field] = `Each ${label} must contain at least ${minLength} characters.`;
     else if (values.some((value) => value.length > maxLength)) errors[field] = `Each ${label} must be ${maxLength} characters or fewer.`;
   });
 

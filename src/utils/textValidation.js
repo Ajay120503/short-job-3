@@ -1,4 +1,4 @@
-export const PERSON_NAME_MIN_LENGTH = 2;
+export const PERSON_NAME_MIN_LENGTH = 5;
 export const PERSON_NAME_MAX_LENGTH = 20;
 
 const PERSON_NAME_PATTERN = /^[\p{L}\p{M} .'-]+$/u;

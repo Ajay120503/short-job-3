@@ -16,7 +16,11 @@ import API from "../utils/axios";
 import AuthLayout from "../components/auth/AuthLayout";
 import toast from "../utils/toast";
 import { getCreationError } from "../utils/creationErrors";
-import { PROFILE_LIMITS, validateProfileText } from "../utils/profileValidation";
+import {
+  PROFILE_LIMITS,
+  PROFILE_LIST_MAX_INPUT_LENGTH,
+  validateProfileText,
+} from "../utils/profileValidation";
 
 const steps = [
   { key: "details", label: "Your details" },
@@ -324,12 +328,12 @@ const CompleteProfile = () => {
           rows={3}
           className="textarea textarea-bordered w-full text-sm"
           placeholder="Tell us about yourself..."
-          maxLength={200}
+          maxLength={PROFILE_LIMITS.bio}
           value={formData.bio}
           onChange={(e) => updateField("bio", e.target.value)}
         />
         <span className="label-text-alt text-base-content/40">
-          {formData.bio.length}/200
+          {formData.bio.length}/{PROFILE_LIMITS.bio}
         </span>
         {errors.bio && <FieldError>{errors.bio}</FieldError>}
       </div>
@@ -376,7 +380,7 @@ const CompleteProfile = () => {
           placeholder="Street, Locality"
           value={formData.address}
           onChange={(e) => updateField("address", e.target.value)}
-          maxLength={300}
+          maxLength={PROFILE_LIMITS.address}
         />
         {errors.address && (
           <p className="mt-1 text-xs text-error">{errors.address}</p>
@@ -490,7 +494,7 @@ const CompleteProfile = () => {
           placeholder="e.g. Python, Design, React"
           value={formData.skills}
           onChange={(e) => updateField("skills", e.target.value)}
-          maxLength={1019}
+          maxLength={PROFILE_LIST_MAX_INPUT_LENGTH}
         />
         {errors.skills && <FieldError>{errors.skills}</FieldError>}
       </div>
@@ -507,7 +511,7 @@ const CompleteProfile = () => {
           placeholder="e.g. B.Tech, M.Sc"
           value={formData.qualifications}
           onChange={(e) => updateField("qualifications", e.target.value)}
-          maxLength={2019}
+          maxLength={PROFILE_LIST_MAX_INPUT_LENGTH}
         />
         {errors.qualifications && <FieldError>{errors.qualifications}</FieldError>}
       </div>

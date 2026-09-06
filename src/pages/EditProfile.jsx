@@ -5,7 +5,11 @@ import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
 import toast from "../utils/toast";
 import { getCreationError } from "../utils/creationErrors";
-import { PROFILE_LIMITS, validateProfileText } from "../utils/profileValidation";
+import {
+  PROFILE_LIMITS,
+  PROFILE_LIST_MAX_INPUT_LENGTH,
+  validateProfileText,
+} from "../utils/profileValidation";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const MAX_RESUME_SIZE = 10 * 1024 * 1024;
@@ -296,7 +300,7 @@ const EditProfile = () => {
                 name="bio"
                 className={`textarea textarea-bordered w-full textarea-sm text-sm ${errors.bio ? "textarea-error" : ""}`}
                 rows={2}
-                maxLength={200}
+                maxLength={PROFILE_LIMITS.bio}
                 value={form.bio}
                 onChange={handleChange}
                 placeholder="Tell us about yourself..."
@@ -528,7 +532,7 @@ const EditProfile = () => {
                 className={`input input-bordered w-full input-sm text-sm ${errors.skills ? "input-error" : ""}`}
                 value={form.skills}
                 onChange={handleChange}
-                maxLength={1019}
+                maxLength={PROFILE_LIST_MAX_INPUT_LENGTH}
                 placeholder="Python, Teaching"
               />
               {errors.skills && <FieldError>{errors.skills}</FieldError>}
@@ -544,7 +548,7 @@ const EditProfile = () => {
                 className={`input input-bordered w-full input-sm text-sm ${errors.qualifications ? "input-error" : ""}`}
                 value={form.qualifications}
                 onChange={handleChange}
-                maxLength={2019}
+                maxLength={PROFILE_LIST_MAX_INPUT_LENGTH}
                 placeholder="B.Tech, M.Sc"
               />
               {errors.qualifications && (
@@ -595,7 +599,7 @@ const EditProfile = () => {
                 className={`input input-bordered w-full input-sm text-sm ${errors.address ? "input-error" : ""}`}
                 value={form.address}
                 onChange={handleChange}
-                maxLength={300}
+                maxLength={PROFILE_LIMITS.address}
                 placeholder="Street, Locality"
               />
               {errors.address && (
@@ -632,7 +636,7 @@ const EditProfile = () => {
                 className={`input input-bordered w-full input-sm text-sm ${errors.interests ? "input-error" : ""}`}
                 value={form.interests}
                 onChange={handleChange}
-                maxLength={1019}
+                maxLength={PROFILE_LIST_MAX_INPUT_LENGTH}
                 placeholder="Research, Sports, Music"
               />
               {errors.interests && <FieldError>{errors.interests}</FieldError>}
