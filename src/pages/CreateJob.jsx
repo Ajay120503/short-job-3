@@ -27,7 +27,10 @@ import {
   getJobWorkplaceLabel,
 } from "../utils/jobLocation";
 import { getCreationError } from "../utils/creationErrors";
-import { MIN_STANDALONE_CONTENT_LENGTH } from "../utils/creationLimits";
+import {
+  MAX_SHORT_CREATION_TEXT_LENGTH,
+  MIN_STANDALONE_CONTENT_LENGTH,
+} from "../utils/creationLimits";
 
 const SHORT_JOB_TYPES = [
   ["one_day_gig", "One-day gig"], ["few_hours", "A few hours"],
@@ -139,8 +142,8 @@ const CreateJob = () => {
   const validateForm = () => {
     const nextErrors = {};
     if (!form.title.trim()) nextErrors.title = "Job title is required.";
-    else if (form.title.trim().length < 3) nextErrors.title = "Job title must contain at least 3 characters.";
-    else if (form.title.trim().length > 200) nextErrors.title = "Job title cannot exceed 200 characters.";
+    else if (form.title.trim().length < MIN_STANDALONE_CONTENT_LENGTH) nextErrors.title = `Job title must contain at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
+    else if (form.title.trim().length > MAX_SHORT_CREATION_TEXT_LENGTH) nextErrors.title = `Job title cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`;
     if (!form.description.trim()) nextErrors.description = "Description is required.";
     else if (form.description.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
       nextErrors.description = `Add at least ${MIN_STANDALONE_CONTENT_LENGTH} characters so applicants understand the role.`;
@@ -398,9 +401,11 @@ const CreateJob = () => {
                 placeholder="e.g., Content Creator for training program"
                 value={form.title}
                 onChange={handleChange}
-                maxLength={200}
+                minLength={MIN_STANDALONE_CONTENT_LENGTH}
+                maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
                 required
               />
+              <span className="label-text-alt text-base-content/40">{form.title.length}/{MAX_SHORT_CREATION_TEXT_LENGTH} characters</span>
               {errors.title && <FieldError>{errors.title}</FieldError>}
             </div>
 

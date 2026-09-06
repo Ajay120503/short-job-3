@@ -10,7 +10,10 @@ import API from "../utils/axios";
 import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
 import { getAvailablePostTypes } from "../utils/postTypeConfig";
-import { MIN_STANDALONE_CONTENT_LENGTH } from "../utils/creationLimits";
+import {
+  MAX_SHORT_CREATION_TEXT_LENGTH,
+  MIN_STANDALONE_CONTENT_LENGTH,
+} from "../utils/creationLimits";
 
 const EditPost = () => {
   const navigate = useNavigate();
@@ -71,12 +74,14 @@ const EditPost = () => {
       return;
     }
     if (
-      text.trim().length < MIN_STANDALONE_CONTENT_LENGTH
-      && existingImages.length === 0
-      && newImages.length === 0
-      && !["poll", "event", "resource_share"].includes(type)
+      text.trim()
+      && text.trim().length < MIN_STANDALONE_CONTENT_LENGTH
     ) {
-      toast.error(`Text-only posts need at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`);
+      toast.error(`Post text needs at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`);
+      return;
+    }
+    if (text.length > MAX_SHORT_CREATION_TEXT_LENGTH) {
+      toast.error(`Post text cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`);
       return;
     }
 
@@ -145,12 +150,13 @@ const EditPost = () => {
               placeholder="What's on your mind?"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              maxLength={2000}
+              minLength={text ? MIN_STANDALONE_CONTENT_LENGTH : undefined}
+              maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
               autoFocus
             />
             <label className="label">
               <span className="label-text-alt text-base-content/40">
-                {text.length}/2000
+                {text.length}/{MAX_SHORT_CREATION_TEXT_LENGTH}
               </span>
             </label>
           </div>

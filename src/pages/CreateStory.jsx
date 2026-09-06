@@ -4,7 +4,10 @@ import { ArrowLeft, X, Image, Send } from "lucide-react";
 import API from "../utils/axios";
 import toast from "../utils/toast";
 import { getCreationError } from "../utils/creationErrors";
-import { MIN_STANDALONE_CONTENT_LENGTH } from "../utils/creationLimits";
+import {
+  MAX_SHORT_CREATION_TEXT_LENGTH,
+  MIN_STANDALONE_CONTENT_LENGTH,
+} from "../utils/creationLimits";
 
 const MAX_STORY_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
@@ -55,11 +58,11 @@ const CreateStory = () => {
     if (!storyImage && !storyText.trim()) {
       nextErrors.form = "Please add an image or caption to your story.";
     }
-    if (!storyImage && storyText.trim() && storyText.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
-      nextErrors.storyText = `Text-only stories need at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
+    if (storyText.trim() && storyText.trim().length < MIN_STANDALONE_CONTENT_LENGTH) {
+      nextErrors.storyText = `Story caption needs at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
     }
-    if (storyText.length > 200) {
-      nextErrors.storyText = "Caption cannot exceed 200 characters.";
+    if (storyText.length > MAX_SHORT_CREATION_TEXT_LENGTH) {
+      nextErrors.storyText = `Caption cannot exceed ${MAX_SHORT_CREATION_TEXT_LENGTH} characters.`;
     }
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
@@ -161,11 +164,12 @@ const CreateStory = () => {
                 setStoryText(e.target.value);
                 setErrors((prev) => ({ ...prev, storyText: "", form: "", server: "" }));
               }}
-              maxLength={200}
+              minLength={storyText ? MIN_STANDALONE_CONTENT_LENGTH : undefined}
+              maxLength={MAX_SHORT_CREATION_TEXT_LENGTH}
             />
             <label className="label">
               <span className="label-text-alt text-base-content/40">
-                {storyText.length}/200
+                {storyText.length}/{MAX_SHORT_CREATION_TEXT_LENGTH}
               </span>
             </label>
             {errors.storyText && <FieldError>{errors.storyText}</FieldError>}
