@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   UserPlus,
+  UserCheck,
   Briefcase,
   MapPin,
   TrendingUp,
@@ -280,11 +281,17 @@ const RightSidebar = () => {
                         type="button"
                         onClick={() => handleFollow(u._id)}
                         disabled={followLoadingId === u._id}
-                        className={`btn btn-xs min-w-[62px] flex-shrink-0 rounded-full ${following.has(u._id) ? "btn-ghost" : "btn-primary"}`}
+                        className={`btn btn-circle btn-sm h-8 min-h-8 w-8 shrink-0 ${following.has(u._id) ? "btn-ghost text-primary" : "btn-primary"}`}
+                        aria-label={following.has(u._id) ? `Unfollow ${u.name}` : `Follow ${u.name}`}
+                        title={following.has(u._id) ? "Following — click to unfollow" : "Follow"}
                       >
                         {followLoadingId === u._id ? (
                           <span className="loading loading-spinner loading-xs" />
-                        ) : following.has(u._id) ? "Following" : "Follow"}
+                        ) : following.has(u._id) ? (
+                          <UserCheck className="h-4 w-4" />
+                        ) : (
+                          <UserPlus className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   );
