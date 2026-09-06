@@ -138,7 +138,8 @@ const Chat = () => {
     const fetchMessages = async () => {
       try {
         const { data } = await API.get(
-          `/chat/conversations/${activeConversation._id}/messages`
+          `/chat/conversations/${activeConversation._id}/messages`,
+          { params: { limit: 200 } },
         );
         setMessages(data.messages || []);
       } catch (err) {
