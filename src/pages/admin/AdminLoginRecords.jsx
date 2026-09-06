@@ -101,11 +101,17 @@ const AdminLoginRecords = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 px-2 py-3 pb-20 sm:px-4 md:p-6">
-      <div data-page-header className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+    <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 pb-20 sm:px-4 md:p-6">
+      <div
+        data-page-header
+        className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5"
+      >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <div data-page-heading-icon className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div
+              data-page-heading-icon
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
+            >
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
@@ -113,18 +119,25 @@ const AdminLoginRecords = () => {
                 Login Records
               </h1>
               <p className="text-xs text-base-content/50 sm:text-sm">
-                Super-admin-only audit trail for location and photo verified sign-ins.
+                Super-admin-only audit trail for location and photo verified
+                sign-ins.
               </p>
             </div>
           </div>
-          <Link to="/admin/settings" className="btn btn-outline btn-sm justify-start gap-2 sm:justify-center">
+          <Link
+            to="/admin/settings"
+            className="btn btn-outline btn-sm justify-start gap-2 sm:justify-center"
+          >
             <Settings className="h-4 w-4" />
             Login Security Settings
           </Link>
         </div>
       </div>
 
-      <div data-filter-panel className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+      <div
+        data-filter-panel
+        className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm"
+      >
         <div className="grid gap-2 md:grid-cols-[1fr_160px_150px_150px]">
           <label className="input input-bordered input-sm flex items-center gap-2">
             <Search className="w-4 h-4 text-base-content/35" />
