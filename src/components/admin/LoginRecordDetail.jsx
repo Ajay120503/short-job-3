@@ -12,6 +12,19 @@ const formatDate = (value) =>
       })
     : "Unknown";
 
+const compactText = (value, limit = 240) => {
+  const text = Array.from(String(value || ""))
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127 ? " " : character;
+    })
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return text.length > limit ? `${text.slice(0, limit).trimEnd()}…` : text;
+};
+
 const LoginRecordDetail = ({ record }) => {
   if (!record) return null;
   const user = record.user || {};
@@ -23,7 +36,7 @@ const LoginRecordDetail = ({ record }) => {
     : "";
 
   return (
-    <div className="rounded-2xl border border-base-300 bg-base-100 p-4">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-4">
       <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
         <div className="space-y-3">
           <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-base-200 border border-base-300">
@@ -49,7 +62,7 @@ const LoginRecordDetail = ({ record }) => {
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="flex items-start gap-3">
             <UserAvatar user={user} size={48} />
             <div className="min-w-0">
@@ -152,17 +165,30 @@ const LoginRecordDetail = ({ record }) => {
             />
           </div>
 
-          <div className="rounded-xl bg-base-200/60 border border-base-300 p-3 text-xs text-base-content/60">
-            <p>
-              <span className="font-semibold text-base-content/75">
-                Profile:
-              </span>{" "}
-              {user.phone || user.address || user.city || user.state
-                ? [user.phone, user.address, user.city, user.state]
-                    .filter(Boolean)
-                    .join(" · ")
-                : "No phone/address on profile"}
-            </p>
+          <div className="min-w-0 rounded-xl bg-base-200/60 border border-base-300 p-3 text-xs text-base-content/60">
+            <div className="grid min-w-0 gap-1.5 sm:grid-cols-[auto_1fr]">
+              <span className="font-semibold text-base-content/75">Profile:</span>
+              <div className="min-w-0 space-y-1">
+                {user.phone && (
+                  <p className="break-words [overflow-wrap:anywhere]">
+                    {compactText(user.phone, 40)}
+                  </p>
+                )}
+                {user.address && (
+                  <p className="break-words [overflow-wrap:anywhere]">
+                    {compactText(user.address)}
+                  </p>
+                )}
+                {(user.city || user.state) && (
+                  <p className="break-words [overflow-wrap:anywhere]">
+                    {compactText([user.city, user.state].filter(Boolean).join(", "), 100)}
+                  </p>
+                )}
+                {!user.phone && !user.address && !user.city && !user.state && (
+                  <p>No phone/address on profile</p>
+                )}
+              </div>
+            </div>
             <p className="mt-1">
               <span className="font-semibold text-base-content/75">
                 Account created:
@@ -186,12 +212,14 @@ const LoginRecordDetail = ({ record }) => {
 };
 
 const Info = ({ icon: Icon, label, value }) => (
-  <div className="rounded-xl border border-base-300 bg-base-200/40 p-3">
+  <div className="min-w-0 rounded-xl border border-base-300 bg-base-200/40 p-3">
     <div className="flex items-center gap-2 text-xs text-base-content/45">
       <Icon className="w-3.5 h-3.5" />
       {label}
     </div>
-    <p className="mt-1 text-sm font-semibold break-words">{value}</p>
+    <p className="mt-1 text-sm font-semibold break-words [overflow-wrap:anywhere]">
+      {compactText(value)}
+    </p>
   </div>
 );
 

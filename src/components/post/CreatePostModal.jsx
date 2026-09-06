@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   X,
   Image,
@@ -8,9 +8,11 @@ import API from "../../utils/axios";
 import toast from "../../utils/toast";
 import useAuthStore from "../../store/authStore";
 import { getAvailablePostTypes } from "../../utils/postTypeConfig";
+import { getCreationError } from "../../utils/creationErrors";
 
 const MAX_POST_IMAGES = 4;
 const MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 
 const CreatePostModal = ({ onClose }) => {
   const [text, setText] = useState("");
@@ -23,6 +25,15 @@ const CreatePostModal = ({ onClose }) => {
   const [eventDate, setEventDate] = useState("");
   const [eventLocation, setEventLocation] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
+  const imagePreviews = useMemo(
+    () => images.map((image) => URL.createObjectURL(image)),
+    [images],
+  );
+
+  useEffect(
+    () => () => imagePreviews.forEach((url) => URL.revokeObjectURL(url)),
+    [imagePreviews],
+  );
 
   const handleImagesChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -30,15 +41,15 @@ const CreatePostModal = ({ onClose }) => {
     if (files.length > MAX_POST_IMAGES) {
       nextErrors.images = `You can upload up to ${MAX_POST_IMAGES} images.`;
     }
-    const invalidFile = files.find((file) => !file.type.startsWith("image/"));
-    if (invalidFile) nextErrors.images = "Please upload image files only.";
+    const invalidFile = files.find((file) => !ALLOWED_IMAGE_TYPES.has(file.type));
+    if (invalidFile) nextErrors.images = "Upload JPG, PNG, GIF, or WebP images only.";
     const oversizedFile = files.find((file) => file.size > MAX_POST_IMAGE_SIZE);
     if (oversizedFile) nextErrors.images = "Each image must be under 5MB.";
     if (Object.keys(nextErrors).length) {
       setErrors((prev) => ({ ...prev, ...nextErrors }));
       return;
     }
-    setErrors((prev) => ({ ...prev, images: "", form: "" }));
+    setErrors((prev) => ({ ...prev, images: "", form: "", server: "" }));
     setImages(files);
   };
 
@@ -49,10 +60,30 @@ const CreatePostModal = ({ onClose }) => {
       nextErrors.form = "Please add text or images to your post.";
     }
     if (text.length > 2000) nextErrors.text = "Post text cannot exceed 2000 characters.";
-    if (tags.length > 160) nextErrors.tags = "Tags are too long.";
-    if (type === "poll" && pollOptions.filter((item) => item.trim()).length < 2) nextErrors.form = "Add at least two poll options.";
-    if (type === "event" && (!eventDate || !eventLocation.trim())) nextErrors.form = "Add the event date and location.";
-    if (type === "resource_share" && !resourceUrl.trim()) nextErrors.form = "Add a resource link.";
+    const normalizedTags = [...new Set(tags.split(",").map((tag) => tag.trim()).filter(Boolean))];
+    if (normalizedTags.length > 10) nextErrors.tags = "Use no more than 10 tags.";
+    else if (normalizedTags.some((tag) => tag.length > 30)) nextErrors.tags = "Each tag must be 30 characters or fewer.";
+    if (!availableTypes.some((item) => item.value === type)) nextErrors.type = "Choose a post type available to your account.";
+    const validPollOptions = pollOptions.map((item) => item.trim()).filter(Boolean);
+    if (type === "poll") {
+      if (validPollOptions.length < 2) nextErrors.pollOptions = "Add at least two poll options.";
+      else if (validPollOptions.some((option) => option.length > 100)) nextErrors.pollOptions = "Each poll option must be 100 characters or fewer.";
+      else if (new Set(validPollOptions.map((option) => option.toLowerCase())).size !== validPollOptions.length) nextErrors.pollOptions = "Poll options must be different.";
+    }
+    if (type === "event") {
+      if (!eventDate) nextErrors.eventDate = "Choose the event date and time.";
+      else if (new Date(eventDate) <= new Date()) nextErrors.eventDate = "Event date must be in the future.";
+      if (!eventLocation.trim()) nextErrors.eventLocation = "Event location is required.";
+      else if (eventLocation.trim().length > 200) nextErrors.eventLocation = "Event location cannot exceed 200 characters.";
+    }
+    if (type === "resource_share") {
+      try {
+        const url = new URL(resourceUrl);
+        if (!["http:", "https:"].includes(url.protocol)) throw new Error("invalid protocol");
+      } catch {
+        nextErrors.resourceUrl = "Enter a valid http:// or https:// resource link.";
+      }
+    }
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       toast.error("Please fix the highlighted fields.");
@@ -78,7 +109,9 @@ const CreatePostModal = ({ onClose }) => {
       onClose();
       window.location.reload();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to create post");
+      const result = getCreationError(error, "The post could not be created.");
+      setErrors((prev) => ({ ...prev, ...result.errors, server: result.message }));
+      toast.error(result.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,6 +141,7 @@ const CreatePostModal = ({ onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {errors.server && <ErrorSummary message={errors.server} />}
           {/* Text Area */}
           <div className="form-control">
             <textarea
@@ -116,7 +150,7 @@ const CreatePostModal = ({ onClose }) => {
               value={text}
               onChange={(e) => {
                 setText(e.target.value);
-                setErrors((prev) => ({ ...prev, text: "", form: "" }));
+                setErrors((prev) => ({ ...prev, text: "", form: "", server: "" }));
               }}
               maxLength={2000}
             />
@@ -129,9 +163,9 @@ const CreatePostModal = ({ onClose }) => {
             {errors.form && <FieldError>{errors.form}</FieldError>}
           </div>
 
-          {type === "poll" && <div className="space-y-2">{pollOptions.map((option, index) => <div key={index} className="flex gap-2"><input className="input input-bordered input-sm grow" value={option} placeholder={`Option ${index + 1}`} onChange={(e) => setPollOptions((items) => items.map((item, i) => i === index ? e.target.value : item))} />{pollOptions.length > 2 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPollOptions((items) => items.filter((_, i) => i !== index))}>×</button>}</div>)}{pollOptions.length < 6 && <button type="button" className="btn btn-ghost btn-xs" onClick={() => setPollOptions((items) => [...items, ""])}>+ Add option</button>}</div>}
-          {type === "event" && <div className="grid gap-2 sm:grid-cols-2"><input type="datetime-local" className="input input-bordered input-sm" value={eventDate} onChange={(e) => setEventDate(e.target.value)} /><input className="input input-bordered input-sm" placeholder="Event location" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} /></div>}
-          {type === "resource_share" && <input type="url" className="input input-bordered w-full" placeholder="https://…" value={resourceUrl} onChange={(e) => setResourceUrl(e.target.value)} />}
+          {type === "poll" && <div className="space-y-2">{pollOptions.map((option, index) => <div key={index} className="flex gap-2"><input name="pollOptions" maxLength={100} className={`input input-bordered input-sm grow ${errors.pollOptions ? "input-error" : ""}`} value={option} placeholder={`Option ${index + 1}`} onChange={(e) => { setPollOptions((items) => items.map((item, i) => i === index ? e.target.value : item)); setErrors((prev) => ({ ...prev, pollOptions: "", server: "" })); }} />{pollOptions.length > 2 && <button type="button" className="btn btn-ghost btn-sm" aria-label={`Remove option ${index + 1}`} onClick={() => setPollOptions((items) => items.filter((_, i) => i !== index))}>×</button>}</div>)}{pollOptions.length < 6 && <button type="button" className="btn btn-ghost btn-xs" onClick={() => setPollOptions((items) => [...items, ""])}>+ Add option</button>}{errors.pollOptions && <FieldError>{errors.pollOptions}</FieldError>}</div>}
+          {type === "event" && <div className="grid gap-2 sm:grid-cols-2"><div><input name="eventDate" type="datetime-local" className={`input input-bordered input-sm w-full ${errors.eventDate ? "input-error" : ""}`} value={eventDate} onChange={(e) => { setEventDate(e.target.value); setErrors((prev) => ({ ...prev, eventDate: "", server: "" })); }} />{errors.eventDate && <FieldError>{errors.eventDate}</FieldError>}</div><div><input name="eventLocation" maxLength={200} className={`input input-bordered input-sm w-full ${errors.eventLocation ? "input-error" : ""}`} placeholder="Event location" value={eventLocation} onChange={(e) => { setEventLocation(e.target.value); setErrors((prev) => ({ ...prev, eventLocation: "", server: "" })); }} />{errors.eventLocation && <FieldError>{errors.eventLocation}</FieldError>}</div></div>}
+          {type === "resource_share" && <div><input name="resourceUrl" type="url" maxLength={1000} className={`input input-bordered w-full ${errors.resourceUrl ? "input-error" : ""}`} placeholder="https://example.com/resource" value={resourceUrl} onChange={(e) => { setResourceUrl(e.target.value); setErrors((prev) => ({ ...prev, resourceUrl: "", server: "" })); }} />{errors.resourceUrl && <FieldError>{errors.resourceUrl}</FieldError>}</div>}
 
           {/* Post Type Selector */}
           <div>
@@ -145,7 +179,10 @@ const CreatePostModal = ({ onClose }) => {
                   <button
                     key={t.value}
                     type="button"
-                    onClick={() => setType(t.value)}
+                    onClick={() => {
+                      setType(t.value);
+                      setErrors((prev) => ({ ...prev, type: "", form: "", server: "" }));
+                    }}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
                       type === t.value
                         ? `border-primary bg-primary/10 text-primary shadow-sm`
@@ -158,6 +195,7 @@ const CreatePostModal = ({ onClose }) => {
                 );
               })}
             </div>
+            {errors.type && <FieldError>{errors.type}</FieldError>}
           </div>
 
           {/* Tags */}
@@ -169,7 +207,7 @@ const CreatePostModal = ({ onClose }) => {
               value={tags}
               onChange={(e) => {
                 setTags(e.target.value);
-                setErrors((prev) => ({ ...prev, tags: "" }));
+                setErrors((prev) => ({ ...prev, tags: "", server: "" }));
               }}
             />
             {errors.tags && <FieldError>{errors.tags}</FieldError>}
@@ -183,7 +221,7 @@ const CreatePostModal = ({ onClose }) => {
               <input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
                 multiple
                 onChange={handleImagesChange}
               />
@@ -202,7 +240,7 @@ const CreatePostModal = ({ onClose }) => {
               {Array.from(images).map((img, i) => (
                 <div key={i} className="relative aspect-square group">
                   <img
-                    src={URL.createObjectURL(img)}
+                    src={imagePreviews[i]}
                     alt=""
                     className="w-full h-full object-cover rounded-xl ring-1 ring-base-300"
                   />
@@ -248,6 +286,10 @@ const CreatePostModal = ({ onClose }) => {
 
 const FieldError = ({ children }) => (
   <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
+
+const ErrorSummary = ({ message }) => (
+  <div role="alert" className="alert alert-error py-3 text-sm"><span>{message}</span></div>
 );
 
 export default CreatePostModal;

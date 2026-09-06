@@ -122,6 +122,9 @@ const CompleteProfile = () => {
     const nextErrors = {};
     if (targetStep === 0) {
       if (formData.bio.length > 200) nextErrors.bio = "Bio cannot exceed 200 characters.";
+      if (formData.address.length > 300) {
+        nextErrors.address = "Address cannot exceed 300 characters.";
+      }
       if (!formData.dateOfBirth) {
         nextErrors.dateOfBirth = "Date of birth is required to confirm you are 18 or older.";
       } else {
@@ -369,11 +372,15 @@ const CompleteProfile = () => {
         </label>
         <input
           type="text"
-          className="input input-bordered w-full input-sm"
+          className={`input input-bordered w-full input-sm ${errors.address ? "input-error" : ""}`}
           placeholder="Street, Locality"
           value={formData.address}
           onChange={(e) => updateField("address", e.target.value)}
+          maxLength={300}
         />
+        {errors.address && (
+          <p className="mt-1 text-xs text-error">{errors.address}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">

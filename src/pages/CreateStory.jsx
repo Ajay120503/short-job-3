@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, X, Image, Send } from "lucide-react";
 import API from "../utils/axios";
 import toast from "../utils/toast";
+import { getCreationError } from "../utils/creationErrors";
 
 const MAX_STORY_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -14,18 +16,24 @@ const CreateStory = () => {
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
 
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith("image/")) {
-        setErrors((prev) => ({ ...prev, image: "Please upload an image file." }));
+      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+        setErrors((prev) => ({ ...prev, image: "Upload a JPG, PNG, GIF, or WebP image." }));
+        e.target.value = "";
         return;
       }
       if (file.size > MAX_STORY_IMAGE_SIZE) {
         setErrors((prev) => ({ ...prev, image: "Story image must be under 5MB." }));
+        e.target.value = "";
         return;
       }
-      setErrors((prev) => ({ ...prev, image: "", form: "" }));
+      setErrors((prev) => ({ ...prev, image: "", form: "", server: "" }));
       setStoryImage(file);
       setPreview(URL.createObjectURL(file));
     }
@@ -66,7 +74,9 @@ const CreateStory = () => {
       toast.success("Story submitted for review.");
       navigate("/feed");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to post story");
+      const result = getCreationError(err, "The story could not be created.");
+      setErrors((prev) => ({ ...prev, ...result.errors, server: result.message }));
+      toast.error(result.message);
     } finally {
       setStoryUploading(false);
     }
@@ -93,6 +103,7 @@ const CreateStory = () => {
       {/* Story Form Card */}
       <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
+          {errors.server && <ErrorSummary message={errors.server} />}
           {/* Image Upload */}
           <div>
             {preview ? (
@@ -120,7 +131,7 @@ const CreateStory = () => {
                 </span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
                   onChange={handleImageChange}
                   className="hidden"
                 />
@@ -144,7 +155,7 @@ const CreateStory = () => {
               value={storyText}
               onChange={(e) => {
                 setStoryText(e.target.value);
-                setErrors((prev) => ({ ...prev, storyText: "", form: "" }));
+                setErrors((prev) => ({ ...prev, storyText: "", form: "", server: "" }));
               }}
               maxLength={200}
             />
@@ -186,6 +197,10 @@ const CreateStory = () => {
 
 const FieldError = ({ children }) => (
   <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
+
+const ErrorSummary = ({ message }) => (
+  <div role="alert" className="alert alert-error py-3 text-sm"><span>{message}</span></div>
 );
 
 export default CreateStory;

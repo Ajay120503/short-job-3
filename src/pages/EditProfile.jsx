@@ -132,6 +132,9 @@ const EditProfile = () => {
       nextErrors.name = "Full name cannot exceed 100 characters.";
     }
     if (form.bio.length > 200) nextErrors.bio = "Bio cannot exceed 200 characters.";
+    if (form.address.length > 300) {
+      nextErrors.address = "Address cannot exceed 300 characters.";
+    }
     if (form.dateOfBirth) {
       const calculatedAge = calculateAge(form.dateOfBirth);
       if (calculatedAge === "") nextErrors.dateOfBirth = "Choose a valid past date.";
@@ -569,11 +572,15 @@ const EditProfile = () => {
               </label>
               <input
                 name="address"
-                className="input input-bordered w-full input-sm text-sm"
+                className={`input input-bordered w-full input-sm text-sm ${errors.address ? "input-error" : ""}`}
                 value={form.address}
                 onChange={handleChange}
+                maxLength={300}
                 placeholder="Street, Locality"
               />
+              {errors.address && (
+                <p className="mt-1 text-xs text-error">{errors.address}</p>
+              )}
             </div>
             <div className="form-control col-span-2">
               <label className="label py-0 pb-1">

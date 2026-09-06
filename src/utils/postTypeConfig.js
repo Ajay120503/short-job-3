@@ -47,5 +47,20 @@ export const postTypes = [
   { value: "discussion", label: "Discuss", icon: MessagesSquare },
 ];
 
+const institutionBadgeTypes = new Set([
+  "teacher", "professor", "hod", "principal", "lecturer",
+  "school_member", "college_member", "university_member", "coaching_member",
+]);
+
+const isInstitutionMember = (user) =>
+  ["school", "college"].includes(user?.category) ||
+  user?.badges?.some(
+    (badge) => badge?.isActive !== false && institutionBadgeTypes.has(badge?.type),
+  );
+
 export const getAvailablePostTypes = (user) =>
-  user ? postTypes : postTypes.filter((type) => !type.requiresInstitution);
+  postTypes.filter(
+    (type) =>
+      type.value !== "job" &&
+      (!type.requiresInstitution || isInstitutionMember(user)),
+  );
