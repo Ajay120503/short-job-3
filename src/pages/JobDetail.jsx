@@ -160,7 +160,7 @@ const JobDetail = () => {
               <img
                 src={job.image?.url || job.institutionLogo?.url}
                 alt={job.title}
-                className="aspect-[16/7] w-full object-cover"
+                className="aspect-16/7 w-full object-contain"
               />
             </div>
           )}
@@ -224,7 +224,7 @@ const JobDetail = () => {
               <p className="text-xs font-medium">
                 {getJobDateTimeLabel(job) || "Not specified"}
               </p>
-            <p className="text-[10px] text-base-content/40">Job schedule</p>
+              <p className="text-[10px] text-base-content/40">Job schedule</p>
             </div>
             <div className="bg-base-200/50 rounded-xl p-3 text-center">
               <Briefcase className="w-4 h-4 text-primary mx-auto mb-1" />
