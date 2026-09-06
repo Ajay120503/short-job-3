@@ -74,6 +74,9 @@ const Chat = () => {
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [messagePage, setMessagePage] = useState(1);
+  const [hasOlderMessages, setHasOlderMessages] = useState(false);
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState({});
@@ -95,6 +98,7 @@ const Chat = () => {
   const editInputRef = useRef(null);
   const fileInputRef = useRef(null);
   const swipeStartRef = useRef(null);
+  const shouldScrollToBottomRef = useRef(true);
 
   // Fetch conversations
   useEffect(() => {
@@ -139,11 +143,35 @@ const Chat = () => {
       try {
         const { data } = await API.get(
           `/chat/conversations/${activeConversation._id}/messages`,
-          { params: { limit: 200 } },
+          { params: { page: 1, limit: 50 } },
         );
+        shouldScrollToBottomRef.current = true;
         setMessages(data.messages || []);
+        setMessagePage(1);
+        setHasOlderMessages((data.pagination?.page || 1) < (data.pagination?.pages || 1));
       } catch (err) {
+        if (err.response?.status === 404) {
+          const otherParticipant = getOtherParticipantFromConversation(
+            activeConversation,
+            user?._id,
+          );
+          if (otherParticipant?._id) {
+            try {
+              const { data } = await API.post("/chat/conversations", {
+                participantId: otherParticipant._id,
+              });
+              setActiveConversation(data.conversation);
+              setConversations((current) =>
+                dedupeConversations([data.conversation, ...current], user?._id),
+              );
+              return;
+            } catch {
+              // Fall through to the user-facing load error.
+            }
+          }
+        }
         setMessages([]);
+        setHasOlderMessages(false);
         toast.error(err.response?.data?.message || "Unable to load messages");
       }
     };
@@ -277,8 +305,35 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (shouldScrollToBottomRef.current) scrollToBottom();
+    shouldScrollToBottomRef.current = true;
   }, [messages]);
+
+  const loadOlderMessages = async () => {
+    if (!activeConversation || !hasOlderMessages || loadingOlderMessages) return;
+    setLoadingOlderMessages(true);
+    try {
+      const nextPage = messagePage + 1;
+      const { data } = await API.get(
+        `/chat/conversations/${activeConversation._id}/messages`,
+        { params: { page: nextPage, limit: 50 } },
+      );
+      shouldScrollToBottomRef.current = false;
+      setMessages((current) => {
+        const currentIds = new Set(current.map((message) => message._id));
+        return [
+          ...(data.messages || []).filter((message) => !currentIds.has(message._id)),
+          ...current,
+        ];
+      });
+      setMessagePage(nextPage);
+      setHasOlderMessages(nextPage < (data.pagination?.pages || nextPage));
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Unable to load older messages");
+    } finally {
+      setLoadingOlderMessages(false);
+    }
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -647,6 +702,22 @@ const Chat = () => {
 
           {/* Messages */}
           <div className="flex-1 space-y-1 overflow-x-hidden overflow-y-auto bg-base-200/25 px-3 py-5 sm:px-6">
+            {hasOlderMessages && (
+              <div className="flex justify-center pb-3">
+                <button
+                  type="button"
+                  onClick={loadOlderMessages}
+                  disabled={loadingOlderMessages}
+                  className="btn btn-ghost btn-xs rounded-full border border-base-300 bg-base-100 px-3 shadow-sm"
+                >
+                  {loadingOlderMessages ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    "Load older messages"
+                  )}
+                </button>
+              </div>
+            )}
             {messages.length === 0 ? (
               <div className="mx-auto mt-12 max-w-xs text-center">
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
