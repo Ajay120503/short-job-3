@@ -547,7 +547,7 @@ const Chat = () => {
         <button
           type="button"
           onPointerDown={startConversationListResize}
-          className="absolute inset-y-0 -right-1 z-30 hidden w-2 cursor-col-resize touch-none items-center justify-center md:flex"
+          className="z-app-dropdown absolute inset-y-0 -right-1 hidden w-2 cursor-col-resize touch-none items-center justify-center md:flex"
           aria-label="Resize conversation list"
           title="Drag to resize conversation list"
         >
@@ -566,7 +566,7 @@ const Chat = () => {
 
             return (
               <div
-                className={`z-10 flex h-16 shrink-0 items-center justify-between border-b px-3 sm:px-5 ${
+                className={`z-app-sticky flex h-16 shrink-0 items-center justify-between border-b px-3 sm:px-5 ${
                   isSpecialOther
                     ? `${specialStyle.shell} border-base-300/60`
                     : "border-base-300/70 bg-base-100/95 backdrop-blur"
@@ -821,7 +821,7 @@ const Chat = () => {
                             <MoreHorizontal className="w-3 h-3" />
                           </button>
                           {menuOpenId === msg._id && (
-                            <div className="absolute bottom-full right-0 mb-1 bg-base-100 shadow-lg rounded-xl border border-base-300 p-1 z-10 min-w-[120px]">
+                            <div className="z-app-dropdown absolute bottom-full right-0 mb-1 bg-base-100 shadow-lg rounded-xl border border-base-300 p-1 min-w-[120px]">
                               {isMine && msg.type === "text" && (
                                 <button
                                   onClick={() => startEdit(msg)}
@@ -943,7 +943,7 @@ const Chat = () => {
                   <Smile className="h-5 w-5" />
                 </button>
                 {showStickers && (
-                  <div className="absolute bottom-full left-0 z-30 mb-3 grid w-60 grid-cols-4 gap-1 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl">
+                  <div className="z-app-dropdown absolute bottom-full left-0 mb-3 grid w-60 grid-cols-4 gap-1 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl">
                     {STICKERS.map((sticker) => (
                       <button
                         key={sticker}

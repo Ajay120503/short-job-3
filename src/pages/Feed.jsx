@@ -588,7 +588,7 @@ const Feed = () => {
                       </button>
                       <ul
                         tabIndex={0}
-                        className="dropdown-content menu z-20 mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
+                        className="z-app-dropdown dropdown-content menu mt-1 w-44 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
                       >
                         <li>
                           <button onClick={() => handleShare(post._id)}>
@@ -653,7 +653,7 @@ const Feed = () => {
       {/* Comment Modal */}
       {commentPost && (
         <div
-          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/55 backdrop-blur-[2px] md:items-center md:p-5"
+          className="z-app-modal fixed inset-0 flex items-end justify-center bg-black/55 backdrop-blur-[2px] md:items-center md:p-5"
           onClick={() => setCommentPost(null)}
           role="presentation"
         >

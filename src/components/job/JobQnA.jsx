@@ -132,7 +132,7 @@ const JobQnA = ({ jobId, isJobPoster }) => {
                     </button>
                     <ul
                       tabIndex={0}
-                      className="dropdown-content menu z-20 w-36 rounded-box border border-base-300 bg-base-100 p-1 text-xs shadow-xl"
+                      className="z-app-dropdown dropdown-content menu w-36 rounded-box border border-base-300 bg-base-100 p-1 text-xs shadow-xl"
                     >
                       <li>
                         <button

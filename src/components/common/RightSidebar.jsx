@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   UserPlus,
   Briefcase,
@@ -14,6 +15,7 @@ import API from "../../utils/axios";
 import useAuthStore from "../../store/authStore";
 import Brand from "./Brand";
 import UserAvatar from "./UserAvatar";
+import GlobalSearch from "./GlobalSearch";
 import { getUserRoleLabel } from "../../utils/badgeUtils";
 import {
   getUserId,
@@ -35,8 +37,13 @@ const isJobDeadlineActive = (job) => {
 };
 
 const RightSidebar = () => {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
+  const navigate = useNavigate();
   const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const [followLoadingId, setFollowLoadingId] = useState("");
   const [recentJobs, setRecentJobs] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -82,17 +89,71 @@ const RightSidebar = () => {
     fetchRecentJobs();
   }, [following, user?._id]);
 
+  useEffect(() => {
+    const query = userSearch.trim();
+    if (!query) return undefined;
+
+    const timer = window.setTimeout(async () => {
+      setSearchingUsers(true);
+      try {
+        const { data } = await API.get("/users/search", {
+          params: { q: query, limit: 8 },
+        });
+        setSearchResults(sortDiscoverableUsers(
+          (data.users || []).filter((item) => item._id !== user?._id),
+        ));
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchingUsers(false);
+      }
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [userSearch, user?._id]);
+
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setUserSearch(value);
+    if (!value.trim()) {
+      setSearchResults([]);
+      setSearchingUsers(false);
+    }
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const query = userSearch.trim();
+    if (query) navigate(`/explore?q=${encodeURIComponent(query)}`);
+  };
+
+  const handleFollow = async (userId) => {
+    setFollowLoadingId(userId);
+    try {
+      const { data } = await API.post(`/users/${userId}/follow`);
+      const currentFollowing = user?.following || [];
+      setUser({
+        ...user,
+        following: data.isFollowing
+          ? [...currentFollowing.filter((item) => getUserId(item) !== userId), userId]
+          : currentFollowing.filter((item) => getUserId(item) !== userId),
+      });
+      toast.success(data.isFollowing ? "Following" : "Unfollowed");
+    } catch {
+      toast.error("Failed to update follow");
+    } finally {
+      setFollowLoadingId("");
+    }
+  };
+
+  const isSearching = Boolean(userSearch.trim());
+  const displayedUsers = isSearching ? searchResults : suggestedUsers;
+
   return (
-    <aside className="hidden 2xl:flex flex-col w-[340px] bg-base-100 border-l border-base-300/70 sticky top-0 h-screen overflow-hidden">
+    <aside className="z-app-sidebar hidden 2xl:flex flex-col w-[340px] bg-base-100 border-l border-base-300/70 sticky top-0 h-screen overflow-hidden">
       <div className="border-b border-base-200/80 p-4">
-        <div className="grid grid-cols-[1fr_auto] gap-2">
-          <Link
-            to="/explore"
-            className="flex h-10 items-center gap-2 rounded-xl border border-base-300/60 bg-base-200/45 px-3 text-sm text-base-content/45 transition-colors hover:border-primary/25 hover:bg-primary/5 hover:text-primary"
-          >
-            <Search className="h-4 w-4" />
-            Search ShortJob
-          </Link>
+        <div className="flex h-10 items-center justify-end gap-2">
+          <GlobalSearch />
           <Link
             to="/posts/create"
             className="btn btn-primary btn-sm h-10 w-10 rounded-xl p-0"
@@ -113,17 +174,32 @@ const RightSidebar = () => {
                 <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <UserPlus className="w-4 h-4 text-primary" />
                 </div>
-                <span className="truncate">Who to Follow</span>
+                <span className="truncate">{isSearching ? "People found" : "Who to Follow"}</span>
               </h3>
               <Link
-                to="/explore"
+                to={userSearch.trim() ? `/explore?q=${encodeURIComponent(userSearch.trim())}` : "/explore"}
                 className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0"
               >
                 See all <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
 
-            {loadingUsers ? (
+            <form
+              onSubmit={handleSearchSubmit}
+              className="mb-3 flex h-9 items-center gap-2 rounded-xl border border-base-300/60 bg-base-200/45 px-3 transition-colors focus-within:border-primary/45 focus-within:bg-base-100 focus-within:ring-2 focus-within:ring-primary/10"
+            >
+              <Search className="h-3.5 w-3.5 text-base-content/40" />
+              <input
+                type="search"
+                value={userSearch}
+                onChange={handleSearchChange}
+                placeholder="Search people..."
+                aria-label="Search people to follow"
+                className="min-w-0 flex-1 bg-transparent text-xs text-base-content outline-none placeholder:text-base-content/40"
+              />
+            </form>
+
+            {(loadingUsers && !isSearching) || searchingUsers ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -135,37 +211,38 @@ const RightSidebar = () => {
                   </div>
                 ))}
               </div>
-            ) : suggestedUsers.length === 0 ? (
+            ) : displayedUsers.length === 0 ? (
               <div className="text-center py-8">
                 <div className="w-14 h-14 rounded-2xl bg-base-300/50 flex items-center justify-center mx-auto mb-3">
                   <UserPlus className="w-6 h-6 text-base-content/20" />
                 </div>
                 <p className="text-xs text-base-content/40 font-medium">
-                  No suggestions yet
+                  {isSearching ? "No users found" : "No suggestions yet"}
                 </p>
                 <p className="text-[11px] text-base-content/30 mt-0.5">
-                  Explore the community to find people
+                  {isSearching ? "Try another name, role, or institution" : "Explore the community to find people"}
                 </p>
               </div>
             ) : (
               <div className="space-y-1.5">
-                {suggestedUsers.map((u) => {
+                {displayedUsers.map((u) => {
                   const signal = getUserSignal(u);
                   const isSpecialUser = Boolean(signal);
                   const specialStyle = getSpecialUserStyle(u);
 
                   return (
-                    <Link
+                    <div
                       key={u._id}
-                      to={`/profile/${u._id}`}
                       className={`flex items-center gap-3 overflow-hidden rounded-xl border p-2.5 transition-all group ${
                         isSpecialUser
                           ? `${specialStyle.shell} ${specialStyle.shellHover}`
                           : "border-transparent hover:border-base-300/60 hover:bg-base-200/70"
                       }`}
                     >
-                      <UserAvatar user={u} size={42} />
-                      <div className="flex-1 min-w-0">
+                      <Link to={`/profile/${u._id}`} className="shrink-0 rounded-full">
+                        <UserAvatar user={u} size={42} />
+                      </Link>
+                      <Link to={`/profile/${u._id}`} className="min-w-0 flex-1">
                         <p
                           className={`text-sm font-semibold line-clamp-1 transition-colors ${
                             isSpecialUser
@@ -198,15 +275,18 @@ const RightSidebar = () => {
                             </span>
                           )}
                         </div>
-                      </div>
-                      <div
-                        className={`btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
-                          isSpecialUser ? specialStyle.icon : ""
-                        }`}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleFollow(u._id)}
+                        disabled={followLoadingId === u._id}
+                        className={`btn btn-xs min-w-[62px] flex-shrink-0 rounded-full ${following.has(u._id) ? "btn-ghost" : "btn-primary"}`}
                       >
-                        <UserPlus className="w-3.5 h-3.5" />
-                      </div>
-                    </Link>
+                        {followLoadingId === u._id ? (
+                          <span className="loading loading-spinner loading-xs" />
+                        ) : following.has(u._id) ? "Following" : "Follow"}
+                      </button>
+                    </div>
                   );
                 })}
               </div>

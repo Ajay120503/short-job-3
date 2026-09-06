@@ -73,7 +73,7 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center ${isAdminAuthor ? "bg-neutral" : "bg-black"}`}
+      className={`z-app-immersive fixed inset-0 flex items-center justify-center ${isAdminAuthor ? "bg-neutral" : "bg-black"}`}
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
       onTouchEnd={(event) => {
         if (touchStart == null) return;

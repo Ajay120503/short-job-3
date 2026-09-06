@@ -18,6 +18,7 @@ import useAuthStore from "../../store/authStore";
 import { useSocket } from "../../context/SocketContext";
 import UserAvatar from "./UserAvatar";
 import Brand from "./Brand";
+import GlobalSearch from "./GlobalSearch";
 import {
   isAdminUser,
   isSuperAdminUser,
@@ -75,7 +76,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col bg-base-100 border-r border-base-300/80 sticky top-0 h-screen overflow-visible transition-[width,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] z-30 will-change-[width] shadow-[1px_0_0_color-mix(in_srgb,var(--color-base-content)_4%,transparent)] ${
+      className={`z-app-sidebar hidden lg:flex flex-col bg-base-100 border-r border-base-300/80 sticky top-0 h-screen overflow-visible transition-[width,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] shadow-[1px_0_0_color-mix(in_srgb,var(--color-base-content)_4%,transparent)] ${
         collapsed ? "w-[72px]" : "w-64"
       }`}
     >
@@ -94,17 +95,20 @@ const Sidebar = ({ collapsed, onToggle }) => {
         >
           <Brand size="sm" />
         </div>
-        <button
-          onClick={onToggle}
-          className={`btn btn-ghost btn-circle btn-sm hover:bg-base-200 shrink-0 ${smoothTransition}`}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="w-4 h-4" />
-          ) : (
-            <PanelLeftClose className="w-4 h-4" />
-          )}
-        </button>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <GlobalSearch className="2xl:hidden" />
+          <button
+            onClick={onToggle}
+            className={`btn btn-ghost btn-circle btn-sm hover:bg-base-200 shrink-0 ${smoothTransition}`}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="w-4 h-4" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -133,7 +137,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               {item.label}
             </span>
             {collapsed && (
-              <div className="absolute left-full ml-2 px-2 py-1 bg-neutral text-neutral-content rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-lg">
+              <div className="z-app-popover absolute left-full ml-2 px-2 py-1 bg-neutral text-neutral-content rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg">
                 {item.label}
               </div>
             )}
@@ -184,7 +188,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
             <div className="relative">
               <item.icon className="w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-105" />
               {collapsed && item.badge > 0 && (
-                <span className={`count-badge absolute -right-1.5 -top-1.5 ${item.badgeClass}`}>
+                <span
+                  className={`count-badge absolute -right-1.5 -top-1.5 ${item.badgeClass}`}
+                >
                   {item.badge > 9 ? "9+" : item.badge}
                 </span>
               )}
@@ -195,12 +201,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
               {item.label}
             </span>
             {!collapsed && item.badge > 0 && (
-              <span className={`count-badge count-badge-inline ${item.badgeClass} ${smoothTransition}`}>
+              <span
+                className={`count-badge count-badge-inline ${item.badgeClass} ${smoothTransition}`}
+              >
                 {item.badge}
               </span>
             )}
             {collapsed && (
-              <div className="absolute left-full ml-2 px-2 py-1 bg-neutral text-neutral-content rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-lg">
+              <div className="z-app-popover absolute left-full ml-2 px-2 py-1 bg-neutral text-neutral-content rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg">
                 {item.label}
                 {item.badge > 0 ? ` (${item.badge})` : ""}
               </div>
@@ -214,7 +222,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <NavLink
           to={`/profile/${user?._id}`}
           className={`flex items-center rounded-xl hover:bg-base-200 ${smoothTransition} ${
-            collapsed ? "h-12 w-12 mx-auto justify-center gap-0 p-0" : "gap-3 p-2"
+            collapsed
+              ? "h-12 w-12 mx-auto justify-center gap-0 p-0"
+              : "gap-3 p-2"
           }`}
         >
           <UserAvatar user={user} size={36} ringClass="ring-2 ring-base-200" />
@@ -225,10 +235,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 : "max-w-44 translate-x-0 opacity-100 delay-100"
             }`}
           >
-              <p className="text-sm font-semibold truncate">{user?.name}</p>
-              <p className="text-xs text-base-content/50 truncate capitalize">
-                {getUserRoleLabel(user)}
-              </p>
+            <p className="text-sm font-semibold truncate">{user?.name}</p>
+            <p className="text-xs text-base-content/50 truncate capitalize">
+              {getUserRoleLabel(user)}
+            </p>
           </div>
         </NavLink>
       </div>

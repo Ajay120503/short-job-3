@@ -880,7 +880,7 @@ const JobApplicants = () => {
               </button>
               <ul
                 tabIndex={0}
-                className="dropdown-content menu bg-base-100 rounded-box z-10 w-56 p-2 shadow-xl border border-base-300"
+                className="z-app-dropdown dropdown-content menu bg-base-100 rounded-box w-56 p-2 shadow-xl border border-base-300"
               >
                 <li>
                   <button onClick={() => handleExportExcel("filtered")}>

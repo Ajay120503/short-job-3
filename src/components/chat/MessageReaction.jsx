@@ -70,7 +70,7 @@ const MessageReaction = ({ messageId, reactions, isOwnMessage = false }) => {
       {/* Reaction picker */}
       {showPicker && (
         <div
-          className={`absolute z-50 flex w-max max-w-[calc(100vw-1rem)] flex-nowrap items-center gap-0.5 overflow-x-auto rounded-full border border-base-300 bg-base-100 px-1.5 py-1 shadow-xl scrollbar-hide sm:max-w-[calc(100vw-2rem)] sm:px-2 ${
+          className={`z-app-popover absolute flex w-max max-w-[calc(100vw-1rem)] flex-nowrap items-center gap-0.5 overflow-x-auto rounded-full border border-base-300 bg-base-100 px-1.5 py-1 shadow-xl scrollbar-hide sm:max-w-[calc(100vw-2rem)] sm:px-2 ${
             isOwnMessage ? "right-0" : "left-0"
           } ${openBelow ? "top-full mt-1" : "bottom-full mb-1"}`}
         >

@@ -228,7 +228,7 @@ const PostDetail = () => {
             </button>
             <ul
               tabIndex={0}
-              className={`dropdown-content menu z-20 mt-1 w-44 rounded-box border p-1.5 text-xs shadow-xl ${
+              className={`z-app-dropdown dropdown-content menu mt-1 w-44 rounded-box border p-1.5 text-xs shadow-xl ${
                 isSpecialPost
                   ? specialStyle.shell
                   : "border-base-300 bg-base-100"

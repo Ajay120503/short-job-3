@@ -92,7 +92,7 @@ const trustItems = [
 const Landing = () => {
   return (
     <div className="min-h-screen bg-base-100 text-base-content overflow-x-hidden">
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
+      <nav className="z-app-navigation fixed top-0 left-0 right-0 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
             <Brand size="md" />

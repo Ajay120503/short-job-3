@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Archive, Briefcase, MapPin, Clock, Plus, Search, SlidersHorizontal, Users } from "lucide-react";
 import API from "../utils/axios";
@@ -43,12 +43,15 @@ const hasAppliedToJob = (job, userId) =>
 
 const getUserId = (value) => (typeof value === "string" ? value : value?._id);
 const isOwnJob = (job, userId) => Boolean(userId && getUserId(job?.postedBy) === userId);
-const getNearbyCityOptions = (jobs, savedCity) => {
-  const names = jobs
-    .map((job) => job.workplaceCity?.trim())
-    .filter(Boolean);
-  if (savedCity) names.unshift(savedCity.trim());
-  return [...new Map(names.map((name) => [name.toLowerCase(), name])).values()];
+const getDistanceKm = (from, to) => {
+  if (!from || !to) return Infinity;
+  const radians = (value) => value * Math.PI / 180;
+  const latitudeDelta = radians(to.lat - from.lat);
+  const longitudeDelta = radians(to.lng - from.lng);
+  const value = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos(radians(from.lat)) * Math.cos(radians(to.lat))
+    * Math.sin(longitudeDelta / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
 };
 
 const Jobs = () => {
@@ -58,70 +61,126 @@ const Jobs = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [city, setCity] = useState("");
-  const [nearbyCities, setNearbyCities] = useState([]);
-  const [radiusKm, setRadiusKm] = useState("25");
-  const [customRadiusKm, setCustomRadiusKm] = useState("100");
+  const [area, setArea] = useState("");
+  const [nearbyAreas, setNearbyAreas] = useState([]);
+  const [radiusKm, setRadiusKm] = useState("5");
+  const [customRadiusKm, setCustomRadiusKm] = useState("5");
   const [useLocation, setUseLocation] = useState(Boolean(
     user?.locationAccessEnabled && user?.currentLocation?.lat,
   ));
+  const [liveLocation, setLiveLocation] = useState(() => (
+    user?.currentLocation?.lat != null && user?.currentLocation?.lng != null
+      ? { lat: user.currentLocation.lat, lng: user.currentLocation.lng }
+      : null
+  ));
+  const [isTrackingLocation, setIsTrackingLocation] = useState(false);
+  const [locationTrackingError, setLocationTrackingError] = useState("");
+  const lastTrackedLocationRef = useRef(liveLocation);
+  const lastSavedLocationRef = useRef({ location: liveLocation, savedAt: 0 });
   const [shortTypes, setShortTypes] = useState([]);
 
   const canPost = canCreateJobs(user);
   const selectedRadiusKm = radiusKm === "custom" ? customRadiusKm : radiusKm;
+  const areaFilterEnabled = useLocation
+    && selectedRadiusKm !== "any"
+    && Number(selectedRadiusKm) > 0;
 
   useEffect(() => {
-    const lat = user?.currentLocation?.lat;
-    const lng = user?.currentLocation?.lng;
+    if (!useLocation || !user?.locationAccessEnabled || !navigator.geolocation) {
+      return undefined;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      ({ coords }) => {
+        const nextLocation = { lat: coords.latitude, lng: coords.longitude };
+        setIsTrackingLocation(true);
+        setLocationTrackingError("");
+        const movedKm = getDistanceKm(lastTrackedLocationRef.current, nextLocation);
+        if (movedKm < 0.05) return;
+
+        lastTrackedLocationRef.current = nextLocation;
+        setLiveLocation(nextLocation);
+
+        const saved = lastSavedLocationRef.current;
+        const movedSinceSaveKm = getDistanceKm(saved.location, nextLocation);
+        if (movedSinceSaveKm >= 0.25 || Date.now() - saved.savedAt >= 60000) {
+          lastSavedLocationRef.current = { location: nextLocation, savedAt: Date.now() };
+          API.patch("/users/me/location", nextLocation)
+            .then(({ data }) => {
+              if (data.currentLocation) {
+                useAuthStore.setState((state) => ({
+                  user: { ...state.user, currentLocation: data.currentLocation },
+                }));
+              }
+            })
+            .catch((error) => console.error("Failed to save live location:", error));
+        }
+      },
+      (error) => {
+        setIsTrackingLocation(false);
+        setLocationTrackingError(
+          error.code === error.PERMISSION_DENIED
+            ? "Live location permission is blocked"
+            : "Waiting for an accurate live location",
+        );
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [useLocation, user?.locationAccessEnabled]);
+
+  useEffect(() => {
+    const lat = liveLocation?.lat;
+    const lng = liveLocation?.lng;
     if (!user?.locationAccessEnabled || lat == null || lng == null) return;
 
-    const fetchNearbyCities = async () => {
+    if (!useLocation || selectedRadiusKm === "any" || Number(selectedRadiusKm) <= 0) {
+      return;
+    }
+
+    const fetchNearbyAreas = async () => {
       try {
-        const { data } = await API.get('/jobs/nearby-cities', {
-          params: { lat, lng },
+        const { data } = await API.get('/jobs/nearby-areas', {
+          params: { lat, lng, radiusKm: selectedRadiusKm },
         });
-        const cityNames = (data.cities || []).map((item) => item.name);
-        const savedCity = user?.currentLocation?.city || user?.city;
-        setNearbyCities(getNearbyCityOptions(
-          cityNames.map((name) => ({ workplaceCity: name })),
-          savedCity,
-        ));
+        const areas = data.areas || [];
+        setNearbyAreas(areas);
+        setArea((current) => areas.some((item) => item.name === current) ? current : "");
       } catch (err) {
-        console.error('Failed to fetch nearby cities:', err);
+        console.error('Failed to fetch nearby areas:', err);
+        setNearbyAreas([]);
+        setArea("");
       }
     };
 
-    fetchNearbyCities();
-  }, [user?.city, user?.locationAccessEnabled, user?.currentLocation?.city, user?.currentLocation?.lat, user?.currentLocation?.lng]);
+    fetchNearbyAreas();
+  }, [selectedRadiusKm, useLocation, user?.locationAccessEnabled, liveLocation?.lat, liveLocation?.lng]);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         const params = {};
         if (filter !== "all") params.isPaid = filter === "paid";
-        if (city) params.city = city;
+        if (area) params.area = area;
         if (shortTypes.length) params.shortJobType = shortTypes.join(",");
         if (
           useLocation
           && selectedRadiusKm !== "any"
           && Number(selectedRadiusKm) > 0
-          && user?.currentLocation?.lat != null
+          && liveLocation?.lat != null
         ) {
           Object.assign(params, {
-            lat: user.currentLocation.lat,
-            lng: user.currentLocation.lng,
+            lat: liveLocation.lat,
+            lng: liveLocation.lng,
             radiusKm: Math.min(Number(selectedRadiusKm), 1000),
           });
         }
         const { data } = await API.get("/jobs", { params });
         const fetchedJobs = data.jobs || [];
         setJobs(fetchedJobs);
-        if (!city) {
-          setNearbyCities(getNearbyCityOptions(
-            fetchedJobs,
-            user?.currentLocation?.city || user?.city,
-          ));
-        }
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
       } finally {
@@ -140,7 +199,7 @@ const Jobs = () => {
       }
     };
     fetchJobs();
-  }, [canPost, city, selectedRadiusKm, useLocation, shortTypes, filter, user?.city, user?.currentLocation?.city, user?.currentLocation?.lat, user?.currentLocation?.lng]);
+  }, [canPost, area, selectedRadiusKm, useLocation, shortTypes, filter, liveLocation?.lat, liveLocation?.lng]);
 
   if (loading) {
     return (
@@ -245,11 +304,11 @@ const Jobs = () => {
           </div>
         </div>
         <div className={`mt-3 grid gap-2 ${radiusKm === "custom" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-          <select className="select select-bordered select-sm" value={city} disabled={nearbyCities.length === 0} onChange={(e) => setCity(e.target.value)}>
-            <option value="">{nearbyCities.length ? "Cities within 100 km" : "No cities within 100 km"}</option>
-            {nearbyCities.map((item) => <option key={item}>{item}</option>)}
+          <select className="select select-bordered select-sm" value={area} disabled={!areaFilterEnabled || nearbyAreas.length === 0} onChange={(e) => setArea(e.target.value)}>
+            <option value="">{nearbyAreas.length ? `All areas within ${selectedRadiusKm} km` : `No areas within ${selectedRadiusKm} km`}</option>
+            {nearbyAreas.map((item) => <option key={item.name} value={item.name}>{item.name} ({item.distanceKm} km)</option>)}
           </select>
-          <select className="select select-bordered select-sm" value={radiusKm} disabled={!useLocation} onChange={(e) => setRadiusKm(e.target.value)}><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="100">100 km</option><option value="custom">Custom distance…</option><option value="any">Any distance</option></select>
+          <select className="select select-bordered select-sm" value={radiusKm} disabled={!useLocation} onChange={(e) => { setRadiusKm(e.target.value); if (e.target.value === "any") setArea(""); }}><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="100">100 km</option><option value="custom">Custom distance…</option><option value="any">Any distance</option></select>
           {radiusKm === "custom" && (
             <label className="input input-bordered input-sm flex items-center gap-2">
               <input
@@ -268,10 +327,16 @@ const Jobs = () => {
           )}
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <label className="label cursor-pointer gap-2 p-0 text-xs"><input type="checkbox" className="toggle toggle-primary toggle-sm" checked={useLocation} disabled={!user?.locationAccessEnabled || !user?.currentLocation?.lat} onChange={(e) => setUseLocation(e.target.checked)} />Use my current location</label>
+          <label className="label cursor-pointer gap-2 p-0 text-xs"><input type="checkbox" className="toggle toggle-primary toggle-sm" checked={useLocation} disabled={!user?.locationAccessEnabled || !user?.currentLocation?.lat} onChange={(e) => { setUseLocation(e.target.checked); if (!e.target.checked) setArea(""); }} />Use my current location</label>
+          {useLocation && (
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium ${locationTrackingError ? "bg-warning/10 text-warning" : "bg-success/10 text-success"}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${isTrackingLocation ? "animate-pulse bg-success" : "bg-warning"}`} />
+              {locationTrackingError || (isTrackingLocation ? "Live location updating" : "Starting live location…")}
+            </span>
+          )}
           <select className="select select-bordered select-sm" value="" onChange={(e) => { if (e.target.value && !shortTypes.includes(e.target.value)) setShortTypes((items) => [...items, e.target.value]); }}><option value="">Add job type…</option>{Object.entries(SHORT_JOB_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
           {shortTypes.map((item) => <button key={item} className="badge badge-primary badge-outline" onClick={() => setShortTypes((items) => items.filter((value) => value !== item))}>{SHORT_JOB_LABELS[item]} ×</button>)}
-          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setCity(""); setRadiusKm("25"); setCustomRadiusKm("100"); setUseLocation(false); setShortTypes([]); setSearchTerm(""); }}>Clear all filters</button>
+          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setArea(""); setRadiusKm("5"); setCustomRadiusKm("5"); setUseLocation(Boolean(user?.locationAccessEnabled && user?.currentLocation?.lat)); setShortTypes([]); setSearchTerm(""); }}>Reset filters</button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-base-content/45">
           <SlidersHorizontal className="h-3.5 w-3.5" />

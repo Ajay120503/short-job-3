@@ -151,6 +151,17 @@ select,
 }
 
 /* Shared component polish */
+.z-app-sticky { z-index: 10; }
+.z-app-dropdown { z-index: 30; }
+.z-app-sidebar { z-index: 40; }
+.z-app-menu-backdrop { z-index: 45; }
+.z-app-navigation { z-index: 50; }
+.z-app-popover { z-index: 60; }
+.z-app-overlay { z-index: 80; }
+.z-app-modal { z-index: 90; }
+.z-app-immersive { z-index: 100; }
+.z-app-global-search { z-index: 110; }
+
 .app-main {
   background-color: color-mix(in srgb, var(--color-base-200) 82%, var(--color-base-100));
   scrollbar-gutter: stable;

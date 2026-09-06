@@ -485,7 +485,7 @@ const Profile = () => {
       />
 
       {/* ============ TAB BAR ============ */}
-      <div className="sticky top-[57px] z-10 flex rounded-xl border border-base-300/70 bg-base-100/95 backdrop-blur-md shadow-sm mb-3 overflow-hidden md:static">
+      <div className="z-app-sticky sticky top-[57px] flex rounded-xl border border-base-300/70 bg-base-100/95 backdrop-blur-md shadow-sm mb-3 overflow-hidden md:static">
         <button
           onClick={() => setActiveTab("posts")}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
@@ -669,7 +669,7 @@ const Profile = () => {
                           </button>
                           <ul
                             tabIndex={0}
-                            className="dropdown-content menu z-20 w-36 rounded-box border border-base-300 bg-base-100 p-1 text-xs shadow-xl"
+                            className="z-app-dropdown dropdown-content menu w-36 rounded-box border border-base-300 bg-base-100 p-1 text-xs shadow-xl"
                           >
                             <li>
                               <button
@@ -700,7 +700,7 @@ const Profile = () => {
                           </button>
                           <ul
                             tabIndex={0}
-                            className="dropdown-content menu p-1 shadow bg-base-100 rounded-box w-36 z-10 text-xs"
+                            className="z-app-dropdown dropdown-content menu p-1 shadow bg-base-100 rounded-box w-36 text-xs"
                           >
                             <li>
                               <button
@@ -847,7 +847,7 @@ const Profile = () => {
                           </button>
                           <ul
                             tabIndex={0}
-                            className="dropdown-content menu p-1 shadow bg-base-100 rounded-box w-36 z-10 text-xs"
+                            className="z-app-dropdown dropdown-content menu p-1 shadow bg-base-100 rounded-box w-36 text-xs"
                           >
                             <li>
                               <button
@@ -904,7 +904,7 @@ const Profile = () => {
       {/* ============ FOLLOWERS MODAL ============ */}
       {showFollowersModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="z-app-modal fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={() => setShowFollowersModal(false)}
         >
           <div
@@ -1003,7 +1003,7 @@ const Profile = () => {
       {/* ============ FOLLOWING MODAL ============ */}
       {showFollowingModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="z-app-modal fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={() => setShowFollowingModal(false)}
         >
           <div

@@ -42,7 +42,7 @@ const ThemeToggle = ({ compact = false, className = "" }) => {
         </button>
         <div
           tabIndex={0}
-          className="dropdown-content z-[60] mt-2 w-40 rounded-xl border border-base-300 bg-base-100 p-1.5 shadow-xl"
+          className="z-app-dropdown dropdown-content mt-2 w-40 rounded-xl border border-base-300 bg-base-100 p-1.5 shadow-xl"
         >
           {options.map((option) => {
             const Icon = option.icon;

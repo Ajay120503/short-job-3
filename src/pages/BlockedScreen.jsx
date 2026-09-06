@@ -80,7 +80,7 @@ const BlockedScreen = () => {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <header className="md:hidden sticky top-0 z-40 bg-base-100/95 backdrop-blur-md border-b border-base-300/80 shadow-sm safe-area-top">
+      <header className="z-app-navigation sticky top-0 bg-base-100/95 backdrop-blur-md border-b border-base-300/80 shadow-sm md:hidden safe-area-top">
         <div className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2 shrink-0">
             <BrandMark size="sm" />
@@ -110,7 +110,7 @@ const BlockedScreen = () => {
       </header>
 
       <div className="flex h-screen overflow-hidden">
-        <aside className="hidden md:flex flex-col bg-base-100 border-r border-base-300 sticky top-0 h-screen w-64 z-30">
+        <aside className="z-app-sidebar hidden md:flex flex-col bg-base-100 border-r border-base-300 sticky top-0 h-screen w-64">
           <div className="flex items-center h-16 px-4 border-b border-base-300">
             <div className="flex items-center gap-2">
               <BrandMark size="sm" />
@@ -278,7 +278,7 @@ const BlockedScreen = () => {
         </aside>
       </div>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-md border-t border-base-300/80 z-40 safe-area-bottom shadow-lg">
+      <nav className="z-app-navigation fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-md border-t border-base-300/80 md:hidden safe-area-bottom shadow-lg">
         <div className="flex items-center justify-around py-1.5">
           {[
             { icon: Home, label: "Home" },
