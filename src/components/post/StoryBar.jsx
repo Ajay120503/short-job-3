@@ -5,7 +5,6 @@ import useAuthStore from "../../store/authStore";
 import StoryViewer from "./StoryViewer";
 import UserAvatar from "../common/UserAvatar";
 import { canCreateStories } from "../../utils/badgeUtils";
-import UserSignalBadge from "../common/UserSignalBadge";
 import { getUserSignal } from "../../utils/userSignals";
 
 const StoryBar = ({ onAddStory }) => {
@@ -120,22 +119,10 @@ const StoryBar = ({ onAddStory }) => {
                       user={group.author}
                       size={60}
                       showPresence={false}
+                      showAdminBadge={false}
                     />
                   )}
                 </div>
-                {(hasPending || hasRejected) && (
-                  <span
-                    className={`absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center rounded-full shadow-sm ring-2 ring-base-100 ${
-                      hasPending
-                        ? "bg-warning text-warning-content"
-                        : "bg-error text-error-content"
-                    }`}
-                    style={{ width: 18, height: 18 }}
-                    title={hasPending ? "Under review" : "Not approved"}
-                  >
-                    <Clock3 className="w-3 h-3" />
-                  </span>
-                )}
               </div>
               <span
                 className={`text-[10px] line-clamp-1 max-w-[64px] ${
@@ -146,10 +133,16 @@ const StoryBar = ({ onAddStory }) => {
               >
                 {group.author?.institutionName || group.author?.name}
               </span>
-              <UserSignalBadge
-                user={group.author}
-                className="max-w-[64px] line-clamp-1"
-              />
+              {(hasPending || hasRejected) && (
+                <span
+                  className={`flex max-w-[72px] items-center gap-0.5 truncate text-[9px] font-medium ${
+                    hasPending ? "text-warning" : "text-error"
+                  }`}
+                >
+                  <Clock3 className="h-2.5 w-2.5 shrink-0" />
+                  {hasPending ? "Under review" : "Not approved"}
+                </span>
+              )}
             </button>
           );
         })}

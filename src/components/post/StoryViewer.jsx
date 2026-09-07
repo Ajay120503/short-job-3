@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { X, Eye } from "lucide-react";
 import API from "../../utils/axios";
 import UserAvatar from "../common/UserAvatar";
-import UserSignalBadge from "../common/UserSignalBadge";
 import { getUserSignal } from "../../utils/userSignals";
 
 const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
@@ -116,13 +115,17 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
 
       {/* Author info */}
       <div className="absolute top-8 left-4 flex items-center gap-2 z-10">
-        <UserAvatar user={group.author} size={32} showPresence={false} />
+        <UserAvatar
+          user={group.author}
+          size={32}
+          showPresence={false}
+          showAdminBadge={false}
+        />
         <div>
           <div className="flex items-center gap-2">
             <p className="text-white text-sm font-medium">
               {group.author?.name}
             </p>
-            <UserSignalBadge user={group.author} />
             {currentStory.status && currentStory.status !== "approved" && (
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
