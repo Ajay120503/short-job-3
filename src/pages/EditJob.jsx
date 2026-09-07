@@ -106,16 +106,20 @@ const EditJob = () => {
       try {
         const { data } = await API.get(`/jobs/${id}`);
         const job = data.job;
+        const normalizedType = SHORT_JOB_TYPE_OPTIONS.some(([value]) => value === job.shortJobType)
+          ? job.shortJobType
+          : "short_term";
+        const scheduleHours = calculateDurationHours(job.startTime, job.endTime);
         setForm({
           title: job.title || "",
           description: job.description || "",
           institutionName: job.institutionName || "",
           roleType: job.roleType || "other",
-          shortJobType: SHORT_JOB_TYPE_OPTIONS.some(([value]) => value === job.shortJobType) ? job.shortJobType : "short_term",
-          durationValue: job.duration?.value || 1,
-          durationUnit: getDurationUnitForJobType(
-            SHORT_JOB_TYPE_OPTIONS.some(([value]) => value === job.shortJobType) ? job.shortJobType : "short_term",
-          ),
+          shortJobType: normalizedType,
+          durationValue: usesDailyWorkingHours(normalizedType)
+            ? (job.duration?.value || 1)
+            : (scheduleHours || job.duration?.value || 1),
+          durationUnit: getDurationUnitForJobType(normalizedType),
           jobDate: job.jobDate ? new Date(job.jobDate).toISOString().split("T")[0] : "",
           startTime: job.startTime || "",
           endTime: job.endTime || "",
@@ -138,7 +142,9 @@ const EditJob = () => {
           contactEmail: job.contactEmail || "",
           maxApplicants: job.maxApplicants || "",
           isActive: job.isActive !== false,
-          workingHoursPerDay: job.workingHoursPerDay || "",
+          workingHoursPerDay: usesDailyWorkingHours(normalizedType)
+            ? (scheduleHours || job.workingHoursPerDay || "")
+            : "",
         });
         if (job.image?.url) {
           setImagePreview(job.image.url);
@@ -174,12 +180,18 @@ const EditJob = () => {
       } else if (name === "startTime") {
         const hours = usesDailyWorkingHours(next.shortJobType) ? next.workingHoursPerDay : next.durationValue;
         if (hours) next.endTime = calculateEndTime(next.startTime, hours);
-      } else if ((name === "durationValue" && !usesDailyWorkingHours(next.shortJobType)) || name === "workingHoursPerDay") {
+      } else if (name === "durationValue" && !usesDailyWorkingHours(next.shortJobType)) {
         if (next.startTime) next.endTime = calculateEndTime(next.startTime, value);
       }
       return next;
     });
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+      ...(name === "shortJobType" || name === "startTime" || name === "endTime" || name === "durationValue"
+        ? { durationValue: "", durationUnit: "", workingHoursPerDay: "", startTime: "", endTime: "" }
+        : {}),
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -231,9 +243,10 @@ const EditJob = () => {
     const skills = [...new Set(form.skillsRequired.split(",").map((item) => item.trim()).filter(Boolean))];
     if (skills.length > 5 || skills.some((item) => item.length < 3 || item.length > 50)) nextErrors.skillsRequired = "Use up to 5 skills of 3 to 50 characters each.";
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
-    const duration = Number(form.durationValue);
-    const dailyHours = Number(form.workingHoursPerDay);
+    const scheduleHours = calculateDurationHours(form.startTime, form.endTime);
     const dailySchedule = usesDailyWorkingHours(form.shortJobType);
+    const duration = dailySchedule ? Number(form.durationValue) : Number(scheduleHours || form.durationValue);
+    const dailyHours = Number(scheduleHours || form.workingHoursPerDay);
     if (!Number.isFinite(duration) || duration <= 0) nextErrors.durationValue = "Enter a positive duration.";
     else if (!dailySchedule && duration > 24) nextErrors.durationValue = "Duration cannot exceed 24 hours.";
     else if (form.shortJobType === "weekend_only" && duration !== 2) nextErrors.durationValue = "Weekend jobs run for 2 days.";
@@ -317,13 +330,15 @@ const EditJob = () => {
     }
 
     const formData = new FormData();
+    const scheduleHours = calculateDurationHours(form.startTime, form.endTime);
+    const dailySchedule = usesDailyWorkingHours(form.shortJobType);
     formData.append("title", form.title);
     formData.append("description", form.description);
     formData.append("roleType", form.roleType);
     formData.append("shortJobType", form.shortJobType);
-    formData.append("durationValue", form.durationValue);
-    formData.append("durationUnit", form.durationUnit);
-    if (usesDailyWorkingHours(form.shortJobType)) formData.append("workingHoursPerDay", form.workingHoursPerDay);
+    formData.append("durationValue", dailySchedule ? form.durationValue : scheduleHours);
+    formData.append("durationUnit", getDurationUnitForJobType(form.shortJobType));
+    if (dailySchedule) formData.append("workingHoursPerDay", scheduleHours);
     formData.append("jobDate", form.jobDate);
     formData.append("startTime", form.startTime);
     formData.append("endTime", form.endTime);
@@ -579,12 +594,13 @@ const EditJob = () => {
                   min="0.25"
                   max="24"
                   step="0.25"
-                  value={form.workingHoursPerDay}
-                  onChange={handleChange}
-                  className={`input input-bordered ${errors.workingHoursPerDay ? "input-error" : ""}`}
-                  placeholder="6"
+                  value={calculateDurationHours(form.startTime, form.endTime)}
+                  className={`input input-bordered bg-base-200/70 ${errors.workingHoursPerDay ? "input-error" : ""}`}
+                  placeholder="Set start and end time"
                   required
+                  readOnly
                 />
+                <p className="mt-1 text-[11px] text-base-content/45">Calculated automatically from the daily start and end time.</p>
                 {errors.workingHoursPerDay && <FieldError>{errors.workingHoursPerDay}</FieldError>}
               </div>
             )}
@@ -617,7 +633,7 @@ const EditJob = () => {
                 />
               </div>
               <p className="mt-2 text-[11px] text-base-content/45">
-                Applicants see these times in 12-hour AM/PM format.
+                Applicants see these times in 12-hour AM/PM format. Duration and working hours stay synchronized automatically.
               </p>
             </div>
           </div>
