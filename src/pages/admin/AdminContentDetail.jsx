@@ -8,6 +8,8 @@ import {
   User,
   AlertTriangle,
   FileText,
+  ScanText,
+  Clock3,
 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import { isAdminUser } from "../../utils/badgeUtils";
@@ -15,6 +17,11 @@ import BadgeChip from "../../components/common/BadgeChip";
 import API from "../../utils/axios";
 import { getJobMapLink, getJobWorkModeLabel, getJobWorkplaceLabel } from "../../utils/jobLocation";
 import toast from "../../utils/toast";
+import {
+  getJobDateTimeLabel,
+  getJobDurationLabel,
+  getShortJobTypeLabel,
+} from "../../utils/jobSchedule";
 
 const splitQualifications = (value = "") =>
   value
@@ -91,8 +98,8 @@ const AdminContentDetail = () => {
       setContent(data.content || content);
       toast.success(
         data.moderationResult?.approved
-          ? "Rule check approved this content"
-          : "Rule check rejected this content",
+          ? "OCR and safety check completed"
+          : "OCR and safety check found high-risk content",
         { dedupeKey: `rule-check:${type}:${id}:${data.moderationResult?.approved}` },
       );
     } catch (err) {
@@ -104,7 +111,9 @@ const AdminContentDetail = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString("en-US", {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return "N/A";
+    return date.toLocaleString("en-IN", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -141,7 +150,8 @@ const AdminContentDetail = () => {
   }
 
   const author = content.author || content.postedBy;
-  const authorBadge = author?.badges?.[0]?.type || "student";
+  const authorBadge = author?.badges?.[0]?.type;
+  const creatorName = author?.name || content.creatorDisplayName || "Account unavailable";
   const autoScore = content.moderationMeta?.autoScore;
   const autoFlags = content.moderationMeta?.autoFlags || [];
   const autoDecision = content.moderationMeta?.autoDecision;
@@ -195,10 +205,14 @@ const AdminContentDetail = () => {
               )}
             </div>
             <div className="min-w-0">
-              <div className="font-semibold truncate">{author?.name || "Unknown"}</div>
-              <div className="flex items-center gap-2 text-xs text-base-content/50">
-                <BadgeChip badgeType={authorBadge} size="sm" />
-                <span>{formatDate(content.createdAt)}</span>
+              <div className="font-semibold truncate">{creatorName}</div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-base-content/50">
+                {authorBadge && <BadgeChip badgeType={authorBadge} size="sm" />}
+                {content.creatorUnavailable && <span className="badge badge-ghost badge-sm">Creator account unavailable</span>}
+                <span className="inline-flex items-center gap-1">
+                  <Clock3 className="h-3 w-3" />
+                  Submitted {formatDate(content.createdAt)}
+                </span>
               </div>
             </div>
           </div>
@@ -207,6 +221,58 @@ const AdminContentDetail = () => {
           {content.title && (
             <h2 className="text-xl font-bold mb-3">{content.title}</h2>
           )}
+
+          {/* OCR evidence */}
+          <div className="mb-4 rounded-xl border border-base-300 bg-base-200/35 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="flex items-center gap-2 text-sm font-semibold">
+                  <ScanText className="h-4 w-4 text-primary" />
+                  Image text (OCR)
+                </h3>
+                <p className="mt-1 text-xs text-base-content/50">
+                  Text found inside uploaded images is included in the safety score.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className={`badge badge-sm capitalize ${
+                  content.moderationMeta?.ocrStatus === "failed"
+                    ? "badge-error badge-soft"
+                    : content.moderationMeta?.ocrStatus === "partial"
+                      ? "badge-warning badge-soft"
+                      : "badge-primary badge-soft"
+                }`}>
+                  {(content.moderationMeta?.ocrStatus || "not scanned").replace(/_/g, " ")}
+                </span>
+                {Number.isFinite(content.moderationMeta?.ocrConfidence) && (
+                  <span className="badge badge-sm badge-ghost">
+                    {content.moderationMeta.ocrConfidence}% confidence
+                  </span>
+                )}
+              </div>
+            </div>
+            {content.moderationMeta?.ocrText ? (
+              <pre className="mt-3 max-h-48 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-base-300 bg-base-100 p-3 font-sans text-sm leading-relaxed text-base-content/75">
+                {content.moderationMeta.ocrText}
+              </pre>
+            ) : (
+              <p className="mt-3 text-sm text-base-content/50">
+                {content.moderationMeta?.ocrStatus === "failed"
+                  ? "The image could not be scanned. Run the check again to retry."
+                  : content.moderationMeta?.ocrStatus === "completed"
+                    ? "No readable text was found in the image."
+                    : "Run OCR & Safety Check to scan this content."}
+              </p>
+            )}
+            {content.moderationMeta?.ocrProcessedAt && (
+              <p className="mt-2 text-xs text-base-content/45">
+                Scanned {content.moderationMeta.ocrImageCount || 0} image(s) on {formatDate(content.moderationMeta.ocrProcessedAt)}
+                {content.moderationMeta.ocrProcessingMs
+                  ? ` in ${(content.moderationMeta.ocrProcessingMs / 1000).toFixed(1)}s`
+                  : ""}
+              </p>
+            )}
+          </div>
 
           {/* Detection rules */}
           {autoScore !== undefined && (
@@ -221,6 +287,11 @@ const AdminContentDetail = () => {
                     {content.moderationMeta?.reviewNotes ||
                       "Automatic safety checks were applied to this content."}
                   </p>
+                  {content.moderationMeta?.autoReviewedAt && (
+                    <p className="mt-1 text-xs text-base-content/40">
+                      Safety check completed {formatDate(content.moderationMeta.autoReviewedAt)}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-wrap justify-end gap-2">
                   <span className={`badge badge-lg ${scoreTone}`}>
@@ -355,6 +426,24 @@ const AdminContentDetail = () => {
                 <p className="font-medium capitalize">{content.roleType}</p>
               </div>
             )}
+            {content.shortJobType && (
+              <div>
+                <span className="text-xs text-base-content/50">Short Job Type</span>
+                <p className="font-medium">{getShortJobTypeLabel(content)}</p>
+              </div>
+            )}
+            {content.duration?.value && (
+              <div>
+                <span className="text-xs text-base-content/50">Duration</span>
+                <p className="font-medium">{getJobDurationLabel(content)}</p>
+              </div>
+            )}
+            {content.jobDate && (
+              <div>
+                <span className="text-xs text-base-content/50">Daily working time</span>
+                <p className="font-medium">{getJobDateTimeLabel(content)}</p>
+              </div>
+            )}
             {content.location && (
               <div>
                 <span className="text-xs text-base-content/50">Work Mode</span>
@@ -390,10 +479,7 @@ const AdminContentDetail = () => {
                   Compensation
                 </span>
                 <p className="font-medium">
-                  Paid
-                  {content.stipend
-                    ? ` (${content.stipend})`
-                    : ""}
+                  {content.currency || "INR"} {Number(content.stipend || 0).toLocaleString("en-IN")}
                 </p>
               </div>
             )}
@@ -410,9 +496,15 @@ const AdminContentDetail = () => {
               </p>
             </div>
             <div>
-              <span className="text-xs text-base-content/50">Posted</span>
+              <span className="text-xs text-base-content/50">Submitted</span>
               <p className="font-medium">{formatDate(content.createdAt)}</p>
             </div>
+            {content.updatedAt && content.updatedAt !== content.createdAt && (
+              <div>
+                <span className="text-xs text-base-content/50">Last updated</span>
+                <p className="font-medium">{formatDate(content.updatedAt)}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -430,8 +522,8 @@ const AdminContentDetail = () => {
               disabled={actionLoading}
               className="btn btn-outline btn-warning w-full gap-2"
             >
-              <AlertTriangle className="w-5 h-5" />
-              Run Rule Check
+              <ScanText className="w-5 h-5" />
+              Run OCR &amp; Safety Check
             </button>
 
             <button

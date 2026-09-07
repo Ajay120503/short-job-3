@@ -28,9 +28,10 @@ const formatFlag = (flag) => {
  * @param {string} type - The content type ('post', 'job', 'story')
  * @param {function} onUpdate - Callback to refresh parent data after actions
  */
-const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
+const QueueItem = ({ item, type, onUpdate, mode = "queue", layout = "list" }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const isArchive = mode === "archive" || item.status === "rejected";
+  const isGrid = layout === "grid";
 
   const handleModerate = async (action) => {
     setActionLoading(true);
@@ -100,11 +101,17 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
     type === "job" ? Briefcase : type === "story" ? Image : FileText;
 
   return (
-    <div className="card bg-base-200/30 border border-base-300 rounded-xl p-3 sm:p-5 space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <article
+      className={`card border border-base-300 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md ${
+        isGrid
+          ? "h-full min-h-[28rem] overflow-hidden rounded-2xl p-4"
+          : "space-y-4 rounded-xl bg-base-200/30 p-3 sm:p-5"
+      }`}
+    >
+      <div className={`flex gap-3 ${isGrid ? "items-center" : "flex-col sm:flex-row sm:items-start sm:justify-between"}`}>
         {/* Author info */}
         <div className="flex min-w-0 items-center gap-3">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+          <div className={`${isGrid ? "h-10 w-10" : "h-11 w-11 sm:h-12 sm:w-12"} flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10`}>
             {author.profilePic?.url ? (
               <img
                 src={author.profilePic.url}
@@ -125,15 +132,15 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
         </div>
 
         {/* Date */}
-        <div className="text-xs text-base-content/50 flex items-center gap-1 sm:justify-end">
+        <div className={`flex shrink-0 items-center gap-1 text-xs text-base-content/50 ${isGrid ? "ml-auto" : "sm:justify-end"}`}>
           <Calendar className="w-3 h-3" />
           {formatDate(item.createdAt)}
         </div>
       </div>
 
       {/* Content preview */}
-      <div className="grid gap-3 sm:grid-cols-[96px_minmax(0,1fr)]">
-        <div className="w-full h-24 rounded-lg bg-base-200 border border-base-300/60 overflow-hidden flex items-center justify-center">
+      <div className={`${isGrid ? "mt-4 flex flex-1 flex-col" : "grid gap-3 sm:grid-cols-[96px_minmax(0,1fr)]"}`}>
+        <div className={`${isGrid ? "aspect-video" : "h-24"} flex w-full items-center justify-center overflow-hidden rounded-xl border border-base-300/60 bg-base-200`}>
           {mediaUrl && item.mediaType === "video" ? (
             <video src={mediaUrl} muted className="w-full h-full object-cover" />
           ) : mediaUrl ? (
@@ -146,8 +153,8 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
             <TypeIcon className="w-8 h-8 text-base-content/25" />
           )}
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+        <div className={`min-w-0 ${isGrid ? "mt-3" : ""}`}>
+          <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="badge badge-sm badge-primary badge-soft capitalize">
               {type}
             </span>
@@ -155,8 +162,8 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
               {item.status || "pending_review"}
             </span>
           </div>
-          <h3 className="font-semibold text-sm line-clamp-1">{title}</h3>
-          <p className="text-sm text-base-content/70 mt-1 line-clamp-3">
+          <h3 className="line-clamp-1 text-sm font-semibold" title={title}>{title}</h3>
+          <p className={`mt-1 text-sm leading-relaxed text-base-content/70 ${isGrid ? "line-clamp-3 min-h-[3.75rem]" : "line-clamp-3"}`}>
             {previewText.substring(0, 180)}
             {previewText.length > 180 && "..."}
           </p>
@@ -166,7 +173,7 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
             </p>
           )}
           {autoScore !== undefined && (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <div className={`mt-2 flex flex-wrap items-center gap-1.5 ${isGrid ? "max-h-12 overflow-hidden" : ""}`}>
               <span className={`badge badge-xs ${scoreTone}`}>
                 Rule score {autoScore}
               </span>
@@ -200,7 +207,7 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
 
         {/* Detection rules (if any) */}
         {item.detectionRules?.length > 0 && (
-          <div className="sm:col-span-2 mt-1 flex flex-wrap gap-1.5">
+          <div className={`${isGrid ? "mt-2 max-h-11 overflow-hidden" : "sm:col-span-2 mt-1"} flex flex-wrap gap-1.5`}>
             {item.detectionRules.map((rule, i) => (
               <span
                 key={i}
@@ -215,16 +222,16 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col gap-3 pt-3 border-t border-base-300/50 sm:flex-row sm:items-center sm:justify-between">
+      <div className={`flex flex-col gap-2 border-t border-base-300/50 pt-3 ${isGrid ? "mt-4" : "mt-4 sm:flex-row sm:items-center sm:justify-between"}`}>
         <Link
           to={`/admin/content/${type}/${item._id}`}
-          className="btn btn-ghost btn-xs gap-1.5 justify-start sm:justify-center"
+          className={`btn btn-ghost btn-xs gap-1.5 ${isGrid ? "w-full" : "justify-start sm:justify-center"}`}
         >
           <Eye className="w-3 h-3" />
           Review Detail
         </Link>
 
-        <div className={`grid gap-2 sm:flex ${isArchive ? "grid-cols-1" : "grid-cols-2"}`}>
+        <div className={`grid gap-2 ${isArchive ? "grid-cols-1" : "grid-cols-2"} ${isGrid ? "w-full" : "sm:flex"}`}>
           {!isArchive && (
             <button
               onClick={() => handleModerate("reject")}
@@ -251,7 +258,7 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue" }) => {
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

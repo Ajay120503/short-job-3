@@ -105,8 +105,8 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
                 idx < currentIndex
                   ? "w-full"
                   : idx === currentIndex
-                  ? "animate-[storyProgress_5s_linear]"
-                  : "w-0"
+                    ? "animate-[storyProgress_5s_linear]"
+                    : "w-0"
               }`}
             />
           </div>
@@ -140,10 +140,12 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
               </span>
             )}
           </div>
-          {group.author?._id === currentUserId && <p className="text-white/60 text-xs flex items-center gap-1">
-            <Eye className="w-3 h-3" /> {currentStory.viewers?.length || 0}{" "}
-            views
-          </p>}
+          {group.author?._id === currentUserId && (
+            <p className="text-white/60 text-xs flex items-center gap-1">
+              <Eye className="w-3 h-3" /> {currentStory.viewers?.length || 0}{" "}
+              views
+            </p>
+          )}
         </div>
       </div>
 

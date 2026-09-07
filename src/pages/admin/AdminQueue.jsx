@@ -171,13 +171,21 @@ const AdminQueue = () => {
 
       {/* Queue List */}
       {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="card bg-base-100 border border-base-300 rounded-xl p-4 sm:p-5">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="card min-h-[28rem] border border-base-300 bg-base-100 p-4 sm:p-5">
               <div className="space-y-3">
-                <div className="h-4 w-3/4 skeleton rounded"></div>
-                <div className="h-3 w-1/2 skeleton rounded"></div>
-                <div className="h-3 w-full skeleton rounded"></div>
+                <div className="flex items-center gap-3">
+                  <div className="h-11 w-11 skeleton rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 skeleton rounded" />
+                    <div className="h-3 w-1/2 skeleton rounded" />
+                  </div>
+                </div>
+                <div className="aspect-video w-full skeleton rounded-xl" />
+                <div className="h-4 w-2/3 skeleton rounded" />
+                <div className="h-3 w-full skeleton rounded" />
+                <div className="h-3 w-5/6 skeleton rounded" />
               </div>
             </div>
           ))}
@@ -196,13 +204,14 @@ const AdminQueue = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
             <QueueItem
               key={item._id}
               item={item}
               type={queueType}
               mode={section}
+              layout="grid"
               onUpdate={fetchQueue}
             />
           ))}
