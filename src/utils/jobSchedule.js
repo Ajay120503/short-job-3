@@ -54,6 +54,13 @@ export const usesDailyWorkingHours = (shortJobType) =>
 export const getDurationUnitForJobType = (shortJobType) =>
   usesDailyWorkingHours(shortJobType) ? "days" : "hours";
 
+export const getJobDurationHint = (shortJobType) => {
+  if (shortJobType === "weekend_only") return "Weekend jobs are fixed at 2 days (Saturday and Sunday).";
+  if (shortJobType === "short_term") return "Enter 1 to 7 whole working days.";
+  if (shortJobType === "one_day_gig") return "Enter 0.25 to 24 hours for this one-day job.";
+  return "Enter 0.25 to 24 hours for this job.";
+};
+
 export const getJobDurationLabel = (job) => {
   const value = Number(job?.duration?.value);
   if (!Number.isFinite(value) || value <= 0) return "Not specified";

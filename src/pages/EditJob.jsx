@@ -19,14 +19,22 @@ import {
 import API from "../utils/axios";
 import toast from "../utils/toast";
 import JobTimeField from "../components/job/JobTimeField";
+import QualificationMultiSelect from "../components/job/QualificationMultiSelect";
 import ConfirmModal from "../components/common/ConfirmModal";
 import {
   SHORT_JOB_TYPE_OPTIONS,
   calculateDurationHours,
   calculateEndTime,
   getDurationUnitForJobType,
+  getJobDurationHint,
   usesDailyWorkingHours,
 } from "../utils/jobSchedule";
+import { getCreationError } from "../utils/creationErrors";
+import {
+  getJobPayoutError,
+  JOB_PAYOUT_MAX,
+  JOB_PAYOUT_MIN,
+} from "../utils/jobPayout";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,
@@ -38,18 +46,6 @@ import {
   JOB_TEXT_MIN_LENGTH,
 } from "../utils/creationLimits";
 
-const ROLE_TYPES = [
-  { value: "teacher", label: "Creator" },
-  { value: "professor", label: "Expert" },
-  { value: "assistant", label: "Assistant" },
-  { value: "research", label: "Research / Analysis" },
-  { value: "intern", label: "Internship" },
-  { value: "volunteer", label: "Volunteer" },
-  { value: "hod", label: "Team Leadership" },
-  { value: "principal", label: "Organization Leadership" },
-  { value: "other", label: "Other" },
-];
-
 const LOCATIONS = [
   { value: "onsite", label: "On-site" },
   { value: "remote", label: "Remote" },
@@ -57,7 +53,16 @@ const LOCATIONS = [
 ];
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-const todayInputValue = new Date().toISOString().split("T")[0];
+const toLocalDateInput = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+const todayInputValue = toLocalDateInput(new Date());
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+const earliestJobDate = toLocalDateInput(tomorrow);
 
 const EditJob = () => {
   const navigate = useNavigate();
@@ -70,7 +75,6 @@ const EditJob = () => {
     title: "",
     description: "",
     institutionName: "",
-    roleType: "other",
     shortJobType: "short_term",
     durationValue: "",
     durationUnit: "hours",
@@ -114,7 +118,6 @@ const EditJob = () => {
           title: job.title || "",
           description: job.description || "",
           institutionName: job.institutionName || "",
-          roleType: job.roleType || "other",
           shortJobType: normalizedType,
           durationValue: usesDailyWorkingHours(normalizedType)
             ? (job.duration?.value || 1)
@@ -173,6 +176,10 @@ const EditJob = () => {
           else next.durationValue = hours;
         }
       }
+      if (name === "location" && value === "remote") {
+        next.coordinateLat = "";
+        next.coordinateLng = "";
+      }
       if ((name === "startTime" || name === "endTime") && next.startTime && next.endTime) {
         const hours = calculateDurationHours(next.startTime, next.endTime);
         if (usesDailyWorkingHours(next.shortJobType)) next.workingHoursPerDay = hours;
@@ -191,6 +198,19 @@ const EditJob = () => {
       ...(name === "shortJobType" || name === "startTime" || name === "endTime" || name === "durationValue"
         ? { durationValue: "", durationUnit: "", workingHoursPerDay: "", startTime: "", endTime: "" }
         : {}),
+      ...(name === "location" && value === "remote"
+        ? {
+            workplaceName: "",
+            workplaceAddress: "",
+            workplaceCity: "",
+            workplaceState: "",
+            workplaceCountry: "",
+            coordinates: "",
+            coordinateLat: "",
+            coordinateLng: "",
+          }
+        : {}),
+      server: "",
     }));
   };
 
@@ -226,18 +246,22 @@ const EditJob = () => {
     else if (form.title.trim().length > JOB_TEXT_MAX_LENGTH) nextErrors.title = `Job title cannot exceed ${JOB_TEXT_MAX_LENGTH} characters.`;
     if (form.description.trim().length > JOB_DESCRIPTION_MAX_LENGTH) nextErrors.description = `Description cannot exceed ${JOB_DESCRIPTION_MAX_LENGTH} characters.`;
     const requiredTextRules = {
-      institutionName: [50, "Organization name"],
       workplaceName: [50, "Workplace name"],
       workplaceAddress: [100, "Street address"],
       workplaceCity: [50, "City"],
       workplaceState: [50, "State"],
       workplaceCountry: [50, "Country"],
     };
-    Object.entries(requiredTextRules).forEach(([field, [max, label]]) => {
-      const length = form[field].trim().length;
-      if (!length) nextErrors[field] = `${label} is required.`;
-      else if (length < 3 || length > max) nextErrors[field] = `${label} must contain 3 to ${max} characters.`;
-    });
+    const organizationLength = form.institutionName.trim().length;
+    if (!organizationLength) nextErrors.institutionName = "Organization name is required.";
+    else if (organizationLength < 3 || organizationLength > 50) nextErrors.institutionName = "Organization name must contain 3 to 50 characters.";
+    if (form.location !== "remote") {
+      Object.entries(requiredTextRules).forEach(([field, [max, label]]) => {
+        const length = form[field].trim().length;
+        if (!length) nextErrors[field] = `${label} is required.`;
+        else if (length < 3 || length > max) nextErrors[field] = `${label} must contain 3 to ${max} characters.`;
+      });
+    }
     const qualifications = [...new Set(form.requiredQualifications.split(",").map((item) => item.trim()).filter(Boolean))];
     if (qualifications.length > 5 || qualifications.some((item) => item.length < 3 || item.length > 50)) nextErrors.requiredQualifications = "Use up to 5 qualifications of 3 to 50 characters each.";
     const skills = [...new Set(form.skillsRequired.split(",").map((item) => item.trim()).filter(Boolean))];
@@ -247,12 +271,14 @@ const EditJob = () => {
     const dailySchedule = usesDailyWorkingHours(form.shortJobType);
     const duration = dailySchedule ? Number(form.durationValue) : Number(scheduleHours || form.durationValue);
     const dailyHours = Number(scheduleHours || form.workingHoursPerDay);
-    if (!Number.isFinite(duration) || duration <= 0) nextErrors.durationValue = "Enter a positive duration.";
-    else if (!dailySchedule && duration > 24) nextErrors.durationValue = "Duration cannot exceed 24 hours.";
+    if (!Number.isFinite(duration) || duration <= 0) nextErrors.durationValue = `Enter a valid ${dailySchedule ? "number of days" : "number of hours"}.`;
+    else if (!dailySchedule && duration < 0.25) nextErrors.durationValue = "Duration must be at least 0.25 hours (15 minutes).";
+    else if (!dailySchedule && duration > 24) nextErrors.durationValue = "Duration must be between 0.25 and 24 hours.";
     else if (form.shortJobType === "weekend_only" && duration !== 2) nextErrors.durationValue = "Weekend jobs run for 2 days.";
-    else if (form.shortJobType === "short_term" && (!Number.isInteger(duration) || duration > 365)) nextErrors.durationValue = "Short-term duration must be 1 to 365 whole days.";
+    else if (form.shortJobType === "short_term" && (!Number.isInteger(duration) || duration > 7)) nextErrors.durationValue = "Short-Term duration must be 1 to 7 whole days.";
     if (dailySchedule && (!Number.isFinite(dailyHours) || dailyHours < 0.25 || dailyHours > 24)) nextErrors.workingHoursPerDay = "Working hours per day must be between 0.25 and 24.";
     if (!form.jobDate) nextErrors.jobDate = "Job date is required.";
+    if (form.jobDate && form.jobDate < earliestJobDate) nextErrors.jobDate = "Job date must be tomorrow or a later date.";
     if (form.shortJobType === "weekend_only" && form.jobDate && new Date(`${form.jobDate}T00:00:00`).getDay() !== 6) nextErrors.jobDate = "Weekend jobs must start on a Saturday.";
     if (!form.startTime) nextErrors.startTime = "Start time is required.";
     if (!form.endTime) nextErrors.endTime = "End time is required.";
@@ -267,18 +293,17 @@ const EditJob = () => {
     if (form.contactEmail && (!isValidEmail(form.contactEmail) || emailLocalPart.length < 2 || emailLocalPart.length > 20)) {
       nextErrors.contactEmail = "Enter a valid email with 2 to 20 characters before @.";
     }
-    if (!form.stipend || Number(form.stipend) <= 0) {
-      nextErrors.stipend = "Enter a valid paid amount.";
-    }
+    const payoutError = getJobPayoutError(form.stipend);
+    if (payoutError) nextErrors.stipend = payoutError;
     if (form.maxApplicants !== "" && (!Number.isInteger(Number(form.maxApplicants)) || Number(form.maxApplicants) < 0 || Number(form.maxApplicants) > 100)) {
       nextErrors.maxApplicants = "Applicant limit must be a whole number between 0 and 100.";
     }
     const hasLat = String(form.coordinateLat).trim() !== "";
     const hasLng = String(form.coordinateLng).trim() !== "";
-    if (hasLat !== hasLng) {
+    if (form.location !== "remote" && hasLat !== hasLng) {
       nextErrors.coordinates = "Add both latitude and longitude, or leave both empty.";
     }
-    if (hasLat && hasLng) {
+    if (form.location !== "remote" && hasLat && hasLng) {
       const lat = Number(form.coordinateLat);
       const lng = Number(form.coordinateLng);
       if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
@@ -326,6 +351,13 @@ const EditJob = () => {
 
     if (!validateForm()) {
       toast.error("Please fix the highlighted fields.");
+      requestAnimationFrame(() => {
+        document
+          .querySelector(
+            ".input-error, .textarea-error, .select-error, [aria-invalid='true']",
+          )
+          ?.focus();
+      });
       return;
     }
 
@@ -334,7 +366,6 @@ const EditJob = () => {
     const dailySchedule = usesDailyWorkingHours(form.shortJobType);
     formData.append("title", form.title);
     formData.append("description", form.description);
-    formData.append("roleType", form.roleType);
     formData.append("shortJobType", form.shortJobType);
     formData.append("durationValue", dailySchedule ? form.durationValue : scheduleHours);
     formData.append("durationUnit", getDurationUnitForJobType(form.shortJobType));
@@ -344,11 +375,15 @@ const EditJob = () => {
     formData.append("endTime", form.endTime);
     formData.append("isPaid", "true");
     formData.append("location", form.location);
-    formData.append("workplaceName", form.workplaceName);
-    formData.append("workplaceAddress", form.workplaceAddress);
-    formData.append("workplaceCity", form.workplaceCity);
-    formData.append("workplaceState", form.workplaceState);
-    formData.append("workplaceCountry", form.workplaceCountry);
+    if (form.location !== "remote") {
+      formData.append("workplaceName", form.workplaceName);
+      formData.append("workplaceAddress", form.workplaceAddress);
+      formData.append("workplaceCity", form.workplaceCity);
+      formData.append("workplaceState", form.workplaceState);
+      formData.append("workplaceCountry", form.workplaceCountry);
+    } else {
+      formData.append("clearCoordinates", "true");
+    }
     formData.append("deadline", form.deadline);
     formData.append("contactEmail", form.contactEmail);
     formData.append("institutionName", form.institutionName);
@@ -363,7 +398,7 @@ const EditJob = () => {
     if (form.maxApplicants) {
       formData.append("maxApplicants", form.maxApplicants);
     }
-    if (String(form.coordinateLat).trim() && String(form.coordinateLng).trim()) {
+    if (form.location !== "remote" && String(form.coordinateLat).trim() && String(form.coordinateLng).trim()) {
       formData.append("coordinateLat", form.coordinateLat);
       formData.append("coordinateLng", form.coordinateLng);
     } else {
@@ -382,8 +417,9 @@ const EditJob = () => {
       // The linked feed post is synced server-side (Post.jobPost -> text = title)
       navigate(`/jobs/${data.job._id}`);
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to update job.";
-      toast.error(message);
+      const result = getCreationError(err, "The job could not be updated.");
+      setErrors((prev) => ({ ...prev, ...result.errors, server: result.message }));
+      toast.error(result.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -402,6 +438,9 @@ const EditJob = () => {
         : undefined,
   };
   const mapEmbedUrl = getJobMapEmbedUrl(previewJob);
+  const validationErrors = Object.entries(errors)
+    .filter(([field, message]) => field !== "server" && Boolean(message))
+    .map(([field, message]) => ({ field, message }));
 
   if (loading) {
     return (
@@ -436,7 +475,9 @@ const EditJob = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        {errors.server && <ErrorSummary message={errors.server} />}
+        {validationErrors.length > 0 && <ValidationSummary errors={validationErrors} />}
         {/* Basic Info Card */}
         <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
           <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
@@ -478,7 +519,7 @@ const EditJob = () => {
               <input
                 type="text"
                 name="institutionName"
-                className="input input-bordered w-full h-12 text-sm"
+                className={`input input-bordered w-full h-12 text-sm ${errors.institutionName ? "input-error" : ""}`}
                 placeholder="e.g., Delhi Public School"
                 value={form.institutionName}
                 onChange={handleChange}
@@ -486,6 +527,7 @@ const EditJob = () => {
                 maxLength={50}
                 required
               />
+              {errors.institutionName && <FieldError>{errors.institutionName}</FieldError>}
             </div>
 
             {/* Description */}
@@ -508,38 +550,18 @@ const EditJob = () => {
               )}
             </div>
 
-            {/* Opportunity Type */}
             <div className="form-control">
               <label className="label pb-1">
-                <span className="label-text font-medium text-sm flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5" />
-                  Opportunity Type
-                </span>
-              </label>
-              <select
-                name="roleType"
-                className="select select-bordered w-full h-12 text-sm"
-                value={form.roleType}
-                onChange={handleChange}
-              >
-                {ROLE_TYPES.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-control">
-              <label className="label pb-1">
-                <span className="label-text text-sm font-medium">
-                  Short Job Type *
+                <span className="label-text flex items-center gap-1.5 text-sm font-medium">
+                  <Tag className="h-3.5 w-3.5" />
+                  Short Job Type <span className="text-error">*</span>
                 </span>
               </label>
               <select
                 name="shortJobType"
                 value={form.shortJobType}
                 onChange={handleChange}
-                className="select select-bordered h-12 w-full text-sm"
+                className={`select select-bordered h-12 w-full text-sm ${errors.shortJobType ? "select-error" : ""}`}
               >
                 {SHORT_JOB_TYPE_OPTIONS.map(([value, label]) => (
                   <option key={value} value={value}>
@@ -547,6 +569,7 @@ const EditJob = () => {
                   </option>
                 ))}
               </select>
+              {errors.shortJobType && <FieldError>{errors.shortJobType}</FieldError>}
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-3">
               <div className="form-control">
@@ -563,12 +586,15 @@ const EditJob = () => {
                   value={form.durationValue}
                   onChange={handleChange}
                   className={`input input-bordered ${errors.durationValue ? "input-error" : ""}`}
-                  max={usesDailyWorkingHours(form.shortJobType) ? "365" : "24"}
+                  max={form.shortJobType === "short_term" ? "7" : form.shortJobType === "weekend_only" ? "2" : "24"}
                   readOnly={form.shortJobType === "weekend_only"}
                 />
                 {errors.durationValue && (
                   <FieldError>{errors.durationValue}</FieldError>
                 )}
+                <p className="mt-1 text-[11px] text-base-content/45">
+                  {getJobDurationHint(form.shortJobType)}
+                </p>
               </div>
               <div className="form-control">
                 <label className="label pb-1">
@@ -583,6 +609,7 @@ const EditJob = () => {
                   <option value="hours">Hours</option>
                   <option value="days">Days</option>
                 </select>
+                {errors.durationUnit && <FieldError>{errors.durationUnit}</FieldError>}
               </div>
             </div>
             {usesDailyWorkingHours(form.shortJobType) && (
@@ -613,7 +640,7 @@ const EditJob = () => {
                   <label className="label pb-1"><span className="label-text text-xs font-semibold">Job date <span className="text-error">*</span></span></label>
                   <div className="relative">
                     <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
-                    <input name="jobDate" type="date" min={todayInputValue} value={form.jobDate} onChange={handleChange} className={`input input-bordered h-12 w-full rounded-xl pl-10 ${errors.jobDate ? "input-error" : ""}`} required />
+                    <input name="jobDate" type="date" min={earliestJobDate} value={form.jobDate} onChange={handleChange} className={`input input-bordered h-12 w-full rounded-xl pl-10 ${errors.jobDate ? "input-error" : ""}`} required />
                   </div>
                   {errors.jobDate && <FieldError>{errors.jobDate}</FieldError>}
                 </div>
@@ -669,7 +696,13 @@ const EditJob = () => {
               </select>
             </div>
 
-            <div className="rounded-2xl border border-base-300/70 bg-base-200/35 p-4">
+            <fieldset
+              disabled={form.location === "remote"}
+              aria-disabled={form.location === "remote"}
+              className={`rounded-2xl border border-base-300/70 bg-base-200/35 p-4 transition-opacity ${
+                form.location === "remote" ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-semibold flex items-center gap-1.5">
@@ -677,8 +710,9 @@ const EditJob = () => {
                     Workplace Location
                   </h3>
                   <p className="text-xs text-base-content/45 mt-1">
-                    Update the exact work place so applicants can check distance
-                    and directions.
+                    {form.location === "remote"
+                      ? "Physical workplace details are disabled for remote jobs."
+                      : "Update the exact work place so applicants can check distance and directions."}
                   </p>
                 </div>
                 <button
@@ -695,7 +729,7 @@ const EditJob = () => {
                 <input
                   type="text"
                   name="workplaceName"
-                  className="input input-bordered h-11 text-sm sm:col-span-2"
+                  className={`input input-bordered h-11 text-sm sm:col-span-2 ${errors.workplaceName ? "input-error" : ""}`}
                   placeholder="Workplace name / branch"
                   value={form.workplaceName}
                   onChange={handleChange}
@@ -706,7 +740,7 @@ const EditJob = () => {
                 <input
                   type="text"
                   name="workplaceAddress"
-                  className="input input-bordered h-11 text-sm sm:col-span-2"
+                  className={`input input-bordered h-11 text-sm sm:col-span-2 ${errors.workplaceAddress ? "input-error" : ""}`}
                   placeholder="Full street address"
                   value={form.workplaceAddress}
                   onChange={handleChange}
@@ -717,7 +751,7 @@ const EditJob = () => {
                 <input
                   type="text"
                   name="workplaceCity"
-                  className="input input-bordered h-11 text-sm"
+                  className={`input input-bordered h-11 text-sm ${errors.workplaceCity ? "input-error" : ""}`}
                   placeholder="City"
                   value={form.workplaceCity}
                   onChange={handleChange}
@@ -728,7 +762,7 @@ const EditJob = () => {
                 <input
                   type="text"
                   name="workplaceState"
-                  className="input input-bordered h-11 text-sm"
+                  className={`input input-bordered h-11 text-sm ${errors.workplaceState ? "input-error" : ""}`}
                   placeholder="State"
                   value={form.workplaceState}
                   onChange={handleChange}
@@ -739,7 +773,7 @@ const EditJob = () => {
                 <input
                   type="text"
                   name="workplaceCountry"
-                  className="input input-bordered h-11 text-sm"
+                  className={`input input-bordered h-11 text-sm ${errors.workplaceCountry ? "input-error" : ""}`}
                   placeholder="Country"
                   value={form.workplaceCountry}
                   onChange={handleChange}
@@ -768,11 +802,21 @@ const EditJob = () => {
                   />
                 </div>
               </div>
-              {(errors.coordinates ||
+              {(errors.workplaceName ||
+                errors.workplaceAddress ||
+                errors.workplaceCity ||
+                errors.workplaceState ||
+                errors.workplaceCountry ||
+                errors.coordinates ||
                 errors.coordinateLat ||
                 errors.coordinateLng) && (
                 <FieldError>
-                  {errors.coordinates ||
+                  {errors.workplaceName ||
+                    errors.workplaceAddress ||
+                    errors.workplaceCity ||
+                    errors.workplaceState ||
+                    errors.workplaceCountry ||
+                    errors.coordinates ||
                     errors.coordinateLat ||
                     errors.coordinateLng}
                 </FieldError>
@@ -801,17 +845,17 @@ const EditJob = () => {
                 Open {getJobWorkplaceLabel(previewJob)} in map
                 <ExternalLink className="w-3 h-3" />
               </a>
-            </div>
+            </fieldset>
 
             <div className="badge badge-success badge-soft">Paid job</div>
 
-            {/* Stipend (only if paid) */}
+            {/* Payout / salary */}
             {form.isPaid && (
               <div className="space-y-3">
                 <div className="form-control">
                   <label className="label pb-1">
                     <span className="label-text font-medium text-sm">
-                      Stipend / Salary <span className="text-error">*</span>
+                      Payout / Salary <span className="text-error">*</span>
                     </span>
                   </label>
                   <div className="flex gap-2">
@@ -819,10 +863,13 @@ const EditJob = () => {
                       type="number"
                       name="stipend"
                       className={`input input-bordered flex-1 h-12 text-sm ${errors.stipend ? "input-error" : ""}`}
-                      placeholder="e.g., 50000"
+                      placeholder="e.g., 100 or 100.50"
                       value={form.stipend}
                       onChange={handleChange}
-                      min="0.01"
+                      min={JOB_PAYOUT_MIN}
+                      max={JOB_PAYOUT_MAX}
+                      step="0.01"
+                      inputMode="decimal"
                       required
                     />
                     <select
@@ -836,6 +883,9 @@ const EditJob = () => {
                     </select>
                   </div>
                   {errors.stipend && <FieldError>{errors.stipend}</FieldError>}
+                  <p className="mt-1 text-[11px] text-base-content/45">
+                    Whole numbers and values with up to 2 decimal places are accepted.
+                  </p>
                 </div>
               </div>
             )}
@@ -847,14 +897,16 @@ const EditJob = () => {
                   Required Qualifications
                 </span>
               </label>
-              <textarea
-                name="requiredQualifications"
-                className="textarea textarea-bordered w-full text-sm min-h-[80px]"
-                placeholder="Up to 5, comma separated"
+              <QualificationMultiSelect
                 value={form.requiredQualifications}
                 onChange={handleChange}
-                maxLength={258}
+                error={errors.requiredQualifications}
               />
+              {errors.requiredQualifications && (
+                <div id="required-qualifications-error">
+                  <FieldError>{errors.requiredQualifications}</FieldError>
+                </div>
+              )}
             </div>
 
             {/* Skills Required */}
@@ -867,12 +919,13 @@ const EditJob = () => {
               <input
                 type="text"
                 name="skillsRequired"
-                className="input input-bordered w-full h-12 text-sm"
+                className={`input input-bordered w-full h-12 text-sm ${errors.skillsRequired ? "input-error" : ""}`}
                 placeholder="e.g., Communication, Python, Classroom Management (comma separated)"
                 value={form.skillsRequired}
                 onChange={handleChange}
                 maxLength={258}
               />
+              {errors.skillsRequired && <FieldError>{errors.skillsRequired}</FieldError>}
             </div>
           </div>
         </div>
@@ -1048,6 +1101,23 @@ const EditJob = () => {
 
 const FieldError = ({ children }) => (
   <p className="mt-1 text-xs font-medium text-error">{children}</p>
+);
+
+const ErrorSummary = ({ message }) => (
+  <div role="alert" className="alert alert-error text-sm">
+    <span>{message}</span>
+  </div>
+);
+
+const ValidationSummary = ({ errors: validationErrors }) => (
+  <div role="alert" className="rounded-xl border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
+    <p className="font-semibold">Please correct these fields:</p>
+    <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs">
+      {validationErrors.map(({ field, message }) => (
+        <li key={field}>{message}</li>
+      ))}
+    </ul>
+  </div>
 );
 
 export default EditJob;
