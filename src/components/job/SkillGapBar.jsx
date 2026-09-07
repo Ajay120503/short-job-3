@@ -1,31 +1,34 @@
 import useAuthStore from "../../store/authStore";
-import { normalizeJobSkills } from "../../utils/jobSkills";
+import { getJobSkillMatch } from "../../utils/jobSkills";
 
 const SkillGapBar = ({ job }) => {
   const { user } = useAuthStore();
-  const cleanSkillsRequired = normalizeJobSkills(job?.skillsRequired);
-  if (!user || !cleanSkillsRequired.length) return null;
-
-  const studentSkills = normalizeJobSkills(user.skills).map((s) => s.toLowerCase());
-  const jobSkills = cleanSkillsRequired.map((s) => s.toLowerCase());
-
-  const matchedSkills = jobSkills.filter((s) => studentSkills.includes(s));
-  const missingSkills = jobSkills.filter((s) => !studentSkills.includes(s));
-  const matchPercent = Math.round(
-    (matchedSkills.length / jobSkills.length) * 100
-  );
+  const { requiredSkills, profileTerms, matchedSkills, missingSkills, matchPercent } =
+    getJobSkillMatch(job, user);
+  if (!user || !requiredSkills.length) return null;
 
   return (
-    <div className="skill-gap-section mt-4 p-4 bg-base-200/50 rounded-lg">
-      <p className="text-sm font-semibold mb-2">
-        You match {matchedSkills.length}/{jobSkills.length} skills (
-        {matchPercent}%)
-      </p>
+    <div className="skill-gap-section mt-4 rounded-xl border border-base-300/60 bg-base-200/50 p-4">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-semibold">
+          Job skill match: {matchedSkills.length}/{requiredSkills.length} ({matchPercent}%)
+        </p>
+        <span className="text-[11px] text-base-content/45">Based on your profile</span>
+      </div>
       <progress
         className="progress progress-success w-full"
         value={matchedSkills.length}
-        max={jobSkills.length}
+        max={requiredSkills.length}
+        aria-label={`${matchPercent}% job skill match`}
       />
+      <p className="mt-2 text-xs text-base-content/55">
+        Compared with your skills, interests, qualifications, focus area, profession, and current position.
+      </p>
+      {!profileTerms.length && (
+        <p className="mt-2 text-xs text-warning">
+          Add skills or interests to your profile to calculate an accurate match.
+        </p>
+      )}
       <div className="flex flex-wrap gap-2 mt-3">
         {matchedSkills.map((s) => (
           <span key={s} className="badge badge-success badge-sm">
@@ -33,8 +36,8 @@ const SkillGapBar = ({ job }) => {
           </span>
         ))}
         {missingSkills.map((s) => (
-          <span key={s} className="badge badge-error badge-outline badge-sm">
-            ✗ {s}
+          <span key={s} className="badge badge-warning badge-outline badge-sm">
+            Missing: {s}
           </span>
         ))}
       </div>
