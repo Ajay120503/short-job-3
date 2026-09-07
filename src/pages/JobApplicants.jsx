@@ -83,6 +83,8 @@ const getApplicantRows = (applications) =>
       Email: a.email || "",
       Phone: a.phone || "",
       Status: statusLabels[app.status] || app.status,
+      "Job Match": app.jobMatch?.score == null ? "Not scored" : `${app.jobMatch.score}%`,
+      "Matched Requirements": app.jobMatch?.matchedCount ?? "",
       Profession: a.profession || "",
       "Current Position": a.currentPosition || "",
       "Current Company": a.currentCompany || "",
@@ -154,6 +156,31 @@ const InfoPill = ({ icon: Icon, children, tone = "base" }) => {
   );
 };
 
+const RequirementMatchGroup = ({ label, result }) => {
+  if (result?.percent == null) {
+    return (
+      <div>
+        <p className="text-xs font-semibold">{label}</p>
+        <p className="mt-1 text-[11px] text-base-content/45">No {label.toLowerCase()} specified for this job.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs font-semibold">{label}: {result.percent}%</p>
+      <div className="mt-1.5 flex flex-wrap gap-1">
+        {result.matched.map((item) => (
+          <span key={`matched-${item}`} className="badge badge-success badge-outline badge-xs">✓ {item}</span>
+        ))}
+        {result.missing.map((item) => (
+          <span key={`missing-${item}`} className="badge badge-ghost badge-xs">Missing: {item}</span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const ApplicantCard = ({ app, onStatusUpdate }) => {
   const [expanded, setExpanded] = useState(false);
   const a = app.applicant || {};
@@ -212,15 +239,28 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
                     {currentRole || a.educationLevel || "Applicant profile"}
                   </p>
                 </div>
-                <span
-                  className={`badge badge-sm font-semibold capitalize ${
-                    isSpecialApplicant
-                      ? specialStyle.label
-                      : statusColors[app.status] || "badge-ghost"
-                  }`}
-                >
-                  {statusLabels[app.status] || app.status}
-                </span>
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                  {app.jobMatch?.score != null && (
+                    <span className={`badge badge-sm font-bold ${
+                      app.jobMatch.score >= 70
+                        ? "badge-success"
+                        : app.jobMatch.score >= 40
+                          ? "badge-warning"
+                          : "badge-ghost"
+                    }`} title={`${app.jobMatch.matchedCount}/${app.jobMatch.requiredCount} requirements matched`}>
+                      {app.jobMatch.score}% match
+                    </span>
+                  )}
+                  <span
+                    className={`badge badge-sm font-semibold capitalize ${
+                      isSpecialApplicant
+                        ? specialStyle.label
+                        : statusColors[app.status] || "badge-ghost"
+                    }`}
+                  >
+                    {statusLabels[app.status] || app.status}
+                  </span>
+                </div>
               </div>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -378,6 +418,27 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
       {/* Expanded Details */}
       {expanded && (
         <div className="border-t border-base-200/70 px-5 py-4 space-y-4">
+          {app.jobMatch?.score != null && (
+            <div className="rounded-xl border border-primary/15 bg-primary/5 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">Requirement match</p>
+                  <p className="text-xs text-base-content/50">
+                    {app.jobMatch.matchedCount}/{app.jobMatch.requiredCount} job requirements matched
+                  </p>
+                </div>
+                <span className="text-lg font-bold text-primary">{app.jobMatch.score}%</span>
+              </div>
+              <progress className="progress progress-primary mt-2 w-full" value={app.jobMatch.score} max="100" />
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <RequirementMatchGroup label="Skills" result={app.jobMatch.skills} />
+                <RequirementMatchGroup label="Qualifications" result={app.jobMatch.qualifications} />
+              </div>
+              <p className="mt-2 text-[11px] text-base-content/45">
+                Ranking is a profile-based aid. Review the complete application before making a decision.
+              </p>
+            </div>
+          )}
           {/* Summary stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {a?.age && (
@@ -539,7 +600,7 @@ const JobApplicants = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState("match");
   const [viewMode, setViewMode] = useState("list"); // "list" or "kanban"
 
   useEffect(() => {
@@ -589,6 +650,10 @@ const JobApplicants = () => {
         .some((value) => String(value).toLowerCase().includes(term));
     })
     .sort((a, b) => {
+      if (sortBy === "match") {
+        const difference = (b.jobMatch?.score ?? -1) - (a.jobMatch?.score ?? -1);
+        return difference || new Date(b.createdAt) - new Date(a.createdAt);
+      }
       if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
       if (sortBy === "experience") {
         return (b.applicant?.experience || 0) - (a.applicant?.experience || 0);
@@ -863,6 +928,7 @@ const JobApplicants = () => {
               onChange={(e) => setSortBy(e.target.value)}
               className="select select-bordered select-sm h-10"
             >
+              <option value="match">Best job match</option>
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
               <option value="experience">Most experience</option>

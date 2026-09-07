@@ -235,6 +235,20 @@ const ApplicantCard = ({ app, isDragging, onDragStart, onDragEnd }) => {
               }`}
             />
           </div>
+          {app.jobMatch?.score != null && (
+            <span
+              className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                app.jobMatch.score >= 70
+                  ? "bg-success/10 text-success"
+                  : app.jobMatch.score >= 40
+                    ? "bg-warning/10 text-warning"
+                    : "bg-base-200 text-base-content/55"
+              }`}
+              title={`${app.jobMatch.matchedCount}/${app.jobMatch.requiredCount} requirements matched`}
+            >
+              {app.jobMatch.score}% job match
+            </span>
+          )}
           {headline && (
             <p className="mt-0.5 truncate text-xs text-base-content/55">
               {headline}
