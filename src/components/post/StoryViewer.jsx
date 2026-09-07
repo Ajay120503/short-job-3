@@ -71,6 +71,8 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
   if (!currentStory) return null;
   const authorSignal = getUserSignal(group.author);
   const isAdminAuthor = authorSignal?.key === "admin";
+  const storyText = String(currentStory.text || "").trim();
+  const hasMedia = Boolean(currentStory.image?.url);
 
   return (
     <div
@@ -169,19 +171,23 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
             alt=""
             className="max-h-[80vh] max-w-full object-contain rounded-lg"
           />
-        ) : currentStory.text ? (
-          <div className="text-white text-center max-w-md">
-            <p className="text-xl">{currentStory.text}</p>
+        ) : storyText ? (
+          <div className="z-20 max-h-[65vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/15 bg-white/10 px-6 py-8 text-center text-white shadow-2xl backdrop-blur-sm sm:px-10">
+            <p className="whitespace-pre-wrap break-words text-xl font-medium leading-relaxed sm:text-2xl">
+              {storyText}
+            </p>
           </div>
         ) : null}
       </div>
 
       {/* Text overlay at bottom */}
-      {currentStory.text && (
-        <div className="absolute bottom-8 left-0 right-0 text-center px-8">
-          <p className="text-white text-lg font-medium drop-shadow-lg">
-            {currentStory.text}
-          </p>
+      {hasMedia && storyText && (
+        <div className="pointer-events-none absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-0 right-0 z-20 px-4 sm:px-8">
+          <div className="mx-auto max-h-[30vh] w-fit max-w-2xl overflow-y-auto rounded-2xl border border-white/15 bg-black/70 px-4 py-3 text-center shadow-2xl backdrop-blur-md sm:px-6">
+            <p className="whitespace-pre-wrap break-words text-sm font-medium leading-relaxed text-white sm:text-base">
+              {storyText}
+            </p>
+          </div>
         </div>
       )}
     </div>
