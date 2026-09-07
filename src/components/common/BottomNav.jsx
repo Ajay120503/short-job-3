@@ -48,7 +48,10 @@ const BottomNav = () => {
                   <UserAvatar
                     user={user}
                     size={22}
+                    showBadges={false}
+                    showIndicator={false}
                     showPresence={false}
+                    showAdminBadge={false}
                     className={isActive ? "scale-110" : ""}
                     ringClass={
                       isActive
@@ -109,7 +112,10 @@ const BottomNav = () => {
                   <UserAvatar
                     user={user}
                     size={22}
+                    showBadges={false}
+                    showIndicator={false}
                     showPresence={false}
+                    showAdminBadge={false}
                     className={isActive ? "scale-110" : ""}
                     ringClass={
                       isActive

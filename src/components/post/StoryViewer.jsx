@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { X, Eye } from "lucide-react";
 import API from "../../utils/axios";
 import UserAvatar from "../common/UserAvatar";
-import { getUserSignal } from "../../utils/userSignals";
 
 const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -68,14 +67,12 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
   };
 
   if (!currentStory) return null;
-  const authorSignal = getUserSignal(group.author);
-  const isAdminAuthor = authorSignal?.key === "admin";
   const storyText = String(currentStory.text || "").trim();
   const hasMedia = Boolean(currentStory.image?.url);
 
   return (
     <div
-      className={`z-app-immersive fixed inset-0 flex items-center justify-center ${isAdminAuthor ? "bg-neutral" : "bg-black"}`}
+      className="z-app-immersive fixed inset-0 flex items-center justify-center bg-base-200 text-base-content"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
       onTouchEnd={(event) => {
         if (touchStart == null) return;
@@ -88,7 +85,8 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 btn btn-circle btn-ghost text-white"
+        className="btn btn-circle btn-sm absolute right-3 top-7 z-30 border border-base-300 bg-base-100/90 text-base-content shadow-lg backdrop-blur-md hover:bg-base-100 sm:right-4 sm:top-8"
+        aria-label="Close story"
       >
         <X className="w-6 h-6" />
       </button>
@@ -98,10 +96,10 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
         {stories.map((_, idx) => (
           <div
             key={idx}
-            className="h-0.5 rounded-full bg-white/30 flex-1 overflow-hidden"
+            className="h-0.5 flex-1 overflow-hidden rounded-full bg-base-content/20"
           >
             <div
-              className={`h-full bg-white transition-all duration-100 ${
+              className={`h-full bg-primary transition-all duration-100 ${
                 idx < currentIndex
                   ? "w-full"
                   : idx === currentIndex
@@ -114,7 +112,7 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
       </div>
 
       {/* Author info */}
-      <div className="absolute top-8 left-4 flex items-center gap-2 z-10">
+      <div className="absolute left-3 top-7 z-20 flex max-w-[calc(100%_-_4.75rem)] items-center gap-2 rounded-xl border border-base-300 bg-base-100/90 px-2.5 py-2 shadow-lg backdrop-blur-md sm:left-4 sm:top-8">
         <UserAvatar
           user={group.author}
           size={32}
@@ -123,7 +121,7 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
         />
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-white text-sm font-medium">
+            <p className="truncate text-sm font-medium text-base-content">
               {group.author?.name}
             </p>
             {currentStory.status && currentStory.status !== "approved" && (
@@ -141,7 +139,7 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
             )}
           </div>
           {group.author?._id === currentUserId && (
-            <p className="text-white/60 text-xs flex items-center gap-1">
+            <p className="flex items-center gap-1 text-xs text-base-content/60">
               <Eye className="w-3 h-3" /> {currentStory.viewers?.length || 0}{" "}
               views
             </p>
@@ -160,7 +158,7 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
       />
 
       {/* Story content */}
-      <div className="w-full h-full flex items-center justify-center p-4">
+      <div className="flex h-full w-full items-center justify-center bg-base-300/25 px-2 pb-[max(1rem,env(safe-area-inset-bottom))] pt-20 sm:p-4">
         {currentStory.image?.url && currentStory.mediaType === "video" ? (
           <video
             src={currentStory.image.url}
@@ -168,16 +166,16 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
             autoPlay
             playsInline
             onEnded={handleNext}
-            className="max-h-[80vh] max-w-full rounded-lg"
+            className="max-h-[calc(100dvh-7rem)] max-w-full rounded-xl bg-black shadow-2xl sm:max-h-[80vh]"
           />
         ) : currentStory.image?.url ? (
           <img
             src={currentStory.image.url}
             alt=""
-            className="max-h-[80vh] max-w-full object-contain rounded-lg"
+            className="max-h-[calc(100dvh-7rem)] max-w-full rounded-xl bg-base-300 object-contain shadow-2xl sm:max-h-[80vh]"
           />
         ) : storyText ? (
-          <div className="z-20 max-h-[65vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/15 bg-white/10 px-6 py-8 text-center text-white shadow-2xl backdrop-blur-sm sm:px-10">
+          <div className="z-20 max-h-[70dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-base-300 bg-base-100 px-6 py-8 text-center text-base-content shadow-2xl sm:px-10">
             <p className="whitespace-pre-wrap break-words text-xl font-medium leading-relaxed sm:text-2xl">
               {storyText}
             </p>
@@ -188,8 +186,8 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
       {/* Text overlay at bottom */}
       {hasMedia && storyText && (
         <div className="pointer-events-none absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-0 right-0 z-20 px-4 sm:px-8">
-          <div className="mx-auto max-h-[30vh] w-fit max-w-2xl overflow-y-auto rounded-2xl border border-white/15 bg-black/70 px-4 py-3 text-center shadow-2xl backdrop-blur-md sm:px-6">
-            <p className="whitespace-pre-wrap break-words text-sm font-medium leading-relaxed text-white sm:text-base">
+          <div className="pointer-events-auto mx-auto max-h-[30vh] w-fit max-w-2xl overflow-y-auto rounded-2xl border border-base-300 bg-base-100/95 px-4 py-3 text-center shadow-2xl backdrop-blur-md sm:px-6">
+            <p className="whitespace-pre-wrap break-words text-sm font-medium leading-relaxed text-base-content sm:text-base">
               {storyText}
             </p>
           </div>
