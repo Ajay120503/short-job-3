@@ -35,11 +35,11 @@ import {
 import { normalizeJobSkills } from "../utils/jobSkills";
 import {
   getJobDateTimeLabel,
+  getJobDurationLabel,
   getShortJobTypeLabel,
 } from "../utils/jobSchedule";
 
-const formatStipend = (stipend, currency, isPaid) => {
-  if (!isPaid) return "Unpaid";
+const formatStipend = (stipend, currency) => {
   const formatted = Number(stipend).toLocaleString();
   if (currency === "USD") return `$${formatted}`;
   return `₹${formatted}`;
@@ -198,16 +198,10 @@ const JobDetail = () => {
               <p className="text-[10px] text-base-content/40">Work mode</p>
             </div>
             <div className="bg-base-200/50 rounded-xl p-3 text-center">
-              <p
-                className={`text-xs font-medium ${
-                  job.isPaid ? "text-success" : ""
-                }`}
-              >
-                {formatStipend(job.stipend, job.currency, job.isPaid)}
+              <p className="text-xs font-medium text-success">
+                {formatStipend(job.stipend, job.currency)}
               </p>
-              <p className="text-[10px] text-base-content/40">
-                {job.isPaid ? "Payout" : "Type"}
-              </p>
+              <p className="text-[10px] text-base-content/40">Payout</p>
             </div>
             <div className="bg-base-200/50 rounded-xl p-3 text-center">
               <Calendar className="w-4 h-4 text-accent mx-auto mb-1" />
@@ -229,9 +223,7 @@ const JobDetail = () => {
             <div className="bg-base-200/50 rounded-xl p-3 text-center">
               <Briefcase className="w-4 h-4 text-primary mx-auto mb-1" />
               <p className="text-xs font-medium">
-                {job.duration?.value
-                  ? `${job.duration.value} ${job.duration.unit}`
-                  : "Not specified"}
+                {getJobDurationLabel(job)}
               </p>
               <p className="text-[10px] text-base-content/40">Duration</p>
             </div>
@@ -284,14 +276,7 @@ const JobDetail = () => {
             <span className="badge badge-sm badge-primary badge-soft capitalize">
               {getShortJobTypeLabel(job)}
             </span>
-            {job.isPaid && (
-              <span className="badge badge-sm badge-success badge-soft">
-                Paid
-              </span>
-            )}
-            {!job.isPaid && (
-              <span className="badge badge-sm badge-ghost">Unpaid</span>
-            )}
+            <span className="badge badge-sm badge-success badge-soft">Paid</span>
           </div>
 
           {/* Description */}

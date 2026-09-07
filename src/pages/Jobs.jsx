@@ -10,10 +10,9 @@ import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getUserSignal } from "../utils/userSignals";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
 import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../utils/jobLocation";
-import { getJobDateTimeLabel } from "../utils/jobSchedule";
+import { getJobDateTimeLabel, getJobDurationLabel } from "../utils/jobSchedule";
 
-const formatStipend = (stipend, currency, isPaid) => {
-  if (!isPaid) return "Unpaid";
+const formatStipend = (stipend, currency) => {
   const formatted = Number(stipend).toLocaleString();
   if (currency === "USD") return `$${formatted}`;
   return `₹${formatted}`;
@@ -30,7 +29,12 @@ const ROLE_TYPE_LABELS = {
   principal: "Organization Leadership",
   other: "Other",
 };
-const SHORT_JOB_LABELS = { one_day_gig: "One-day gig", few_hours: "A few hours", weekend_only: "Weekend only", short_term: "Short term", ongoing_part_time: "Part-time", full_time: "Full-time", internship: "Internship", volunteer: "Volunteer" };
+const SHORT_JOB_LABELS = {
+  few_hours: "Few Hours",
+  one_day_gig: "One Day",
+  weekend_only: "Weekend",
+  short_term: "Short-Term",
+};
 const hasAppliedToJob = (job, userId) =>
   Boolean(
     userId &&
@@ -59,7 +63,6 @@ const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [archivedJobs, setArchivedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [area, setArea] = useState("");
   const [nearbyAreas, setNearbyAreas] = useState([]);
@@ -163,7 +166,6 @@ const Jobs = () => {
     const fetchJobs = async () => {
       try {
         const params = {};
-        if (filter !== "all") params.isPaid = filter === "paid";
         if (area) params.area = area;
         if (shortTypes.length) params.shortJobType = shortTypes.join(",");
         if (
@@ -199,7 +201,7 @@ const Jobs = () => {
       }
     };
     fetchJobs();
-  }, [canPost, area, selectedRadiusKm, useLocation, shortTypes, filter, liveLocation?.lat, liveLocation?.lng]);
+  }, [canPost, area, selectedRadiusKm, useLocation, shortTypes, liveLocation?.lat, liveLocation?.lng]);
 
   if (loading) {
     return (
@@ -266,7 +268,7 @@ const Jobs = () => {
       </div>
 
       <div data-filter-panel className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div className="grid gap-3 sm:items-center">
           <label className="input input-bordered h-10 rounded-xl flex items-center gap-2">
             <Search className="h-4 w-4 text-base-content/35" />
             <input
@@ -276,32 +278,6 @@ const Jobs = () => {
               placeholder="Search jobs, skills, organization..."
             />
           </label>
-          <div className="join w-full sm:w-auto">
-            <button
-              className={`btn btn-sm join-item flex-1 sm:flex-none ${
-                filter === "all" ? "btn-primary" : "btn-ghost"
-              }`}
-              onClick={() => setFilter("all")}
-            >
-              All
-            </button>
-            <button
-              className={`btn btn-sm join-item flex-1 sm:flex-none ${
-                filter === "paid" ? "btn-primary" : "btn-ghost"
-              }`}
-              onClick={() => setFilter("paid")}
-            >
-              Paid
-            </button>
-            <button
-              className={`btn btn-sm join-item flex-1 sm:flex-none ${
-                filter === "unpaid" ? "btn-primary" : "btn-ghost"
-              }`}
-              onClick={() => setFilter("unpaid")}
-            >
-              Unpaid
-            </button>
-          </div>
         </div>
         <div className={`mt-3 grid gap-2 ${radiusKm === "custom" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
           <select className="select select-bordered select-sm" value={area} disabled={!areaFilterEnabled || nearbyAreas.length === 0} onChange={(e) => setArea(e.target.value)}>
@@ -336,13 +312,13 @@ const Jobs = () => {
           )}
           <select className="select select-bordered select-sm" value="" onChange={(e) => { if (e.target.value && !shortTypes.includes(e.target.value)) setShortTypes((items) => [...items, e.target.value]); }}><option value="">Add job type…</option>{Object.entries(SHORT_JOB_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
           {shortTypes.map((item) => <button key={item} className="badge badge-primary badge-outline" onClick={() => setShortTypes((items) => items.filter((value) => value !== item))}>{SHORT_JOB_LABELS[item]} ×</button>)}
-          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setFilter("all"); setArea(""); setRadiusKm("5"); setCustomRadiusKm("5"); setUseLocation(Boolean(user?.locationAccessEnabled && user?.currentLocation?.lat)); setShortTypes([]); setSearchTerm(""); }}>Reset filters</button>
+          <button className="btn btn-ghost btn-xs ml-auto" onClick={() => { setArea(""); setRadiusKm("5"); setCustomRadiusKm("5"); setUseLocation(Boolean(user?.locationAccessEnabled && user?.currentLocation?.lat)); setShortTypes([]); setSearchTerm(""); }}>Reset filters</button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-base-content/45">
           <SlidersHorizontal className="h-3.5 w-3.5" />
           <span>{filtered.length} showing</span>
           <span className="h-1 w-1 rounded-full bg-base-content/25" />
-          <span>{visibleJobs.filter((j) => j.isPaid).length} paid</span>
+          <span>All opportunities are paid</span>
           <span className="h-1 w-1 rounded-full bg-base-content/25" />
           <span>{visibleJobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0)} total applicants</span>
         </div>
@@ -426,18 +402,11 @@ const Jobs = () => {
                             </span>
                           </span>
                           <span
-                            className={`flex items-center gap-1 font-medium ${
-                              job.isPaid
-                                ? "text-success"
-                                : isSpecialJob
-                                  ? "text-base-content/55"
-                                  : "text-base-content/40"
-                            }`}
+                            className="flex items-center gap-1 font-medium text-success"
                           >
                             {formatStipend(
                               job.stipend,
                               job.currency,
-                              job.isPaid,
                             )}
                           </span>
                           <span
@@ -455,7 +424,7 @@ const Jobs = () => {
                           <span className="badge badge-xs badge-soft badge-primary font-medium">
                             {SHORT_JOB_LABELS[job.shortJobType] || ROLE_TYPE_LABELS[job.roleType] || "Opportunity"}
                           </span>
-                          {job.duration?.value && <span className="badge badge-xs badge-outline">{job.duration.value} {job.duration.unit === "hours" ? "hrs" : "days"}</span>}
+                          {job.duration?.value && <span className="badge badge-xs badge-outline">{getJobDurationLabel(job)}</span>}
                           {getJobDateTimeLabel(job) && <span className="badge badge-xs badge-outline"><Clock className="h-3 w-3" /> {getJobDateTimeLabel(job)}</span>}
                           {job.distanceKm != null && <span className="badge badge-xs badge-info badge-soft">{Number(job.distanceKm).toFixed(1)} km away</span>}
                           {job.postedBy?._id === user?._id &&

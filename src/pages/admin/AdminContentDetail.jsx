@@ -390,8 +390,8 @@ const AdminContentDetail = () => {
                   Compensation
                 </span>
                 <p className="font-medium">
-                  {content.isPaid ? "Paid" : "Volunteer"}
-                  {content.isPaid && content.stipend
+                  Paid
+                  {content.stipend
                     ? ` (${content.stipend})`
                     : ""}
                 </p>

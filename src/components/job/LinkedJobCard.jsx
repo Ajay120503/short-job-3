@@ -15,7 +15,7 @@ import {
 } from "../../utils/specialUserStyles";
 import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../../utils/jobLocation";
 import { normalizeJobSkills } from "../../utils/jobSkills";
-import { getJobDateTimeLabel } from "../../utils/jobSchedule";
+import { getJobDateTimeLabel, getJobDurationLabel } from "../../utils/jobSchedule";
 
 const LinkedJobCard = ({ job }) => {
   if (!job) return null;
@@ -27,7 +27,6 @@ const LinkedJobCard = ({ job }) => {
   const skillsRequired = normalizeJobSkills(job.skillsRequired);
 
   const formatStipend = () => {
-    if (!job.isPaid || !job.stipend) return "Unpaid";
     const value = Number(job.stipend).toLocaleString("en-IN");
     return `${job.currency === "USD" ? "$" : "₹"}${value}`;
   };
@@ -136,6 +135,12 @@ const LinkedJobCard = ({ job }) => {
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
                 {getJobDateTimeLabel(job)}
+              </span>
+            )}
+            {job.duration?.value && (
+              <span className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                {getJobDurationLabel(job)}
               </span>
             )}
           </div>

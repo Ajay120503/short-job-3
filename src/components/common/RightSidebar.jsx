@@ -398,19 +398,11 @@ const RightSidebar = () => {
                                 {getJobWorkplaceLabel(job)}
                               </span>
                             </span>
-                            <span
-                              className={`flex min-w-0 items-center gap-1 text-[10px] font-semibold ${
-                                job.isPaid
-                                  ? "text-success"
-                                  : "text-base-content/40"
-                              }`}
-                            >
+                            <span className="flex min-w-0 items-center gap-1 text-[10px] font-semibold text-success">
                               <span className="max-w-24 truncate rounded-full bg-success/10 px-1.5 py-0.5">
-                                {job.isPaid
-                                  ? job.currency === "USD"
-                                    ? `$${Number(job.stipend).toLocaleString()}`
-                                    : `₹${Number(job.stipend).toLocaleString()}`
-                                  : "Volunteer"}
+                                {job.currency === "USD"
+                                  ? `$${Number(job.stipend).toLocaleString()}`
+                                  : `₹${Number(job.stipend).toLocaleString()}`}
                               </span>
                             </span>
                           </div>

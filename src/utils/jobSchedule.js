@@ -41,15 +41,37 @@ export const getJobDateTimeLabel = (job) => {
   return [date, time].filter(Boolean).join(" · ");
 };
 
+export const SHORT_JOB_TYPE_OPTIONS = [
+  ["few_hours", "Few Hours"],
+  ["one_day_gig", "One Day"],
+  ["weekend_only", "Weekend"],
+  ["short_term", "Short-Term"],
+];
+
+export const usesDailyWorkingHours = (shortJobType) =>
+  shortJobType === "weekend_only" || shortJobType === "short_term";
+
+export const getDurationUnitForJobType = (shortJobType) =>
+  usesDailyWorkingHours(shortJobType) ? "days" : "hours";
+
+export const getJobDurationLabel = (job) => {
+  const value = Number(job?.duration?.value);
+  if (!Number.isFinite(value) || value <= 0) return "Not specified";
+  if (usesDailyWorkingHours(job?.shortJobType)) {
+    const hours = Number(job?.workingHoursPerDay);
+    const daysLabel = `${value} ${value === 1 ? "Day" : "Days"}`;
+    return Number.isFinite(hours) && hours > 0
+      ? `${daysLabel} × ${hours} Hours/Day`
+      : daysLabel;
+  }
+  return `${value} ${value === 1 ? "Hour" : "Hours"}`;
+};
+
 const SHORT_JOB_TYPE_LABELS = {
-  one_day_gig: "One-day gig",
-  few_hours: "A few hours",
-  weekend_only: "Weekend opportunity",
-  short_term: "Short-term opportunity",
-  ongoing_part_time: "Part-time opportunity",
-  full_time: "Full-time opportunity",
-  internship: "Internship",
-  volunteer: "Volunteer opportunity",
+  one_day_gig: "One Day",
+  few_hours: "Few Hours",
+  weekend_only: "Weekend",
+  short_term: "Short-Term",
 };
 
 export const getShortJobTypeLabel = (job) =>

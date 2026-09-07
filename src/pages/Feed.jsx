@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link as RouterLink, useNavigate, Link } from "react-router-dom";
 import {
   Heart,
@@ -139,6 +139,8 @@ const Feed = () => {
   const [commentText, setCommentText] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [addingComment, setAddingComment] = useState(false);
+  const commentSubmitLock = useRef(false);
 
   // Delete post confirmation
   const [postToDelete, setPostToDelete] = useState(null);
@@ -215,6 +217,9 @@ const Feed = () => {
     try {
       const { data } = await API.get(`/posts/${post._id}/comments`);
       setComments(data.comments || []);
+      setPosts((items) => items.map((item) => item._id === post._id
+        ? { ...item, commentsCount: data.pagination?.allTotal ?? countCommentThread(data.comments || []) }
+        : item));
     } catch {
       toast.error("Failed to load comments");
     } finally {
@@ -224,23 +229,36 @@ const Feed = () => {
 
   // Add comment
   const handleAddComment = async () => {
-    if (!commentText.trim() || !commentPost) return;
-    if (commentText.trim().length > 500) {
+    if (commentSubmitLock.current || !commentPost) return;
+    const cleanComment = commentText.trim();
+    if (cleanComment.length < 3) {
+      toast.error("Comments must contain at least 3 characters.");
+      return;
+    }
+    if (cleanComment.length > 500) {
       toast.error("Comments cannot exceed 500 characters.");
       return;
     }
+    commentSubmitLock.current = true;
+    setAddingComment(true);
     try {
       const endpoint = replyTo
         ? `/comments/${replyTo}/reply`
         : `/posts/${commentPost._id}/comments`;
-      await API.post(endpoint, { text: commentText });
+      await API.post(endpoint, { text: cleanComment });
       setCommentText("");
       setReplyTo(null);
       // Refresh comments
       const { data } = await API.get(`/posts/${commentPost._id}/comments`);
       setComments(data.comments || []);
+      setPosts((items) => items.map((post) => post._id === commentPost._id
+        ? { ...post, commentsCount: data.pagination?.allTotal ?? countCommentThread(data.comments || []) }
+        : post));
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to add comment");
+    } finally {
+      commentSubmitLock.current = false;
+      setAddingComment(false);
     }
   };
 
@@ -251,6 +269,9 @@ const Feed = () => {
       if (commentPost) {
         const { data } = await API.get(`/posts/${commentPost._id}/comments`);
         setComments(data.comments || []);
+        setPosts((items) => items.map((post) => post._id === commentPost._id
+          ? { ...post, commentsCount: data.pagination?.allTotal ?? countCommentThread(data.comments || []) }
+          : post));
       }
     } catch {
       /* ignore */
@@ -264,6 +285,9 @@ const Feed = () => {
       if (commentPost) {
         const { data } = await API.get(`/posts/${commentPost._id}/comments`);
         setComments(data.comments || []);
+        setPosts((items) => items.map((post) => post._id === commentPost._id
+          ? { ...post, commentsCount: data.pagination?.allTotal ?? countCommentThread(data.comments || []) }
+          : post));
       }
       toast.success("Comment deleted");
     } catch {
@@ -579,7 +603,7 @@ const Feed = () => {
                       className="btn btn-ghost btn-sm gap-2 font-medium text-xs hover:bg-primary/10"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      {post.comments?.length || 0}
+                      {post.commentsCount ?? post.comments?.length ?? 0}
                     </button>
                     <div className="dropdown dropdown-end ml-auto">
                       <button
@@ -783,10 +807,10 @@ const Feed = () => {
                 <button
                   type="submit"
                   className="btn btn-primary btn-circle btn-sm mb-0.5 flex-shrink-0 shadow-sm"
-                  disabled={!commentText.trim()}
+                  disabled={commentText.trim().length < 3 || addingComment}
                   aria-label={replyTo ? "Send reply" : "Post comment"}
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  {addingComment ? <span className="loading loading-spinner loading-xs" /> : <Send className="w-3.5 h-3.5" />}
                 </button>
               </form>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Heart,
@@ -24,6 +24,11 @@ import {
 } from "../utils/specialUserStyles";
 import toast from "../utils/toast";
 
+const countCommentThread = (items = []) => items.reduce(
+  (total, comment) => total + 1 + countCommentThread(comment.replies || []),
+  0,
+);
+
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,11 +39,17 @@ const PostDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [addingComment, setAddingComment] = useState(false);
+  const commentSubmitLock = useRef(false);
 
   const fetchComments = useCallback(async () => {
     try {
       const { data } = await API.get(`/posts/${id}/comments`);
-      setComments(data.comments || []);
+      const nextComments = data.comments || [];
+      setComments(nextComments);
+      setPost((current) => current ? {
+        ...current,
+        commentsCount: data.pagination?.allTotal ?? countCommentThread(nextComments),
+      } : current);
     } catch {
       // Silently fail - comments section will show empty state
     }
@@ -62,7 +73,14 @@ const PostDetail = () => {
 
     API.get(`/posts/${id}/comments`)
       .then(({ data }) => {
-        if (isMounted) setComments(data.comments || []);
+        if (isMounted) {
+          const nextComments = data.comments || [];
+          setComments(nextComments);
+          setPost((current) => current ? {
+            ...current,
+            commentsCount: data.pagination?.allTotal ?? countCommentThread(nextComments),
+          } : current);
+        }
       })
       .catch(() => {
         // Silently fail - comments section will show empty state
@@ -123,23 +141,30 @@ const PostDetail = () => {
   };
 
   const handleAddComment = async () => {
-    if (!commentText.trim()) return;
-    if (commentText.trim().length > 500) {
+    if (commentSubmitLock.current) return;
+    const cleanComment = commentText.trim();
+    if (cleanComment.length < 3) {
+      toast.error("Comments must contain at least 3 characters.");
+      return;
+    }
+    if (cleanComment.length > 500) {
       toast.error("Comments cannot exceed 500 characters.");
       return;
     }
+    commentSubmitLock.current = true;
     setAddingComment(true);
     try {
       const endpoint = replyTo
         ? `/comments/${replyTo}/reply`
         : `/posts/${id}/comments`;
-      await API.post(endpoint, { text: commentText });
+      await API.post(endpoint, { text: cleanComment });
       setCommentText("");
       setReplyTo(null);
       fetchComments();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add comment");
     } finally {
+      commentSubmitLock.current = false;
       setAddingComment(false);
     }
   };
@@ -334,7 +359,7 @@ const PostDetail = () => {
           <button className="btn btn-ghost btn-sm gap-1.5">
             <MessageCircle className="w-4 h-4" />
             <span className="text-xs">
-              {post.commentsCount || comments.length}
+              {post.commentsCount ?? countCommentThread(comments)}
             </span>
           </button>
         </div>
@@ -350,11 +375,11 @@ const PostDetail = () => {
             <div>
               <h3 className="font-bold text-base leading-tight">Comments</h3>
               <p className="text-xs text-base-content/45">
-                {comments.length} {comments.length === 1 ? "response" : "responses"}
+                {countCommentThread(comments)} {countCommentThread(comments) === 1 ? "response" : "responses"}
               </p>
             </div>
           </div>
-          <span className="badge badge-primary badge-soft">{comments.length}</span>
+          <span className="badge badge-primary badge-soft">{countCommentThread(comments)}</span>
         </div>
 
         {/* Add comment */}
@@ -394,7 +419,7 @@ const PostDetail = () => {
                 <button
                   onClick={handleAddComment}
                   className="btn btn-primary btn-sm btn-circle shrink-0"
-                  disabled={!commentText.trim() || addingComment}
+                  disabled={commentText.trim().length < 3 || addingComment}
                 >
                   {addingComment ? (
                     <span className="loading loading-spinner loading-xs" />

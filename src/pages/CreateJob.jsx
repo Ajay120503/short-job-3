@@ -20,7 +20,13 @@ import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
 import JobTimeField from "../components/job/JobTimeField";
 import ConfirmModal from "../components/common/ConfirmModal";
-import { calculateDurationHours, calculateEndTime } from "../utils/jobSchedule";
+import {
+  SHORT_JOB_TYPE_OPTIONS,
+  calculateDurationHours,
+  calculateEndTime,
+  getDurationUnitForJobType,
+  usesDailyWorkingHours,
+} from "../utils/jobSchedule";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,
@@ -31,18 +37,11 @@ import {
   JOB_ADDRESS_MAX_LENGTH,
   JOB_DESCRIPTION_MAX_LENGTH,
   JOB_LIST_MAX_ITEMS,
+  JOB_LIST_ITEM_MAX_LENGTH,
   JOB_TEXT_MAX_LENGTH,
   JOB_TEXT_MIN_LENGTH,
-  LIST_ITEM_MAX_LENGTH,
   LIST_ITEM_MIN_LENGTH,
 } from "../utils/creationLimits";
-
-const SHORT_JOB_TYPES = [
-  ["one_day_gig", "One-day gig"], ["few_hours", "A few hours"],
-  ["weekend_only", "Weekend only"], ["short_term", "Short term"],
-  ["ongoing_part_time", "Ongoing part-time"], ["full_time", "Full-time"],
-  ["internship", "Internship"], ["volunteer", "Volunteer"],
-];
 
 const LOCATIONS = [
   { value: "onsite", label: "On-site" },
@@ -82,7 +81,7 @@ const CreateJob = () => {
     jobDate: "",
     startTime: "",
     endTime: "",
-    isPaid: false,
+    isPaid: true,
     currency: "INR",
     stipend: "",
     location: "onsite",
@@ -98,6 +97,7 @@ const CreateJob = () => {
     deadline: "",
     contactEmail: user?.email || "",
     maxApplicants: "",
+    workingHoursPerDay: "",
   });
 
   const [image, setImage] = useState(null);
@@ -108,13 +108,25 @@ const CreateJob = () => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => {
       const next = { ...prev, [name]: type === "checkbox" ? checked : value };
+      if (name === "shortJobType") {
+        next.durationUnit = getDurationUnitForJobType(value);
+        next.durationValue = value === "weekend_only" ? "2" : "";
+        next.workingHoursPerDay = "";
+        if (next.startTime && next.endTime) {
+          const hours = calculateDurationHours(next.startTime, next.endTime);
+          if (usesDailyWorkingHours(value)) next.workingHoursPerDay = hours;
+          else next.durationValue = hours;
+        }
+      }
       if ((name === "startTime" || name === "endTime") && next.startTime && next.endTime) {
-        next.durationUnit = "hours";
-        next.durationValue = calculateDurationHours(next.startTime, next.endTime);
-      } else if (name === "startTime" && next.durationUnit === "hours" && next.durationValue) {
-        next.endTime = calculateEndTime(next.startTime, next.durationValue);
-      } else if ((name === "durationValue" || name === "durationUnit") && next.durationUnit === "hours" && next.startTime) {
-        next.endTime = calculateEndTime(next.startTime, next.durationValue);
+        const hours = calculateDurationHours(next.startTime, next.endTime);
+        if (usesDailyWorkingHours(next.shortJobType)) next.workingHoursPerDay = hours;
+        else next.durationValue = hours;
+      } else if (name === "startTime") {
+        const hours = usesDailyWorkingHours(next.shortJobType) ? next.workingHoursPerDay : next.durationValue;
+        if (hours) next.endTime = calculateEndTime(next.startTime, hours);
+      } else if ((name === "durationValue" && !usesDailyWorkingHours(next.shortJobType)) || name === "workingHoursPerDay") {
+        if (next.startTime) next.endTime = calculateEndTime(next.startTime, value);
       }
       return next;
     });
@@ -158,11 +170,17 @@ const CreateJob = () => {
     if (!organizationName) nextErrors.institutionName = "Organization name is required.";
     else if (organizationName.length < JOB_TEXT_MIN_LENGTH || organizationName.length > JOB_TEXT_MAX_LENGTH) nextErrors.institutionName = `Organization name must contain ${JOB_TEXT_MIN_LENGTH} to ${JOB_TEXT_MAX_LENGTH} characters.`;
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
-    if (!Number.isFinite(Number(form.durationValue)) || Number(form.durationValue) <= 0) nextErrors.durationValue = "Enter a positive duration.";
-    if (form.durationUnit === "hours" && Number(form.durationValue) > 24) nextErrors.durationValue = "Duration cannot exceed 24 hours.";
-    if (form.durationUnit === "days" && Number(form.durationValue) > 365) nextErrors.durationValue = "Duration cannot exceed 365 days.";
+    const duration = Number(form.durationValue);
+    const dailyHours = Number(form.workingHoursPerDay);
+    const dailySchedule = usesDailyWorkingHours(form.shortJobType);
+    if (!Number.isFinite(duration) || duration <= 0) nextErrors.durationValue = "Enter a positive duration.";
+    else if (!dailySchedule && duration > 24) nextErrors.durationValue = "Duration cannot exceed 24 hours.";
+    else if (form.shortJobType === "weekend_only" && duration !== 2) nextErrors.durationValue = "Weekend jobs run for 2 days.";
+    else if (form.shortJobType === "short_term" && (!Number.isInteger(duration) || duration > 365)) nextErrors.durationValue = "Short-term duration must be 1 to 365 whole days.";
+    if (dailySchedule && (!Number.isFinite(dailyHours) || dailyHours < 0.25 || dailyHours > 24)) nextErrors.workingHoursPerDay = "Working hours per day must be between 0.25 and 24.";
     if (!form.jobDate) nextErrors.jobDate = "Job date is required.";
     if (form.jobDate && form.jobDate < todayInputValue) nextErrors.jobDate = "Job date cannot be in the past.";
+    if (form.shortJobType === "weekend_only" && form.jobDate && new Date(`${form.jobDate}T00:00:00`).getDay() !== 6) nextErrors.jobDate = "Weekend jobs must start on a Saturday.";
     if (!form.startTime) nextErrors.startTime = "Start time is required.";
     if (!form.endTime) nextErrors.endTime = "End time is required.";
     if (form.startTime && form.endTime && form.startTime === form.endTime) {
@@ -177,7 +195,7 @@ const CreateJob = () => {
     if (form.contactEmail && (!isValidEmail(form.contactEmail) || !hasValidEmailLocalPart(form.contactEmail))) {
       nextErrors.contactEmail = "Enter a valid email with 2 to 20 characters before @.";
     }
-    if (form.isPaid && (!form.stipend || Number(form.stipend) <= 0)) {
+    if (!form.stipend || Number(form.stipend) <= 0) {
       nextErrors.stipend = "Enter a valid paid amount.";
     }
     if (form.maxApplicants !== "" && (!Number.isInteger(Number(form.maxApplicants)) || Number(form.maxApplicants) < 0 || Number(form.maxApplicants) > 100)) {
@@ -197,10 +215,10 @@ const CreateJob = () => {
     });
     const qualifications = [...new Set(form.requiredQualifications.split(",").map((item) => item.trim()).filter(Boolean))];
     if (qualifications.length > JOB_LIST_MAX_ITEMS) nextErrors.requiredQualifications = `Add no more than ${JOB_LIST_MAX_ITEMS} qualifications.`;
-    else if (qualifications.some((item) => item.length < LIST_ITEM_MIN_LENGTH || item.length > LIST_ITEM_MAX_LENGTH)) nextErrors.requiredQualifications = `Each qualification must contain ${LIST_ITEM_MIN_LENGTH} to ${LIST_ITEM_MAX_LENGTH} characters.`;
+    else if (qualifications.some((item) => item.length < LIST_ITEM_MIN_LENGTH || item.length > JOB_LIST_ITEM_MAX_LENGTH)) nextErrors.requiredQualifications = `Each qualification must contain ${LIST_ITEM_MIN_LENGTH} to ${JOB_LIST_ITEM_MAX_LENGTH} characters.`;
     const skills = [...new Set(form.skillsRequired.split(",").map((skill) => skill.trim()).filter(Boolean))];
     if (skills.length > JOB_LIST_MAX_ITEMS) nextErrors.skillsRequired = `Add no more than ${JOB_LIST_MAX_ITEMS} skills.`;
-    else if (skills.some((skill) => skill.length < LIST_ITEM_MIN_LENGTH || skill.length > LIST_ITEM_MAX_LENGTH)) nextErrors.skillsRequired = `Each skill must contain ${LIST_ITEM_MIN_LENGTH} to ${LIST_ITEM_MAX_LENGTH} characters.`;
+    else if (skills.some((skill) => skill.length < LIST_ITEM_MIN_LENGTH || skill.length > JOB_LIST_ITEM_MAX_LENGTH)) nextErrors.skillsRequired = `Each skill must contain ${LIST_ITEM_MIN_LENGTH} to ${JOB_LIST_ITEM_MAX_LENGTH} characters.`;
     const hasLat = String(form.coordinateLat).trim() !== "";
     const hasLng = String(form.coordinateLng).trim() !== "";
     if (hasLat !== hasLng) {
@@ -300,10 +318,11 @@ const CreateJob = () => {
     formData.append("shortJobType", form.shortJobType);
     formData.append("durationValue", form.durationValue);
     formData.append("durationUnit", form.durationUnit);
+    if (usesDailyWorkingHours(form.shortJobType)) formData.append("workingHoursPerDay", form.workingHoursPerDay);
     formData.append("jobDate", form.jobDate);
     formData.append("startTime", form.startTime);
     formData.append("endTime", form.endTime);
-    formData.append("isPaid", form.isPaid);
+    formData.append("isPaid", "true");
     formData.append("location", form.location);
     formData.append("workplaceName", form.workplaceName);
     formData.append("workplaceAddress", form.workplaceAddress);
@@ -316,7 +335,7 @@ const CreateJob = () => {
     formData.append("requiredQualifications", form.requiredQualifications);
     formData.append("skillsRequired", form.skillsRequired);
 
-    if (form.stipend && form.isPaid) {
+    if (form.stipend) {
       formData.append("stipend", form.stipend);
       formData.append("currency", form.currency);
     }
@@ -472,7 +491,7 @@ const CreateJob = () => {
                 onChange={handleChange}
                 required
               >
-                {SHORT_JOB_TYPES.map(([value, label]) => (
+                {SHORT_JOB_TYPE_OPTIONS.map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
@@ -494,12 +513,13 @@ const CreateJob = () => {
                   type="number"
                   min="0.25"
                   max={form.durationUnit === "hours" ? "24" : "365"}
-                  step="0.25"
+                  step={usesDailyWorkingHours(form.shortJobType) ? "1" : "0.25"}
                   value={form.durationValue}
                   onChange={handleChange}
                   className={`input input-bordered ${errors.durationValue ? "input-error" : ""}`}
                   placeholder="4"
                   required
+                  readOnly={form.shortJobType === "weekend_only"}
                 />
                 {errors.durationValue && (
                   <FieldError>{errors.durationValue}</FieldError>
@@ -512,15 +532,35 @@ const CreateJob = () => {
                 <select
                   name="durationUnit"
                   value={form.durationUnit}
-                  onChange={handleChange}
-                  className="select select-bordered"
+                  className="select select-bordered bg-base-200/70"
                   required
+                  disabled
                 >
                   <option value="hours">Hours</option>
                   <option value="days">Days</option>
                 </select>
               </div>
             </div>
+            {usesDailyWorkingHours(form.shortJobType) && (
+              <div className="form-control">
+                <label className="label pb-1">
+                  <span className="label-text text-sm font-medium">Working Hours per Day <RequiredMark /></span>
+                </label>
+                <input
+                  name="workingHoursPerDay"
+                  type="number"
+                  min="0.25"
+                  max="24"
+                  step="0.25"
+                  value={form.workingHoursPerDay}
+                  onChange={handleChange}
+                  className={`input input-bordered ${errors.workingHoursPerDay ? "input-error" : ""}`}
+                  placeholder="6"
+                  required
+                />
+                {errors.workingHoursPerDay && <FieldError>{errors.workingHoursPerDay}</FieldError>}
+              </div>
+            )}
             <div className="rounded-xl border border-base-300/60 bg-base-200/35 p-3">
               <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
                 <Clock className="h-4 w-4 text-primary" /> Daily working time
@@ -705,19 +745,7 @@ const CreateJob = () => {
               </a>
             </div>
 
-            {/* Paid / Unpaid */}
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="isPaid"
-                  className="checkbox checkbox-primary checkbox-sm"
-                  checked={form.isPaid}
-                  onChange={handleChange}
-                />
-                <span className="text-sm font-medium">Paid Position</span>
-              </label>
-            </div>
+            <div className="badge badge-success badge-soft">Paid job</div>
 
             {/* Stipend (only if paid) */}
             {form.isPaid && (
@@ -736,7 +764,7 @@ const CreateJob = () => {
                       placeholder="e.g., 50000"
                       value={form.stipend}
                       onChange={handleChange}
-                      min="0"
+                      min="0.01"
                       required
                     />
                     <select
@@ -767,7 +795,7 @@ const CreateJob = () => {
                 placeholder="Up to 5, comma separated (e.g., B.Ed, M.Sc)"
                 value={form.requiredQualifications}
                 onChange={handleChange}
-                maxLength={108}
+                maxLength={258}
               />
               {errors.requiredQualifications && <FieldError>{errors.requiredQualifications}</FieldError>}
             </div>
@@ -786,7 +814,7 @@ const CreateJob = () => {
                 placeholder="e.g., Communication, Python, Classroom Management (comma separated)"
                 value={form.skillsRequired}
                 onChange={handleChange}
-                maxLength={108}
+                maxLength={258}
               />
               {errors.skillsRequired && <FieldError>{errors.skillsRequired}</FieldError>}
             </div>

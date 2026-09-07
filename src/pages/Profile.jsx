@@ -747,19 +747,11 @@ const Profile = () => {
                             {job.institutionName}
                           </p>
                           <div className="flex flex-wrap gap-1.5 mt-2">
-                            {job.isPaid ? (
-                              <span className="badge badge-xs badge-success badge-soft">
-                                Paid
-                                {job.stipend > 0 &&
-                                  ` · ${job.currency === "USD" ? "$" : "₹"}${
-                                    job.stipend
-                                  }`}
-                              </span>
-                            ) : (
-                              <span className="badge badge-xs badge-ghost">
-                                Volunteer
-                              </span>
-                            )}
+                            <span className="badge badge-xs badge-success badge-soft">
+                              Paid
+                              {job.stipend > 0 &&
+                                ` · ${job.currency === "USD" ? "$" : "₹"}${job.stipend}`}
+                            </span>
                             <span className="badge badge-xs badge-outline capitalize">
                               {getJobWorkplaceLabel(job)}
                             </span>
