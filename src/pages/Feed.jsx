@@ -231,8 +231,8 @@ const Feed = () => {
   const handleAddComment = async () => {
     if (commentSubmitLock.current || !commentPost) return;
     const cleanComment = commentText.trim();
-    if (cleanComment.length < 3) {
-      toast.error("Comments must contain at least 3 characters.");
+    if (cleanComment.length < 1) {
+      toast.error("Comments must contain at least 1 character.");
       return;
     }
     if (cleanComment.length > 500) {
@@ -791,6 +791,7 @@ const Feed = () => {
                     replyTo ? "Write a reply..." : "Write a comment..."
                   }
                   value={commentText}
+                  minLength={1}
                   maxLength={500}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => {
@@ -807,7 +808,7 @@ const Feed = () => {
                 <button
                   type="submit"
                   className="btn btn-primary btn-circle btn-sm mb-0.5 flex-shrink-0 shadow-sm"
-                  disabled={commentText.trim().length < 3 || addingComment}
+                  disabled={commentText.trim().length < 1 || addingComment}
                   aria-label={replyTo ? "Send reply" : "Post comment"}
                 >
                   {addingComment ? <span className="loading loading-spinner loading-xs" /> : <Send className="w-3.5 h-3.5" />}

@@ -101,7 +101,7 @@ const GlobalSearch = ({ className = "" }) => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [results, setResults] = useState({ users: [], jobs: [], posts: [], chats: [] });
+  const [results, setResults] = useState({ users: [], jobs: [], posts: [], comments: [], chats: [] });
 
   const availableDestinations = useMemo(() => [
     ...GENERAL_DESTINATIONS,
@@ -123,6 +123,7 @@ const GlobalSearch = ({ className = "" }) => {
     results.users.length ||
     results.jobs.length ||
     results.posts.length ||
+    results.comments?.length ||
     results.chats.length;
 
   useEffect(() => {
@@ -153,10 +154,10 @@ const GlobalSearch = ({ className = "" }) => {
           params: { q: searchTerm },
           signal: controller.signal,
         });
-        setResults(data.results || { users: [], jobs: [], posts: [], chats: [] });
+        setResults({ users: [], jobs: [], posts: [], comments: [], chats: [], ...(data.results || {}) });
       } catch (requestError) {
         if (requestError.code !== "ERR_CANCELED") {
-          setResults({ users: [], jobs: [], posts: [], chats: [] });
+          setResults({ users: [], jobs: [], posts: [], comments: [], chats: [] });
           setError("Search is temporarily unavailable");
         }
       } finally {
@@ -173,7 +174,7 @@ const GlobalSearch = ({ className = "" }) => {
   const closeSearch = () => {
     setOpen(false);
     setQuery("");
-    setResults({ users: [], jobs: [], posts: [], chats: [] });
+    setResults({ users: [], jobs: [], posts: [], comments: [], chats: [] });
     setError("");
   };
 
@@ -186,7 +187,7 @@ const GlobalSearch = ({ className = "" }) => {
     const value = event.target.value;
     setQuery(value);
     if (value.trim().length < 2) {
-      setResults({ users: [], jobs: [], posts: [], chats: [] });
+      setResults({ users: [], jobs: [], posts: [], comments: [], chats: [] });
       setError("");
       setLoading(false);
     }
@@ -227,7 +228,7 @@ const GlobalSearch = ({ className = "" }) => {
                 type="search"
                 value={query}
                 onChange={handleQueryChange}
-                placeholder="Search people, jobs, posts, or pages..."
+                placeholder="Search people, jobs, posts, comments, or pages..."
                 className="min-w-0 flex-1 bg-transparent text-sm text-base-content outline-none placeholder:text-base-content/35 sm:text-base"
               />
               <button
@@ -329,6 +330,20 @@ const GlobalSearch = ({ className = "" }) => {
                           title={getPostTitle(item)}
                           subtitle={`${item.author?.name || "ShortJob user"} · ${item.type || "post"}`}
                           path={`/post/${item._id}`}
+                          onOpen={openResult}
+                        />
+                      ))}
+                    </ResultGroup>
+                  )}
+                  {results.comments.length > 0 && (
+                    <ResultGroup title="Your comments">
+                      {results.comments.map((item) => (
+                        <ContentResult
+                          key={item._id}
+                          icon={MessageCircle}
+                          title={getPostTitle(item)}
+                          subtitle={`Comment on: ${getPostTitle(item.post)}`}
+                          path={`/post/${item.post._id}#comment-${item._id}`}
                           onOpen={openResult}
                         />
                       ))}

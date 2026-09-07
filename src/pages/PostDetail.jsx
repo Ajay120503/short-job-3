@@ -39,21 +39,52 @@ const PostDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [addingComment, setAddingComment] = useState(false);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
+  const [commentPagination, setCommentPagination] = useState({ page: 1, pages: 1, allTotal: null });
   const commentSubmitLock = useRef(false);
+  const loadingMoreCommentsRef = useRef(false);
+  const highlightedCommentId = window.location.hash.startsWith("#comment-")
+    ? window.location.hash.slice("#comment-".length)
+    : "";
 
-  const fetchComments = useCallback(async () => {
+  const fetchComments = useCallback(async ({ page = 1, append = false } = {}) => {
+    if (append) {
+      if (loadingMoreCommentsRef.current) return;
+      loadingMoreCommentsRef.current = true;
+      setLoadingMoreComments(true);
+    }
     try {
-      const { data } = await API.get(`/posts/${id}/comments`);
+      const { data } = await API.get(`/posts/${id}/comments`, {
+        params: {
+          page,
+          limit: 20,
+          ...(page === 1 && highlightedCommentId ? { highlight: highlightedCommentId } : {}),
+        },
+      });
       const nextComments = data.comments || [];
-      setComments(nextComments);
+      setComments((current) => {
+        if (!append) return nextComments;
+        const existingIds = new Set(current.map((comment) => comment._id));
+        return [...current, ...nextComments.filter((comment) => !existingIds.has(comment._id))];
+      });
+      setCommentPagination({
+        page: data.pagination?.page || page,
+        pages: data.pagination?.pages || 1,
+        allTotal: data.pagination?.allTotal ?? countCommentThread(nextComments),
+      });
       setPost((current) => current ? {
         ...current,
         commentsCount: data.pagination?.allTotal ?? countCommentThread(nextComments),
       } : current);
     } catch {
       // Silently fail - comments section will show empty state
+    } finally {
+      if (append) {
+        loadingMoreCommentsRef.current = false;
+        setLoadingMoreComments(false);
+      }
     }
-  }, [id]);
+  }, [id, highlightedCommentId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -71,11 +102,18 @@ const PostDetail = () => {
         if (isMounted) setLoading(false);
       });
 
-    API.get(`/posts/${id}/comments`)
+    API.get(`/posts/${id}/comments`, {
+      params: highlightedCommentId ? { highlight: highlightedCommentId } : undefined,
+    })
       .then(({ data }) => {
         if (isMounted) {
           const nextComments = data.comments || [];
           setComments(nextComments);
+          setCommentPagination({
+            page: data.pagination?.page || 1,
+            pages: data.pagination?.pages || 1,
+            allTotal: data.pagination?.allTotal ?? countCommentThread(nextComments),
+          });
           setPost((current) => current ? {
             ...current,
             commentsCount: data.pagination?.allTotal ?? countCommentThread(nextComments),
@@ -89,7 +127,18 @@ const PostDetail = () => {
     return () => {
       isMounted = false;
     };
-  }, [id, navigate]);
+  }, [id, navigate, highlightedCommentId]);
+
+  useEffect(() => {
+    if (!comments.length || !window.location.hash.startsWith("#comment-")) return;
+    const target = document.getElementById(window.location.hash.slice(1));
+    if (!target) return;
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("ring-2", "ring-primary/40");
+      window.setTimeout(() => target.classList.remove("ring-2", "ring-primary/40"), 1800);
+    });
+  }, [comments]);
 
   const handleLike = async () => {
     if (!user) return;
@@ -143,8 +192,8 @@ const PostDetail = () => {
   const handleAddComment = async () => {
     if (commentSubmitLock.current) return;
     const cleanComment = commentText.trim();
-    if (cleanComment.length < 3) {
-      toast.error("Comments must contain at least 3 characters.");
+    if (cleanComment.length < 1) {
+      toast.error("Comments must contain at least 1 character.");
       return;
     }
     if (cleanComment.length > 500) {
@@ -160,12 +209,34 @@ const PostDetail = () => {
       await API.post(endpoint, { text: cleanComment });
       setCommentText("");
       setReplyTo(null);
-      fetchComments();
+      await fetchComments();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add comment");
     } finally {
       commentSubmitLock.current = false;
       setAddingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await API.delete(`/comments/${commentId}`);
+      await fetchComments();
+      toast.success("Comment deleted");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete comment");
+    }
+  };
+
+  const handleCommentsScroll = (event) => {
+    const element = event.currentTarget;
+    const nearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 120;
+    if (
+      nearBottom
+      && !loadingMoreCommentsRef.current
+      && commentPagination.page < commentPagination.pages
+    ) {
+      fetchComments({ page: commentPagination.page + 1, append: true });
     }
   };
 
@@ -197,6 +268,9 @@ const PostDetail = () => {
   const isSaved = post.saves?.includes(user?._id) || post.isSaved;
   const isSpecialPost = canUseSpecialStyle(postAuthor);
   const specialStyle = getSpecialUserStyle(postAuthor);
+  const displayedCommentCount = commentPagination.allTotal
+    ?? post.commentsCount
+    ?? countCommentThread(comments);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-3 md:py-6">
@@ -366,8 +440,8 @@ const PostDetail = () => {
       </div>
 
       {/* Comments Section */}
-      <div className="overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-base-200 px-4 py-3 sm:px-5">
+      <div className="flex max-h-[75dvh] min-h-0 flex-col overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm lg:sticky lg:top-4 lg:h-[calc(100dvh-7rem)] lg:max-h-[calc(100dvh-7rem)]">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-base-200 px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
               <MessageCircle className="w-4 h-4 text-primary" />
@@ -375,15 +449,15 @@ const PostDetail = () => {
             <div>
               <h3 className="font-bold text-base leading-tight">Comments</h3>
               <p className="text-xs text-base-content/45">
-                {countCommentThread(comments)} {countCommentThread(comments) === 1 ? "response" : "responses"}
+                {displayedCommentCount} {displayedCommentCount === 1 ? "response" : "responses"}
               </p>
             </div>
           </div>
-          <span className="badge badge-primary badge-soft">{countCommentThread(comments)}</span>
+          <span className="badge badge-primary badge-soft">{displayedCommentCount}</span>
         </div>
 
         {/* Add comment */}
-        <div className="border-b border-base-200 bg-base-100 p-3 sm:p-4">
+        <div className="shrink-0 border-b border-base-200 bg-base-100 p-3 sm:p-4">
           <div className="flex gap-3 rounded-2xl border border-base-300/60 bg-base-200/40 p-3">
             <UserAvatar user={user} size={36} />
             <div className="flex-1 min-w-0">
@@ -404,6 +478,7 @@ const PostDetail = () => {
                   className="textarea textarea-bordered min-h-10 flex-1 resize-none rounded-2xl text-sm leading-relaxed focus:outline-none focus:border-primary/50"
                   placeholder="Write a comment..."
                   value={commentText}
+                  minLength={1}
                   maxLength={500}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => {
@@ -419,7 +494,7 @@ const PostDetail = () => {
                 <button
                   onClick={handleAddComment}
                   className="btn btn-primary btn-sm btn-circle shrink-0"
-                  disabled={commentText.trim().length < 3 || addingComment}
+                  disabled={commentText.trim().length < 1 || addingComment}
                 >
                   {addingComment ? (
                     <span className="loading loading-spinner loading-xs" />
@@ -433,7 +508,7 @@ const PostDetail = () => {
         </div>
 
         {/* Comments List */}
-        <div className="max-h-none space-y-4 overflow-y-visible p-3 sm:p-4 lg:max-h-[calc(100vh-210px)] lg:overflow-y-auto">
+        <div onScroll={handleCommentsScroll} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-4">
           {comments.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-14 h-14 rounded-2xl bg-base-300/50 flex items-center justify-center mx-auto mb-3">
@@ -451,7 +526,7 @@ const PostDetail = () => {
               {comments.map((comment) => {
                 const commentAuthor = comment.author || comment.user || {};
                 return (
-                  <div key={comment._id} className="group">
+                  <div id={`comment-${comment._id}`} key={comment._id} className="group scroll-m-24 rounded-xl transition-shadow">
                     <div className="flex gap-3">
                       <UserAvatar user={commentAuthor} size={32} />
                       <div className="flex-1 min-w-0">
@@ -482,6 +557,16 @@ const PostDetail = () => {
                           >
                             Reply
                           </button>
+                          {commentAuthor._id?.toString() === user?._id?.toString() && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteComment(comment._id)}
+                              className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-error/75 transition-colors hover:text-error"
+                              aria-label="Delete your comment"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" /> Delete
+                            </button>
+                          )}
                         </div>
 
                         {/* Replies */}
@@ -491,12 +576,25 @@ const PostDetail = () => {
                               const replyAuthor =
                                 reply.author || reply.user || {};
                               return (
-                                <div key={reply._id} className="flex gap-2">
+                                <div id={`comment-${reply._id}`} key={reply._id} className="flex scroll-m-24 gap-2 rounded-xl transition-shadow">
                                   <UserAvatar user={replyAuthor} size={24} />
                                   <div className="bg-base-200/40 border border-base-300/50 rounded-xl px-3 py-2 flex-1 min-w-0">
-                                    <p className="text-[11px] font-semibold mb-0.5">
-                                      {replyAuthor.name || "Unknown"}
-                                    </p>
+                                    <div className="mb-0.5 flex items-center gap-2">
+                                      <p className="text-[11px] font-semibold">
+                                        {replyAuthor.name || "Unknown"}
+                                      </p>
+                                      {replyAuthor._id?.toString() === user?._id?.toString() && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteComment(reply._id)}
+                                          className="ml-auto text-error/70 transition-colors hover:text-error"
+                                          aria-label="Delete your reply"
+                                          title="Delete reply"
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
                                     <p className="text-xs leading-relaxed break-words whitespace-pre-wrap">
                                       {reply.text}
                                     </p>
@@ -511,6 +609,11 @@ const PostDetail = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+          {loadingMoreComments && (
+            <div className="flex justify-center py-3">
+              <span className="loading loading-spinner loading-sm text-primary" />
             </div>
           )}
         </div>
