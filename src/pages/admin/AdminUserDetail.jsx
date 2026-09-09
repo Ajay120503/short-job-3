@@ -195,7 +195,7 @@ const AdminUserDetail = () => {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-2 py-3 sm:px-4 md:p-6">
+      <div className="admin-page mx-auto max-w-4xl px-2 py-3 sm:px-4 md:p-6">
         <div className="space-y-4">
           <div className="h-8 w-48 skeleton rounded mb-4"></div>
           <div className="card bg-base-100 p-6 space-y-4">
@@ -210,7 +210,7 @@ const AdminUserDetail = () => {
 
   if (!profile) {
     return (
-      <div className="mx-auto max-w-4xl px-2 py-20 text-center sm:px-4 md:p-6">
+      <div className="admin-page mx-auto max-w-4xl px-2 py-20 text-center sm:px-4 md:p-6">
         <h2 className="text-xl font-semibold text-base-content/40">
           User not found
         </h2>
@@ -230,7 +230,7 @@ const AdminUserDetail = () => {
   const canViewPlatformControls = isSuperAdminUser(currentUser);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
+    <div className="admin-page admin-detail-page mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
       <div data-page-header className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

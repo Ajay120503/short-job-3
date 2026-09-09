@@ -99,7 +99,7 @@ const AdminLoginRecords = () => {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 pb-20 sm:px-4 md:p-6">
+    <div className="admin-page mx-auto max-w-4xl space-y-4 px-2 py-3 pb-20 sm:px-4 md:p-6">
       <div
         data-page-header
         className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5"

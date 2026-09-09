@@ -715,7 +715,8 @@ const Profile = () => {
               {userJobs.map((job) => (
                 <div
                   key={job._id}
-                  className={`rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 cursor-pointer ${
+                  data-remote={job.location === "remote"}
+                  className={`profile-job-card rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 cursor-pointer ${
                     isSpecialProfile
                       ? specialStyle.shell
                       : "bg-base-100 border-base-300/60 hover:border-primary/25"
@@ -738,7 +739,7 @@ const Profile = () => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-semibold text-sm sm:text-base line-clamp-1">
+                          <h4 className="profile-job-title font-semibold text-sm sm:text-base line-clamp-1">
                             {job.title}
                           </h4>
                           <p
@@ -746,13 +747,13 @@ const Profile = () => {
                           >
                             {job.institutionName}
                           </p>
-                          <div className="flex flex-wrap gap-1.5 mt-2">
+                          <div className="profile-job-details flex flex-wrap gap-1.5 mt-2">
                             <span className="badge badge-xs badge-success badge-soft">
                               Paid
                               {job.stipend > 0 &&
                                 ` · ${job.currency === "USD" ? "$" : "₹"}${job.stipend}`}
                             </span>
-                            <span className="badge badge-xs badge-outline capitalize">
+                            <span className="profile-job-location badge badge-xs badge-outline capitalize">
                               {getJobWorkplaceLabel(job)}
                             </span>
                             <span className="badge badge-xs badge-ghost">
@@ -790,8 +791,9 @@ const Profile = () => {
                           className="dropdown dropdown-end flex-shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button
-                            tabIndex={0}
+                            <button
+                              tabIndex={0}
+                              aria-label={`Actions for ${job.title}`}
                             className="btn btn-ghost btn-xs btn-circle"
                           >
                             <MoreHorizontal className="w-4 h-4" />

@@ -232,7 +232,7 @@ const Explore = () => {
   const isSearching = query.trim() || exploreFilter;
 
   return (
-    <div className="max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
+    <div className="explore-page max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
       <NoticeboardBanner />
 
       {/* Header */}
@@ -283,7 +283,8 @@ const Explore = () => {
               <button
                 key={f.value}
                 onClick={() => setExploreFilter(f.value)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap ${
+                aria-pressed={exploreFilter === f.value}
+                className={`explore-filter-chip flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap ${
                   exploreFilter === f.value
                     ? "bg-primary text-primary-content shadow-sm"
                     : "bg-base-200 text-base-content/60 hover:bg-base-300 hover:text-base-content/80"
@@ -328,7 +329,7 @@ const Explore = () => {
                 return (
                   <div
                     key={u._id}
-                    className={`flex items-center gap-3 rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md sm:gap-4 sm:p-4 group ${
+                    className={`explore-user-row flex items-center gap-3 rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md sm:gap-4 sm:p-4 group ${
                       isSpecialUser
                         ? `${specialStyle.shell} ${specialStyle.shellHover}`
                         : "bg-base-100 border-base-300/50 hover:border-primary/30"
@@ -355,7 +356,7 @@ const Explore = () => {
                           </span>
                           {getUserSignal(u) && (
                             <span
-                              className={`badge badge-sm text-[10px] font-semibold ${getUserSignal(u).className}`}
+                              className={`badge badge-sm text-[10px] font-semibold ${getUserSignal(u).label === getUserRoleLabel(u) ? "explore-duplicate-badge" : ""} ${getUserSignal(u).className}`}
                             >
                               {getUserSignal(u).label}
                             </span>
@@ -419,6 +420,7 @@ const Explore = () => {
                         e.stopPropagation();
                         handleFollow(u._id);
                       }}
+                      aria-label={`${following.has(u._id) ? "Unfollow" : "Follow"} ${u.name}`}
                       className={`btn btn-active btn-sm gap-1.5 flex-shrink-0 ${
                         following.has(u._id)
                           ? "btn-outline"
@@ -453,7 +455,7 @@ const Explore = () => {
         <div className="space-y-6 sm:space-y-8">
           {/* Trending Users */}
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="explore-section-heading flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-warning/10 flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-warning" />
@@ -485,7 +487,7 @@ const Explore = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
+              <div className="explore-trending-grid grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
                 {trendingUsers.map((u) =>
                   (() => {
                     const signal = getUserSignal(u);
@@ -495,7 +497,7 @@ const Explore = () => {
                       <Link
                         key={u._id}
                         to={`/profile/${u._id}`}
-                        className={`card rounded-xl p-3 text-center transition-all hover:-translate-y-1 hover:shadow-md sm:p-4 group min-h-[176px] ${
+                        className={`explore-trending-card card rounded-xl p-3 text-center transition-all hover:-translate-y-1 hover:shadow-md sm:p-4 group min-h-[176px] ${
                           isSpecialUser
                             ? `${specialStyle.shell} ${specialStyle.shellHover}`
                             : "bg-base-100 border border-base-300/50 hover:border-primary/20"
@@ -518,7 +520,7 @@ const Explore = () => {
                           </span>
                           {signal && (
                             <span
-                              className={`badge badge-xs text-[10px] ${signal.className}`}
+                              className={`badge badge-xs text-[10px] ${signal.label === getUserRoleLabel(u) ? "explore-duplicate-badge" : ""} ${signal.className}`}
                             >
                               {signal.label}
                             </span>
@@ -549,7 +551,7 @@ const Explore = () => {
 
           {/* Recently Joined */}
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="explore-section-heading flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-success/10 flex items-center justify-center">
                   <Clock className="w-4 h-4 text-success" />
@@ -591,7 +593,7 @@ const Explore = () => {
                   return (
                     <div
                       key={u._id}
-                      className={`flex items-center gap-3 rounded-xl border p-3 transition-all hover:shadow-sm sm:gap-4 sm:p-4 group ${
+                      className={`explore-user-row flex items-center gap-3 rounded-xl border p-3 transition-all hover:shadow-sm sm:gap-4 sm:p-4 group ${
                         isSpecialUser
                           ? `${specialStyle.shell} ${specialStyle.shellHover}`
                           : "bg-base-100 border-base-300/30 hover:border-primary/20"

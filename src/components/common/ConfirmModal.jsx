@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, X } from "lucide-react";
 
 const ConfirmModal = ({
@@ -14,6 +15,7 @@ const ConfirmModal = ({
   requireTyping = null, // pass a string to require the user to type it
 }) => {
   const [typedText, setTypedText] = useState("");
+  const titleId = useId();
 
   if (!isOpen) return null;
 
@@ -39,21 +41,22 @@ const ConfirmModal = ({
 
   const styles = variantStyles[variant] || variantStyles.danger;
 
-  return (
+  return createPortal(
     <div className="z-app-modal fixed inset-0 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={() => !isLoading && onClose()}
       />
 
       {/* Modal */}
-      <div className="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in zoom-in-95 fade-in duration-200">
+      <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain p-5 sm:p-6 animate-in zoom-in-95 fade-in duration-200">
         {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 btn btn-ghost btn-sm btn-circle"
           disabled={isLoading}
+          aria-label="Close confirmation"
         >
           <X className="w-4 h-4" />
         </button>
@@ -66,7 +69,7 @@ const ConfirmModal = ({
         </div>
 
         {/* Title */}
-        <h2 className="text-xl font-bold font-heading text-center mb-2">
+        <h2 id={titleId} className="text-xl font-bold font-heading text-center mb-2">
           {title}
         </h2>
 
@@ -122,7 +125,7 @@ const ConfirmModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>, document.body
   );
 };
 

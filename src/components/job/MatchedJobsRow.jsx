@@ -40,7 +40,7 @@ const MatchedJobsRow = () => {
 
   if (loading) {
     return (
-      <div className="mb-6">
+      <div className="matched-jobs-row mb-6">
         <div className="flex items-center gap-2 mb-3">
           <div className="h-5 w-32 skeleton rounded"></div>
         </div>
@@ -61,7 +61,7 @@ const MatchedJobsRow = () => {
   if (!visibleMatched.length) return null;
 
   return (
-    <div className="mb-6">
+    <div className="matched-jobs-row mb-6">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
         Matched for You
       </h3>

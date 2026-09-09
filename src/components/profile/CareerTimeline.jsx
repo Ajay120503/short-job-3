@@ -16,7 +16,8 @@ import {
   MapPin,
   ExternalLink,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import toast from "../../utils/toast";
 import API from "../../utils/axios";
 import FontAwesomeGraduateIcon from "../common/FontAwesomeGraduateIcon";
@@ -204,7 +205,7 @@ const CareerTimeline = ({ timeline = [], isOwner, userId, onUpdated }) => {
   }
 
   return (
-    <section className="my-4 overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
+    <section className="career-timeline my-4 overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
       <div className="flex items-center gap-3 border-b border-base-300/60 px-4 py-3.5 sm:px-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <Briefcase className="h-4 w-4" />
@@ -312,9 +313,20 @@ const TimelineEditor = ({
   addDraft,
   onClose,
   onSave,
-}) => (
-  <div className="modal modal-open px-2" role="dialog" aria-modal="true" aria-labelledby="timeline-editor-title">
-    <div className="modal-box max-h-[92dvh] max-w-3xl overflow-hidden border border-base-300 p-0 shadow-2xl">
+}) => {
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousFocus = document.activeElement;
+    dialog.showModal();
+    return () => {
+      dialog.close();
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, []);
+  return createPortal(
+  <dialog ref={dialogRef} className="timeline-editor modal modal-open px-2" onCancel={(event) => { event.preventDefault(); if (!saving) onClose(); }} aria-modal="true" aria-labelledby="timeline-editor-title">
+    <div className="modal-box flex max-h-[92dvh] max-w-3xl flex-col overflow-hidden border border-base-300 p-0 shadow-2xl">
       <div className="flex items-start justify-between gap-3 border-b border-base-300/60 px-4 py-4 sm:px-5">
         <div>
           <h3 id="timeline-editor-title" className="font-heading text-lg font-bold">Career Timeline</h3>
@@ -323,12 +335,12 @@ const TimelineEditor = ({
             profile.
           </p>
         </div>
-        <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle" aria-label="Close timeline editor">
+        <button type="button" disabled={saving} onClick={onClose} className="btn btn-ghost btn-sm btn-circle" aria-label="Close timeline editor">
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="max-h-[58dvh] space-y-3 overflow-y-auto bg-base-200/25 px-4 py-4 sm:px-5">
+      <fieldset disabled={saving} className="timeline-editor-fields min-h-0 min-w-0 max-h-[58dvh] space-y-3 overflow-y-auto bg-base-200/25 px-4 py-4 sm:px-5">
         {draft.map((entry, index) => (
           <div
             key={index}
@@ -426,10 +438,10 @@ const TimelineEditor = ({
             </div>
           </div>
         ))}
-      </div>
+      </fieldset>
 
       <div className="modal-action m-0 flex-col-reverse justify-between gap-2 border-t border-base-300/60 px-4 py-3 sm:flex-row sm:px-5">
-        <button type="button" onClick={addDraft} disabled={draft.length >= 20} className="btn btn-ghost btn-sm gap-2">
+        <button type="button" onClick={addDraft} disabled={saving || draft.length >= 20} className="btn btn-ghost btn-sm gap-2">
           <Plus className="w-4 h-4" /> Add Entry
         </button>
         <button type="button"
@@ -442,7 +454,7 @@ const TimelineEditor = ({
         </button>
       </div>
     </div>
-  </div>
-);
+  </dialog>, document.body);
+};
 
 export default CareerTimeline;

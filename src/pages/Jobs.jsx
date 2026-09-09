@@ -240,7 +240,7 @@ const Jobs = () => {
     });
 
   return (
-    <div className="max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
+    <div className="jobs-page max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
       <MatchedJobsRow />
 
       <div data-page-header className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:mb-5 sm:p-5">
@@ -345,7 +345,8 @@ const Jobs = () => {
               <Link
                 key={job._id}
                 to={`/jobs/${job._id}`}
-                className={`block rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 ${
+                data-remote={job.location === "remote"}
+                className={`job-list-card block rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 ${
                   isSpecialJob
                     ? `${specialStyle.shell} ${specialStyle.shellHover}`
                     : "bg-base-100 border-base-300/50 hover:border-primary/30"
@@ -389,9 +390,9 @@ const Jobs = () => {
                           </p>
                           <UserSignalBadge user={job.postedBy} />
                         </div>
-                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <div className="job-list-details flex flex-wrap items-center gap-2 text-xs">
                           <span
-                            className={`flex items-center gap-1 ${isSpecialJob ? "text-base-content/60" : "text-base-content/50"}`}
+                            className={`job-list-location flex items-center gap-1 ${isSpecialJob ? "text-base-content/60" : "text-base-content/50"}`}
                           >
                             <MapPin className="w-3.5 h-3.5" />
                             <span className="line-clamp-1">
@@ -425,7 +426,7 @@ const Jobs = () => {
                             {SHORT_JOB_LABELS[job.shortJobType] || ROLE_TYPE_LABELS[job.roleType] || "Opportunity"}
                           </span>
                           {job.duration?.value && <span className="badge badge-xs badge-outline">{getJobDurationLabel(job)}</span>}
-                          {getJobDateTimeLabel(job) && <span className="badge badge-xs badge-outline"><Clock className="h-3 w-3" /> {getJobDateTimeLabel(job)}</span>}
+                          {getJobDateTimeLabel(job) && <span className="job-schedule-label badge badge-xs badge-outline"><Clock className="h-3 w-3" /> {getJobDateTimeLabel(job)}</span>}
                           {job.distanceKm != null && <span className="badge badge-xs badge-info badge-soft">{Number(job.distanceKm).toFixed(1)} km away</span>}
                           {job.postedBy?._id === user?._id &&
                             job.status &&
@@ -444,7 +445,7 @@ const Jobs = () => {
                             )}
                         </div>
                       </div>
-                      <div className="flex items-center justify-between gap-2 sm:flex-col sm:items-end flex-shrink-0">
+                      <div className="job-list-actions flex items-center justify-between gap-2 sm:flex-col sm:items-end flex-shrink-0">
                         <QuickApplyBtn
                           jobId={job._id}
                           alreadyApplied={hasAppliedToJob(job, user?._id)}

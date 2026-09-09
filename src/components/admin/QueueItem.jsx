@@ -102,7 +102,7 @@ const QueueItem = ({ item, type, onUpdate, mode = "queue", layout = "list" }) =>
 
   return (
     <article
-      className={`card border border-base-300 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md ${
+      className={`admin-queue-item card border border-base-300 bg-base-100 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md ${
         isGrid
           ? "h-full min-h-[28rem] overflow-hidden rounded-2xl p-4"
           : "space-y-4 rounded-xl bg-base-200/30 p-3 sm:p-5"

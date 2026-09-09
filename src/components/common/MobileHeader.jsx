@@ -34,7 +34,7 @@ const MobileHeader = () => {
 
   return (
     <>
-      <header className="z-app-navigation sticky top-0 bg-base-100/95 backdrop-blur-xl border-b border-base-300/80 shadow-sm lg:hidden safe-area-top">
+      <header className="mobile-app-header z-app-navigation sticky top-0 bg-base-100/95 backdrop-blur-xl border-b border-base-300/80 shadow-sm lg:hidden safe-area-top">
         <div className="flex min-h-14 items-center justify-between px-3 py-2 sm:px-5">
           {/* Logo */}
           <Link to="/feed" className="flex items-center gap-2 shrink-0">

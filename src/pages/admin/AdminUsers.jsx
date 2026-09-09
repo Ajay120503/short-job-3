@@ -146,7 +146,7 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
+    <div className="admin-page mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
       <div data-page-header className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -221,7 +221,7 @@ const AdminUsers = () => {
       {/* Users Table */}
       <div className="card border border-base-300/70 bg-base-100 shadow-sm">
         <div className="card-body p-0">
-          <div className="block space-y-2 p-3 sm:hidden">
+          <div className="admin-mobile-users block space-y-2 p-3 md:hidden">
             {loading ? (
               <div className="h-24 skeleton rounded-xl" />
             ) : filteredUsers.length === 0 ? (
@@ -232,7 +232,7 @@ const AdminUsers = () => {
               filteredUsers.map((u) => <UserMobileCard key={u._id} user={u} />)
             )}
           </div>
-          <div className="hidden overflow-x-auto sm:block">
+          <div className="admin-users-table hidden overflow-x-auto md:block">
             <table className="table table-hover">
               <thead>
                 <tr>

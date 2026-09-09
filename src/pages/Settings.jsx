@@ -89,7 +89,7 @@ const SectionCard = ({
           : "bg-primary/10 text-primary";
 
   return (
-    <section id={id} className="scroll-mt-20 overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
+    <section id={id} className="settings-section scroll-mt-20 overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
       <div className="flex items-start gap-3 border border-base-200/70 bg-base-200/20 px-3 py-3 sm:p-5">
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11 ${toneClass}`}
@@ -132,7 +132,7 @@ const ToggleRow = ({
         : "bg-primary/10 text-primary";
 
   return (
-    <div id={id} className="scroll-mt-20 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:p-4">
+    <div id={id} className="settings-toggle-row scroll-mt-20 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm sm:p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <div
@@ -169,6 +169,7 @@ const ToggleRow = ({
             </span>
             <input
               type="checkbox"
+              aria-label={title}
               className={`toggle ${toggleClass}`}
               checked={active}
               onChange={onChange}
@@ -397,8 +398,8 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="grid min-w-0 gap-3 sm:gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="order-2 min-w-0 space-y-3 sm:space-y-4 2xl:order-1">
+      <div className="settings-layout grid min-w-0 gap-3 sm:gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="settings-preferences order-2 min-w-0 space-y-3 sm:space-y-4 2xl:order-1">
           <SectionCard
             id="appearance-settings"
             icon={
@@ -428,6 +429,7 @@ const Settings = () => {
                         key={option.value}
                         type="button"
                         onClick={() => handleAppThemeChange(option.value)}
+                        aria-pressed={selected}
                         className={`rounded-xl border p-2.5 text-left transition-all hover:-translate-y-0.5 sm:p-3 ${
                           selected
                             ? "border-primary bg-primary/10 ring-1 ring-primary/30"
@@ -468,6 +470,7 @@ const Settings = () => {
                         key={option.value}
                         type="button"
                         onClick={() => handleAppFontChange(option.value)}
+                        aria-pressed={selected}
                         className={`rounded-xl border p-2.5 text-left transition-all hover:-translate-y-0.5 sm:p-3 ${
                           selected
                             ? "border-primary bg-primary/10 ring-1 ring-primary/30"
@@ -587,6 +590,7 @@ const Settings = () => {
                       key={variant.value}
                       type="button"
                       onClick={() => handleThemeChange(variant.value)}
+                      aria-pressed={selected}
                       disabled={themeLoading}
                       className={`rounded-xl border p-3 text-left transition-all hover:-translate-y-0.5 ${
                         selected
@@ -608,9 +612,9 @@ const Settings = () => {
           )}
         </div>
 
-        <aside className="order-1 min-w-0 space-y-3 sm:space-y-4 2xl:order-2">
+        <aside className="settings-account order-1 min-w-0 space-y-3 sm:space-y-4 2xl:order-2">
           <section
-            className={`rounded-2xl border p-3 shadow-sm sm:p-4 ${
+            className={`settings-account-summary rounded-2xl border p-3 shadow-sm sm:p-4 ${
               canStyleProfile
                 ? specialStyle.shell
                 : "border-base-300/70 bg-base-100"

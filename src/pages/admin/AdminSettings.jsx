@@ -21,6 +21,36 @@ import { isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
 import toast from "../../utils/toast";
 
+const SettingToggle = ({ icon: Icon, title, description, checked, onClick }) => (
+  <div className="admin-setting-toggle flex items-start justify-between gap-3 p-3 sm:p-4 rounded-lg bg-base-200/50 border border-base-300/50">
+    <div className="flex items-start gap-3 min-w-0">
+      <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="font-semibold text-sm leading-snug">{title}</p>
+        <p className="text-xs text-base-content/50 leading-relaxed mt-0.5">
+          {description}
+        </p>
+      </div>
+    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="btn btn-ghost btn-sm btn-circle shrink-0"
+      aria-pressed={checked}
+      aria-label={title}
+    >
+      {checked ? (
+        <ToggleRight className="w-6 h-6 text-success" />
+      ) : (
+        <ToggleLeft className="w-6 h-6 text-base-content/40" />
+      )}
+    </button>
+  </div>
+);
+
+
 const AdminSettings = () => {
   const { user: currentUser, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
@@ -134,7 +164,7 @@ const AdminSettings = () => {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-2 py-3 sm:px-4 md:p-6">
+      <div className="admin-page mx-auto max-w-4xl px-2 py-3 sm:px-4 md:p-6">
         <div className="space-y-4">
           <div className="h-8 w-48 skeleton rounded mb-4"></div>
           <div className="card bg-base-100 border border-base-300 rounded-xl p-6 space-y-4">
@@ -147,36 +177,8 @@ const AdminSettings = () => {
     );
   }
 
-  const SettingToggle = ({ icon: Icon, title, description, checked, onClick }) => (
-    <div className="flex items-start justify-between gap-3 p-3 sm:p-4 rounded-lg bg-base-200/50 border border-base-300/50">
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-sm leading-snug">{title}</p>
-          <p className="text-xs text-base-content/50 leading-relaxed mt-0.5">
-            {description}
-          </p>
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={onClick}
-        className="btn btn-ghost btn-sm btn-circle shrink-0"
-        aria-pressed={checked}
-      >
-        {checked ? (
-          <ToggleRight className="w-6 h-6 text-success" />
-        ) : (
-          <ToggleLeft className="w-6 h-6 text-base-content/40" />
-        )}
-      </button>
-    </div>
-  );
-
   return (
-    <div className="mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-5 md:p-6">
+    <div className="admin-page mx-auto max-w-4xl space-y-4 px-2 py-3 sm:px-4 md:space-y-5 md:p-6">
       {/* Header */}
       <div data-page-header className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

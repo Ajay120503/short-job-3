@@ -141,7 +141,7 @@ const Notifications = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-6">
+    <div className="notifications-page max-w-3xl mx-auto p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold font-heading">Notifications</h1>
@@ -185,7 +185,7 @@ const Notifications = () => {
           <p className="text-sm text-base-content/30">No notifications yet</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="notification-list space-y-2">
           {notifications.map((notif) => {
             const item = iconMap[notif.type] || {
               icon: Bell,
@@ -199,7 +199,8 @@ const Notifications = () => {
             return (
               <div
                 key={notif._id}
-                className={`relative flex items-start gap-4 border rounded-xl p-4 transition-all hover:shadow-sm group ${
+                data-unread={!notif.isRead}
+                className={`notification-row relative flex items-start gap-4 border rounded-xl p-4 transition-all hover:shadow-sm group ${
                   isSpecialSender
                     ? `${specialStyle.shell} ${specialStyle.shellHover}`
                     : !notif.isRead
@@ -208,7 +209,7 @@ const Notifications = () => {
                 }`}
               >
                 {!notif.isRead && (
-                  <div className="absolute top-4 right-4 w-2.5 h-2.5 bg-primary rounded-full animate-pulse"></div>
+                  <div aria-label="Unread notification" className="notification-unread-dot absolute top-4 right-4 w-2.5 h-2.5 bg-primary rounded-full animate-pulse"></div>
                 )}
 
                 <div
@@ -271,7 +272,7 @@ const Notifications = () => {
                   </div>
                 </div>
 
-                <div className="dropdown dropdown-end flex-shrink-0 opacity-0 transition-all group-hover:opacity-100">
+                <div className="notification-actions dropdown dropdown-end flex-shrink-0 opacity-0 transition-all group-hover:opacity-100 focus-within:opacity-100">
                   <button
                     tabIndex={0}
                     type="button"

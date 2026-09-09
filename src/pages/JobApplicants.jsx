@@ -854,7 +854,7 @@ const JobApplicants = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6">
+    <div className="applicants-page max-w-4xl mx-auto p-4 md:p-6">
       {/* Header */}
       <Link
         to={`/jobs/${id}`}

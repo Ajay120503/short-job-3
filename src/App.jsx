@@ -26,6 +26,7 @@ import BottomNav from "./components/common/BottomNav";
 import MobileHeader from "./components/common/MobileHeader";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import Brand from "./components/common/Brand";
+import AdaptiveDropdowns from "./components/common/AdaptiveDropdowns";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -222,6 +223,7 @@ function App() {
                   <div className="app-shell flex h-dvh flex-col overflow-hidden bg-base-200">
                     <a href="#app-content" className="skip-link">Skip to main content</a>
                     <MobileHeader />
+                    <AdaptiveDropdowns />
                     <div className="flex flex-1 min-h-0">
                       <Sidebar
                         collapsed={sidebarCollapsed}

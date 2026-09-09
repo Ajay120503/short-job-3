@@ -60,7 +60,7 @@ const AdminQueue = () => {
   const isArchive = section === "archive";
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
+    <div className="admin-page admin-queue-page mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       {/* Header */}
       <div data-page-header className="rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -94,6 +94,7 @@ const AdminQueue = () => {
               <button
                 key={key}
                 onClick={() => setSection(key)}
+                aria-pressed={section === key}
                 className={`btn btn-sm gap-1.5 ${
                   section === key
                     ? "bg-primary/10 text-primary ring-1 ring-primary/25"
@@ -115,6 +116,7 @@ const AdminQueue = () => {
               <button
                 key={key}
                 onClick={() => setQueueType(key)}
+                aria-pressed={queueType === key}
                 className={`btn btn-sm gap-1.5 ${
                   queueType === key
                     ? "bg-primary/10 text-primary ring-1 ring-primary/25"

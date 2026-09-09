@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -76,7 +77,7 @@ const SavedPosts = () => {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto p-4 md:p-6 space-y-4">
+      <div className="saved-page max-w-3xl mx-auto p-4 md:p-6 space-y-4">
         <div className="h-10 w-40 skeleton mb-6"></div>
         {[1, 2, 3].map((i) => (
           <div key={i} className="card border border-base-300/50 p-5 space-y-4">
@@ -108,7 +109,7 @@ const SavedPosts = () => {
     });
 
   return (
-    <div className="max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
+    <div className="saved-page max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
       <div data-page-header className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex items-start gap-3">
           <div data-page-heading-icon className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -134,10 +135,12 @@ const SavedPosts = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search saved posts..."
+              aria-label="Search saved posts"
             />
             {searchTerm && (
               <button
                 type="button"
+                aria-label="Clear saved post search"
                 onClick={() => setSearchTerm("")}
                 className="btn btn-ghost btn-xs btn-circle"
               >
@@ -145,10 +148,11 @@ const SavedPosts = () => {
               </button>
             )}
           </label>
-          <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
+          <div className="saved-filters mt-3 flex gap-1.5 overflow-x-auto pb-1">
             {["all", "general", "achievement", "job"].map((type) => (
               <button
                 key={type}
+                aria-pressed={typeFilter === type}
                 onClick={() => setTypeFilter(type)}
                 className={`btn btn-xs rounded-full capitalize ${
                   typeFilter === type
@@ -184,7 +188,7 @@ const SavedPosts = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="saved-post-list space-y-5">
           {filteredPosts.map((post) => {
             const isLiked =
               post.likes?.includes(user?._id) ||
@@ -195,7 +199,7 @@ const SavedPosts = () => {
             return (
               <div
                 key={post._id}
-                className={`overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                className={`saved-post-card overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
                   isSpecialAuthor
                     ? `${specialStyle.shell} ${specialStyle.shellHover}`
                     : "border-base-300/60 bg-base-100 hover:border-primary/25"
@@ -203,7 +207,7 @@ const SavedPosts = () => {
               >
                 <div className="p-4 sm:p-5">
                   {/* Author Row */}
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="saved-post-author flex items-center gap-3 mb-4">
                     <UserAvatar
                       user={post.author}
                       size={44}
@@ -219,7 +223,7 @@ const SavedPosts = () => {
                       >
                         {post.author?.name}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-base-content/40">
+                      <div className="saved-post-meta flex items-center gap-2 text-xs text-base-content/40">
                         <span
                           className={isSpecialAuthor ? specialStyle.muted : ""}
                         >
@@ -259,7 +263,7 @@ const SavedPosts = () => {
                   {/* Images */}
                   {post.images?.length > 0 && (
                     <div
-                      className={`grid gap-2 mb-4 rounded-xl overflow-hidden ${
+                      className={`saved-post-media grid gap-2 mb-4 rounded-xl overflow-hidden ${
                         post.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
                       }`}
                     >
@@ -277,7 +281,7 @@ const SavedPosts = () => {
 
                   {/* Tags */}
                   {post.tags?.length > 0 && (
-                    <div className="flex gap-2 mb-4 flex-wrap">
+                    <div className="saved-post-tags flex gap-2 mb-4 flex-wrap">
                       {post.tags.map((tag, i) => (
                         <span
                           key={i}
@@ -295,6 +299,8 @@ const SavedPosts = () => {
                   <div className="flex items-center gap-1 pt-3 border-t border-base-200/70">
                     <button
                       onClick={() => handleLike(post._id)}
+                      aria-label={isLiked ? "Unlike post" : "Like post"}
+                      aria-pressed={Boolean(isLiked)}
                       className={`btn btn-ghost btn-sm gap-2 font-medium text-xs ${
                         isLiked ? "text-error" : ""
                       }`}
@@ -304,10 +310,10 @@ const SavedPosts = () => {
                       />{" "}
                       {post.likes?.length || 0}
                     </button>
-                    <button className="btn btn-ghost btn-sm gap-2 font-medium text-xs">
+                    <Link to={`/post/${post._id}`} aria-label="View post comments" className="btn btn-ghost btn-sm gap-2 font-medium text-xs">
                       <MessageCircle className="w-4 h-4" />{" "}
-                      {post.comments?.length || 0}
-                    </button>
+                      {post.commentsCount ?? post.comments?.length ?? 0}
+                    </Link>
                     <div className="dropdown dropdown-left ml-auto">
                       <button
                         tabIndex={0}

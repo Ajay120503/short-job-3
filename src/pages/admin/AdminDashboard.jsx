@@ -253,7 +253,7 @@ const AdminDashboard = () => {
   const canManagePlatform = isSuperAdminUser(user);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
+    <div className="admin-page mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       <div data-page-header className="rounded-xl sm:rounded-2xl bg-base-100 border border-base-300/70 shadow-sm p-4 sm:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-3">
@@ -430,7 +430,7 @@ const AdminDashboard = () => {
                 </Link>
               }
             >
-              <div className="block space-y-2 p-3 sm:hidden">
+              <div className="admin-mobile-users block space-y-2 p-3 md:hidden">
                 {loadingUsers ? (
                   <div className="h-24 skeleton rounded-lg"></div>
                 ) : recentUsers.length === 0 ? (
@@ -443,7 +443,7 @@ const AdminDashboard = () => {
                   ))
                 )}
               </div>
-              <div className="hidden overflow-x-auto sm:block">
+              <div className="admin-users-table hidden overflow-x-auto md:block">
                 <table className="table">
                   <thead>
                     <tr>
@@ -561,7 +561,7 @@ const AdminDashboard = () => {
             </Link>
           </div>
 
-          <div className="block space-y-2 p-3 sm:hidden">
+          <div className="admin-mobile-users block space-y-2 p-3 md:hidden">
             {loadingUsers ? (
               <div className="h-24 skeleton rounded-lg"></div>
             ) : filteredUsers.length === 0 ? (
@@ -575,7 +575,7 @@ const AdminDashboard = () => {
             )}
           </div>
 
-          <div className="hidden overflow-x-auto sm:block">
+          <div className="admin-users-table hidden overflow-x-auto md:block">
             <table className="table">
               <thead>
                 <tr>

@@ -12,7 +12,7 @@ export default function MemberOverview({ user }) {
     { to: "/explore", icon: Users, title: "Grow your network", detail: "Meet people with shared interests", tone: "text-success bg-success/10" },
   ];
   return (
-    <section aria-label="Your dashboard" className="mb-7 space-y-4">
+    <section aria-label="Your dashboard" className="member-overview mb-7 space-y-4">
       <div className="rounded-2xl border border-base-300 bg-base-100 p-5 sm:p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-primary">Your ShortJob space</p>
         <div className="mt-3 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
