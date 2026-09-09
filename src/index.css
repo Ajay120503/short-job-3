@@ -1344,7 +1344,7 @@ select.select:disabled {
   .admin-queue-page > .grid:has(.admin-queue-item) { padding: 0; gap: 0; }
   .admin-queue-item > .flex:first-child { flex-wrap: wrap; }
   .admin-queue-item .badge { max-width: 100%; height: auto; white-space: normal; overflow-wrap: anywhere; }
-  .admin-setting-toggle { border: 0; border-radius: 0; padding: 0.875rem 0; gap: 0.5rem; }
+  .admin-setting-toggle { border: 0; border-radius: 0; padding: 0.875rem 0.75rem; gap: 0.5rem; }
   .admin-setting-toggle > div { gap: 0.625rem; }
   .admin-setting-toggle > button { margin-top: 0.25rem; }
   .admin-page input:not([type="checkbox"]):not([type="radio"]), .admin-page select { min-width: 0; max-width: 100%; }
