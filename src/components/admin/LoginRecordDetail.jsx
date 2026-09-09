@@ -30,21 +30,21 @@ const LoginRecordDetail = ({ record }) => {
   const user = record.user || {};
   const lat = record.location?.lat;
   const lng = record.location?.lng;
-  const hasMap = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
+  const hasMap = lat != null && lng != null && lat !== "" && lng !== "" && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) && Math.abs(Number(lat)) <= 90 && Math.abs(Number(lng)) <= 180;
   const mapSrc = hasMap
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${Number(lng) - 0.01}%2C${Number(lat) - 0.01}%2C${Number(lng) + 0.01}%2C${Number(lat) + 0.01}&layer=mapnik&marker=${lat}%2C${lng}`
     : "";
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-4">
-      <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
-        <div className="space-y-3">
-          <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-base-200 border border-base-300">
+    <div className="login-record-detail min-w-0 rounded-2xl bg-base-100 p-3 sm:p-5">
+      <div className="login-record-layout grid gap-5">
+        <div className="login-record-media grid content-start gap-3">
+          <div className="aspect-square max-h-64 overflow-hidden rounded-2xl bg-base-200 border border-base-300">
             {record.photo?.url ? (
               <img
                 src={record.photo.url}
                 alt="Login verification"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-base-content/35">
@@ -64,10 +64,10 @@ const LoginRecordDetail = ({ record }) => {
 
         <div className="min-w-0 space-y-4">
           <div className="flex items-start gap-3">
-            <UserAvatar user={user} size={48} />
+            <UserAvatar user={user} size={48} showPresence={false} showAdminBadge={false} />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-semibold">{user.name || "Unknown user"}</p>
+                <p className="font-semibold [overflow-wrap:anywhere]">{user.name || "Unknown user"}</p>
                 <span
                   className={`badge badge-xs ${
                     user.isBlocked ? "badge-error" : "badge-success"
@@ -76,7 +76,7 @@ const LoginRecordDetail = ({ record }) => {
                   {user.isBlocked ? "Blocked" : "Active"}
                 </span>
               </div>
-              <p className="text-xs text-base-content/50 line-clamp-1">
+              <p className="text-xs text-base-content/65 break-all">
                 {user.email}
               </p>
               <div className="flex flex-wrap gap-1 mt-1 line-clamp-1">
@@ -200,7 +200,7 @@ const LoginRecordDetail = ({ record }) => {
           {user._id && (
             <Link
               to={`/admin/login-records?userId=${user._id}`}
-              className="btn btn-outline btn-sm"
+              className="btn btn-outline btn-sm h-auto min-h-10 py-2 text-center whitespace-normal"
             >
               View all login records for this user
             </Link>
@@ -213,8 +213,8 @@ const LoginRecordDetail = ({ record }) => {
 
 const Info = ({ icon: Icon, label, value }) => (
   <div className="min-w-0 rounded-xl border border-base-300 bg-base-200/40 p-3">
-    <div className="flex items-center gap-2 text-xs text-base-content/45">
-      <Icon className="w-3.5 h-3.5" />
+    <div className="flex items-center gap-2 text-xs text-base-content/65">
+      <Icon className="w-3.5 h-3.5 shrink-0 text-primary" />
       {label}
     </div>
     <p className="mt-1 text-sm font-semibold break-words [overflow-wrap:anywhere]">

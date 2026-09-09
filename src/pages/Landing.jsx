@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import {
   ArrowRight,
-  BadgeCheck,
   Briefcase,
   CalendarClock,
   CheckCircle2,
-  FileCheck2,
   MapPin,
+  Search,
+  Sparkles,
+  ChevronDown,
   MessageCircle,
   ShieldCheck,
   Users,
@@ -33,26 +34,26 @@ const stagger = {
 const featureCards = [
   {
     icon: Users,
-    title: "Social Network",
-    desc: "Posts, comments, follows, stories, saved posts, and profile signals in one connected feed.",
+    title: "People worth connecting with",
+    desc: "Share your work, follow your community, and turn everyday conversations into new connections.",
     tone: "text-primary bg-primary/10 border-primary/20",
   },
   {
     icon: Briefcase,
-    title: "Opportunities",
-    desc: "Create jobs, apply quickly, review applicants, ask questions, and track application status.",
+    title: "Work that fits your day",
+    desc: "Find paid opportunities for a few hours, a day, a weekend, or a short-term commitment.",
     tone: "text-accent bg-accent/10 border-accent/20",
   },
   {
     icon: MessageCircle,
-    title: "Realtime Chat",
-    desc: "Private conversations with typing indicators, read receipts, media messages, and clean confirmations.",
+    title: "Less back-and-forth",
+    desc: "Discuss the details in private chat. Share files, ask questions, and keep your conversations together.",
     tone: "text-info bg-info/10 border-info/20",
   },
   {
     icon: ShieldCheck,
-    title: "Smart Moderation",
-    desc: "Rule-based fake detection runs beside manual review for posts, jobs, and stories.",
+    title: "A more thoughtful community",
+    desc: "Content checks and human moderation help review jobs, posts, and stories across the platform.",
     tone: "text-success bg-success/10 border-success/20",
   },
 ];
@@ -77,32 +78,39 @@ const flowSteps = [
 ];
 
 const stats = [
-  { value: "24h", label: "audit retention" },
-  { value: "3", label: "review queues" },
-  { value: "Live", label: "chat and alerts" },
+  { value: "Flexible", label: "Hours, days, and weekends" },
+  { value: "Connected", label: "People, teams, and opportunities" },
+  { value: "Together", label: "Applications and conversations" },
 ];
 
-const trustItems = [
-  "Public posts and stories",
-  "Job matching",
-  "Applicant kanban",
-  "Admin review",
+const questions = [
+  ["What kind of jobs can I find?", "ShortJob focuses on paid short jobs: a few hours, one day, a weekend, or short-term work. Each listing includes the schedule and payout so you can decide what fits."],
+  ["Can I find opportunities near me?", "Yes. Allow location access to discover nearby jobs and adjust the distance filter. You can manage location access in your settings and also look for remote opportunities."],
+  ["Can I use ShortJob to hire people?", "Yes. Create a job with the skills, qualifications, schedule, and payout you need. Review applicants, compare their profiles, and manage applications from your job’s applicant board."],
+  ["What do I need to get started?", "Create an account and complete your profile. Add your skills and interests to help you find relevant work, then explore jobs and connect with your community."],
 ];
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-base-100 text-base-content overflow-x-hidden">
+    <MotionConfig reducedMotion="user">
+    <div className="landing-page min-h-dvh bg-base-100 text-base-content overflow-x-hidden">
+      <a href="#landing-content" className="skip-link">Skip to content</a>
       <nav className="z-app-navigation fixed top-0 left-0 right-0 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <Brand size="md" />
+            <Brand size="sm" />
           </Link>
+          <div className="hidden items-center gap-8 text-sm font-medium text-base-content/65 lg:flex">
+            <a href="#how-it-works" className="hover:text-primary">How it works</a>
+            <a href="#features" className="hover:text-primary">Why ShortJob</a>
+            <a href="#questions" className="hover:text-primary">Questions</a>
+          </div>
           <div className="flex items-center gap-1">
             <ThemeToggle compact />
             <Link to="/login" className="btn btn-ghost btn-sm">
               Sign In
             </Link>
-            <Link to="/register" className="btn btn-primary btn-sm gap-2">
+            <Link to="/register" className="btn btn-primary btn-sm hidden gap-2 sm:inline-flex">
               Get Started
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -110,9 +118,9 @@ const Landing = () => {
         </div>
       </nav>
 
-      <main>
-        <section className="relative isolate overflow-hidden px-4 pb-20 pt-32 sm:px-6 lg:pb-28 lg:pt-40">
-          <div className="absolute inset-0 -z-10 bg-base-100" />
+      <main id="landing-content" tabIndex={-1}>
+        <section className="landing-hero relative isolate overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-40">
+          <div aria-hidden="true" className="landing-hero-glow absolute inset-0 -z-10" />
           <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div
               initial="hidden"
@@ -124,22 +132,22 @@ const Landing = () => {
                 variants={fadeUp}
                 className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary"
               >
-                Professional network, jobs, chat & review
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Small jobs. Real possibilities.
               </motion.div>
 
               <motion.h1
                 variants={fadeUp}
-                className="font-heading text-4xl font-extrabold leading-[1.06] tracking-tight text-base-content sm:text-5xl lg:text-6xl"
+                className="font-heading text-[2.8rem] font-extrabold leading-[1.04] tracking-[-0.045em] text-base-content sm:text-6xl xl:text-7xl"
               >
-                A smarter way to build your network and manage work.
+                Your next move.<br />Your kind of <span className="text-primary">work.</span>
               </motion.h1>
 
               <motion.p
                 variants={fadeUp}
                 className="mt-6 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg"
               >
-                ShortJob brings public posts, stories, jobs, applications,
-                realtime chat, and trusted review into one modern workspace.
+                Find paid short jobs that fit your skills and schedule. Meet your
+                next team, build connections, and take the next step—right where you are.
               </motion.p>
 
               <motion.div
@@ -150,14 +158,14 @@ const Landing = () => {
                   to="/register"
                   className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/20"
                 >
-                  Create Account
+                  Find your next opportunity
                   <ArrowRight className="h-5 w-5" />
                 </Link>
                 <Link
                   to="/login"
                   className="btn btn-outline btn-lg gap-2 bg-base-100"
                 >
-                  Sign In
+                  I’m hiring
                 </Link>
               </motion.div>
 
@@ -166,9 +174,9 @@ const Landing = () => {
                 className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-sm text-base-content/55"
               >
                 {[
-                  "Free to start",
-                  "Realtime alerts",
-                  "Verified trust tools",
+                  "Paid short jobs",
+                  "Flexible schedules",
+                  "Direct conversations",
                 ].map((item) => (
                   <span key={item} className="inline-flex items-center gap-1.5">
                     <CheckCircle2 className="h-4 w-4 text-success" />
@@ -177,185 +185,50 @@ const Landing = () => {
                 ))}
               </motion.div>
 
-              <motion.div
-                variants={fadeUp}
-                className="mt-8 flex flex-wrap gap-2"
-              >
-                {trustItems.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-base-300 bg-base-200/70 px-3 py-1 text-xs font-semibold text-base-content/55"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </motion.div>
             </motion.div>
 
-            {/* Signature hero visual: a fanned stack of real product moments,
-               instead of a generic browser-chrome dashboard mockup */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.75, ease: "easeOut", delay: 0.1 }}
-              className="group relative mx-auto w-full max-w-md space-y-3 sm:h-[470px] sm:max-w-lg sm:space-y-0 lg:mx-0 lg:ml-auto lg:h-[520px] lg:max-w-xl"
-            >
-              <div className="absolute inset-x-8 bottom-2 top-0 hidden rounded-[2rem] border border-base-300 bg-base-200/70 shadow-2xl shadow-primary/10 transition-all duration-500 ease-out sm:block lg:inset-x-10 lg:bottom-4 lg:top-2 lg:group-hover:inset-x-2 lg:group-hover:bottom-0 lg:group-hover:top-0" />
-              <div className="relative rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl transition-all duration-500 ease-out sm:absolute sm:inset-x-14 sm:bottom-9 sm:top-8 sm:rounded-[1.5rem] sm:p-4 lg:inset-x-16 lg:bottom-14 lg:top-12 lg:group-hover:inset-x-8 lg:group-hover:bottom-16 lg:group-hover:top-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                      Today
-                    </p>
-                    <p className="font-heading text-lg font-bold">
-                      Opportunity Feed
-                    </p>
-                  </div>
-                  <span className="badge badge-primary badge-soft">12 new</span>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    ["Senior Coordinator", "Pune · Hybrid", "92%"],
-                    ["Content Associate", "Remote", "86%"],
-                    ["Operations Lead", "Mumbai", "78%"],
-                  ].map(([title, place, match]) => (
-                    <div
-                      key={title}
-                      className="rounded-xl border border-base-300/70 bg-base-200/45 p-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold">{title}</p>
-                          <p className="mt-1 flex items-center gap-1 text-xs text-base-content/45">
-                            <MapPin className="h-3 w-3" />
-                            {place}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
-                          {match}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <div className="landing-preview min-w-0 overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-2xl shadow-primary/10 lg:rotate-1">
+              <div className="flex items-center gap-1.5 border-b border-base-300 bg-base-200/70 px-5 py-4">
+                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-base-content/20" /><span aria-hidden="true" className="h-2 w-2 rounded-full bg-base-content/15" /><span aria-hidden="true" className="h-2 w-2 rounded-full bg-base-content/10" />
+                <span className="ml-auto flex items-center gap-1.5 text-[11px] font-medium text-base-content/60"><Sparkles size={12} /> A glimpse of ShortJob</span>
               </div>
-
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="relative rounded-xl border border-info/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:left-0 sm:top-8 sm:w-[70%] sm:-rotate-3 sm:p-4 lg:-left-4 lg:top-4 lg:w-[66%] lg:group-hover:-left-16 lg:group-hover:-top-2 lg:group-hover:-rotate-6"
-              >
-                <div className="mb-3 flex items-center gap-2 text-info">
-                  <MessageCircle className="h-4 w-4" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wide">
-                    Chat
-                  </span>
+              <div className="p-4 sm:p-6">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Discover your possibilities</p>
+                  <h2 className="mt-2 text-xl font-bold sm:text-2xl">Small commitment.<br />Something new.</h2>
                 </div>
-                <div className="space-y-2">
-                  <div className="ml-auto w-3/4 rounded-lg rounded-tr-sm bg-info/15 px-3 py-2 text-xs">
-                    Are you free for a quick call about the role?
+                <Briefcase className="h-6 w-6 shrink-0 text-primary" />
+              </div>
+              <div className="mb-4 flex items-center gap-2 rounded-xl border border-base-300 bg-base-200/50 px-3 py-3 text-xs text-base-content/60"><Search size={15} /> Your skills. Your schedule. Your next job.</div>
+              <div className="space-y-3">
+                {[
+                  ["Event Assistant", "Pune · On-site", "Weekend · 2 days", "₹1,800"],
+                  ["Workshop Tutor", "Remote", "One day · 4 hours", "₹1,200"],
+                  ["Stock Assistant", "Mumbai · On-site", "Short-term · 3 days", "₹2,400"],
+                ].map(([title, place, duration, payout]) => (
+                  <div key={title} className="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm transition-colors hover:border-primary/40 sm:p-5">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Briefcase size={18} /></span>
+                      <div className="min-w-0"><h3 className="text-sm font-bold sm:text-base">{title}</h3><p className="mt-1 flex items-center gap-1 text-xs text-base-content/65"><MapPin size={12} />{place}</p></div>
+                    </div>
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-base-300 pt-3"><span className="inline-flex items-center gap-1.5 text-xs text-base-content/65"><CalendarClock size={14} />{duration}</span><span className="text-sm font-bold">{payout}</span></div>
                   </div>
-                  <div className="w-2/3 rounded-lg rounded-tl-sm bg-base-200 px-3 py-2 text-xs">
-                    Yes — 4pm works for me.
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                animate={{ y: [0, 7, 0] }}
-                transition={{
-                  duration: 5.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.3,
-                }}
-                className="relative rounded-xl border border-accent/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:right-0 sm:top-40 sm:w-[74%] sm:rotate-2 sm:p-4 lg:-right-2 lg:top-44 lg:w-[70%] lg:group-hover:-right-16 lg:group-hover:top-36 lg:group-hover:rotate-6"
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-accent">
-                    <Briefcase className="h-4 w-4" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wide">
-                      Opportunity
-                    </span>
-                  </div>
-                  <span className="badge badge-success badge-soft badge-sm">
-                    86% match
-                  </span>
-                </div>
-                <p className="text-sm font-bold">Campus Content Lead</p>
-                <p className="mt-1 text-xs text-base-content/55">
-                  Student Affairs Office · Part-time
-                </p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-base-300">
-                  <motion.div
-                    initial={{ width: "12%" }}
-                    animate={{ width: "86%" }}
-                    transition={{ duration: 1.2, delay: 0.5 }}
-                    className="h-full rounded-full bg-success"
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                animate={{ y: [0, -5, 0] }}
-                transition={{
-                  duration: 4.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.6,
-                }}
-                className="relative rounded-xl border border-primary/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:left-5 sm:top-[21rem] sm:w-[76%] sm:-rotate-1 sm:p-4 sm:shadow-xl lg:left-3 lg:top-[23rem] lg:w-[72%] lg:group-hover:-left-10 lg:group-hover:top-[24rem] lg:group-hover:-rotate-5"
-              >
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="h-10 w-10 shrink-0 rounded-full bg-primary/15" />
-                  <div className="min-w-0 flex-1">
-                    <div className="h-3 w-24 rounded bg-neutral/15" />
-                    <div className="mt-1.5 h-2 w-16 rounded bg-primary/20" />
-                  </div>
-                  <BadgeCheck className="h-5 w-5 shrink-0 text-success" />
-                </div>
-                <span className="inline-flex items-center gap-1.5 text-xs text-base-content/55">
-                  <Users className="h-3.5 w-3.5" />
-                  248 connections · 12 mutual
-                </span>
-              </motion.div>
-
-              <motion.div
-                animate={{ y: [0, 5, 0] }}
-                transition={{
-                  duration: 5.2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.2,
-                }}
-                className="relative rounded-xl border border-success/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:right-4 sm:bottom-5 sm:w-[62%] lg:-right-2 lg:bottom-8 lg:group-hover:-right-14 lg:group-hover:bottom-1"
-              >
-                <div className="flex items-center gap-2 text-success">
-                  <FileCheck2 className="h-4 w-4" />
-                  <span className="text-xs font-bold">
-                    Application reviewed
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center gap-2 text-xs text-base-content/50">
-                  <CalendarClock className="h-3.5 w-3.5" />
-                  Interview slot shared in chat
-                </div>
-              </motion.div>
-            </motion.div>
+                ))}
+              </div>
+              <p className="mt-4 text-center text-xs text-base-content/60">Illustrative opportunities · Sign in to see available jobs</p>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="border-y border-base-300 bg-primary px-4 py-9 text-primary-content sm:px-6">
+        <section className="border-y border-base-300 bg-base-200/50 px-4 py-8 sm:px-6">
           <motion.div
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.4 }}
             variants={stagger}
-            className="mx-auto grid max-w-4xl divide-y divide-white/15 text-center text-white sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+            className="mx-auto grid max-w-6xl divide-y divide-base-300 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0"
           >
             {stats.map((stat) => (
               <motion.div
@@ -363,10 +236,10 @@ const Landing = () => {
                 variants={fadeUp}
                 className="px-6 py-3 sm:py-0"
               >
-                <div className="font-heading text-3xl font-extrabold">
+                <div className="font-heading text-xl font-bold text-base-content">
                   {stat.value}
                 </div>
-                <div className="mt-1 text-sm font-medium text-white/80">
+                <div className="mt-1 text-sm text-base-content/60">
                   {stat.label}
                 </div>
               </motion.div>
@@ -374,7 +247,7 @@ const Landing = () => {
           </motion.div>
         </section>
 
-        <section className="px-4 py-20 sm:px-6 lg:py-24">
+        <section id="how-it-works" className="scroll-mt-20 px-4 py-20 sm:px-6 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <motion.div
               initial="hidden"
@@ -394,7 +267,7 @@ const Landing = () => {
                 variants={fadeUp}
                 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl"
               >
-                From profile to opportunity without friction.
+                A fresh start, in a few simple steps.
               </motion.h2>
             </motion.div>
 
@@ -429,7 +302,7 @@ const Landing = () => {
           </div>
         </section>
 
-        <section className="bg-base-200/65 px-4 py-20 sm:px-6 lg:py-24">
+        <section id="features" className="scroll-mt-20 bg-base-200/65 px-4 py-20 sm:px-6 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <motion.div
               initial="hidden"
@@ -442,11 +315,10 @@ const Landing = () => {
                 variants={fadeUp}
                 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl"
               >
-                Built for active communities.
+                More than a job board.<br />A place to move forward.
               </motion.h2>
               <motion.p variants={fadeUp} className="mt-3 text-base-content/60">
-                Every core screen works together, from social discovery to admin
-                trust controls.
+                Find the work. Meet the people. Keep everything connected.
               </motion.p>
             </motion.div>
 
@@ -455,7 +327,7 @@ const Landing = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.2 }}
               variants={stagger}
-              className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+              className="grid gap-4 sm:grid-cols-2 lg:gap-6"
             >
               {featureCards.map((feature) => {
                 const Icon = feature.icon;
@@ -463,13 +335,13 @@ const Landing = () => {
                   <motion.div
                     key={feature.title}
                     variants={fadeUp}
-                    className="group relative overflow-hidden rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-md"
+                    className="group relative overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-md sm:p-8"
                   >
                     <span
                       className={`absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 ${feature.tone.split(" ")[0].replace("text-", "bg-")}`}
                     />
                     <div
-                      className={`mb-4 flex h-11 w-11 items-center justify-center rounded border ${feature.tone}`}
+                      className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl border ${feature.tone}`}
                     >
                       <Icon className="h-5 w-5" />
                     </div>
@@ -486,21 +358,64 @@ const Landing = () => {
           </div>
         </section>
 
+        <section className="px-4 pt-20 sm:px-6 lg:pt-24">
+          <div className="mx-auto grid max-w-7xl gap-8 rounded-3xl border border-primary/20 bg-primary/5 p-6 sm:p-10 lg:grid-cols-[1.2fr_1fr] lg:items-center lg:p-12">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">For people building teams</p>
+              <h2 className="mt-4 max-w-lg font-heading text-3xl font-bold tracking-tight sm:text-4xl">Short on time?<br />Find your next helping hand.</h2>
+              <p className="mt-4 max-w-lg leading-7 text-base-content/65">From a busy weekend to a short project, connect with people whose skills fit the work you need done.</p>
+              <Link to="/register" className="btn btn-primary mt-6 w-full gap-2 sm:w-auto">Start hiring <ArrowRight size={16} /></Link>
+            </div>
+            <div className="space-y-3">
+              {[
+                [Briefcase, "Make the details clear", "Set the schedule, required skills, and payout."],
+                [Users, "Find your fit", "Review applicant profiles against your job requirements."],
+                [MessageCircle, "Keep things moving", "Manage applicants on your board and discuss the next steps."],
+              ].map(([Icon, title, detail]) => (
+                <div key={title} className="flex items-start gap-4 rounded-2xl border border-base-300 bg-base-100 p-4 sm:p-5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon size={19} /></span>
+                  <div><h3 className="text-sm font-bold">{title}</h3><p className="mt-1 text-sm leading-6 text-base-content/60">{detail}</p></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="questions" className="scroll-mt-20 px-4 pt-20 sm:px-6 lg:pt-24">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Good to know</p>
+              <h2 className="mt-4 font-heading text-3xl font-bold tracking-tight sm:text-4xl">A few questions.<br />A little clarity.</h2>
+              <p className="mt-4 leading-7 text-base-content/60">Get to know ShortJob before your next move.</p>
+            </div>
+            <div className="divide-y divide-base-300 border-y border-base-300">
+              {questions.map(([question, answer]) => (
+                <details key={question} className="group py-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md text-sm font-semibold sm:text-base [&::-webkit-details-marker]:hidden">
+                    {question}<ChevronDown size={18} className="shrink-0 text-primary transition-transform group-open:rotate-180" />
+                  </summary>
+                  <p className="mt-3 pr-6 text-sm leading-7 text-base-content/65">{answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="px-4 py-20 sm:px-6 lg:py-24">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.55 }}
-            className="landing-cta-panel mx-auto max-w-4xl rounded-xl border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
+            className="landing-cta-panel mx-auto max-w-7xl rounded-3xl border border-primary/25 p-7 text-center shadow-xl shadow-primary/15 sm:p-16"
           >
             <Brand size="lg" inverse iconOnly className="mb-5" />
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-              Start building your network today.
+              A little time. A new possibility.
             </h2>
             <p className="landing-cta-copy mx-auto mt-3 max-w-xl">
-              Create your profile, share your work, discover opportunities, and
-              manage everything from one focused place.
+              Your next opportunity could start with a simple hello.
+              Create your profile and see where it takes you.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link to="/register" className="btn landing-cta-primary border-0">
@@ -532,6 +447,7 @@ const Landing = () => {
         </div>
       </footer>
     </div>
+    </MotionConfig>
   );
 };
 

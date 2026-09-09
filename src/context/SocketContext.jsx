@@ -16,6 +16,7 @@ export const SocketProvider = ({ children }) => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [messageCount, setMessageCount] = useState(0);
   const socketRef = useRef(null);
+  const conversationRooms = useRef(new Set());
   const { user, isAuthenticated, forceLogout } = useAuthStore();
   const canViewPresence = user?.showOnlineStatus !== false;
   const isBlocked = user?.isBlocked;
@@ -77,15 +78,33 @@ export const SocketProvider = ({ children }) => {
 
     const socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
+      auth: (callback) => callback({ token: localStorage.getItem("accessToken") }),
     });
 
     socketRef.current = socket;
+    let refreshingAuth = false;
+    const refreshConnection = async () => {
+      if (refreshingAuth) return;
+      refreshingAuth = true;
+      try {
+        const { default: API } = await import("../utils/axios");
+        await API.get("/auth/me");
+        if (socketRef.current === socket) socket.connect();
+      } catch {
+        // The HTTP authentication handler handles expired sessions.
+      }
+    };
+    socket.on("connect_error", (error) => {
+      if (error.message.startsWith("Not authenticated")) refreshConnection();
+    });
 
     socket.on("connect", () => {
+      refreshingAuth = false;
       socket.emit("join_room", {
         userId: user._id,
         sharePresence: canViewPresence,
       });
+      conversationRooms.current.forEach((room) => socket.emit("join_conversation", room));
       if (canViewPresence) {
         setOnlineUsers((prev) => {
           const updated = new Set(prev);
@@ -185,8 +204,10 @@ export const SocketProvider = ({ children }) => {
       }
     });
 
-    socket.on("disconnect", () => {
-      // silently
+    socket.on("disconnect", (reason) => {
+      if (reason === "io server disconnect") {
+        refreshConnection();
+      }
     });
 
     return () => {
@@ -210,12 +231,14 @@ export const SocketProvider = ({ children }) => {
   };
 
   const joinConversation = (conversationId) => {
+    conversationRooms.current.add(conversationId);
     if (socketRef.current) {
       socketRef.current.emit("join_conversation", conversationId);
     }
   };
 
   const leaveConversation = (conversationId) => {
+    conversationRooms.current.delete(conversationId);
     if (socketRef.current) {
       socketRef.current.emit("leave_conversation", conversationId);
     }

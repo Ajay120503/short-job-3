@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2, Settings, Camera } from "lucide-react";
+import { Search, ShieldCheck, MapPin, Clock, Laptop, Trash2, Settings, Camera, ChevronDown } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import {
   isSuperAdminUser,
   getUserRoleLabel,
 } from "../../utils/badgeUtils";
 import API from "../../utils/axios";
-import UserAvatar from "../../components/common/UserAvatar";
-import UserSignalBadge from "../../components/common/UserSignalBadge";
 import LoginRecordDetail from "../../components/admin/LoginRecordDetail";
 import toast from "../../utils/toast";
 
@@ -138,7 +136,7 @@ const AdminLoginRecords = () => {
         data-filter-panel
         className="rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm"
       >
-        <div className="grid gap-2 md:grid-cols-[1fr_160px_150px_150px]">
+        <div className="grid gap-3 sm:grid-cols-2">
           <label className="input input-bordered input-sm flex items-center gap-2">
             <Search className="w-4 h-4 text-base-content/35" />
             <input
@@ -147,12 +145,14 @@ const AdminLoginRecords = () => {
                 setFilters((prev) => ({ ...prev, search: e.target.value }))
               }
               placeholder="Search by name or email"
+              aria-label="Search login records by name or email"
               className="grow"
             />
           </label>
           <input
             className="input input-bordered input-sm"
             placeholder="City"
+            aria-label="Filter by city"
             value={filters.city}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, city: e.target.value }))
@@ -161,6 +161,7 @@ const AdminLoginRecords = () => {
           <input
             className="input input-bordered input-sm"
             type="date"
+            aria-label="Logins from date"
             value={filters.from}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, from: e.target.value }))
@@ -169,6 +170,7 @@ const AdminLoginRecords = () => {
           <input
             className="input input-bordered input-sm"
             type="date"
+            aria-label="Logins until date"
             value={filters.to}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, to: e.target.value }))
@@ -191,7 +193,7 @@ const AdminLoginRecords = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="audit-records space-y-3">
           {records.map((record) => {
             const userInfo = record.user || {};
             const isOpen = expanded === record._id;
@@ -206,6 +208,8 @@ const AdminLoginRecords = () => {
               >
                 <div
                   role="button"
+                  aria-expanded={isOpen}
+                  aria-label={`${isOpen ? "Close" : "View"} login details for ${userInfo.name || "user"}`}
                   tabIndex={0}
                   onClick={() => handleToggleRecord(record._id)}
                   onKeyDown={(e) => {
@@ -221,36 +225,31 @@ const AdminLoginRecords = () => {
                   }`}
                 >
                   <div
-                    className={`grid gap-3 md:items-center ${
-                      canDeleteRecords
-                        ? "md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr_110px_44px]"
-                        : "md:grid-cols-[72px_1.3fr_1fr_1fr_1fr_1fr_110px]"
-                    }`}
+                    className="audit-record-grid"
                   >
-                    <div className="w-full max-w-20 md:w-16 h-20 md:h-16 rounded-xl overflow-hidden bg-base-200">
+                    <div className="audit-record-photo w-16 h-16 rounded-xl overflow-hidden bg-base-200 flex items-center justify-center">
                       {record.photo?.url ? (
                         <img
                           src={record.photo.url}
                           alt="Login"
                           className="w-full h-full object-cover"
                         />
-                      ) : null}
+                      ) : <Camera className="h-6 w-6 text-base-content/35" />}
                     </div>
                     <div className="flex items-center gap-3 min-w-0">
-                      <UserAvatar user={userInfo} size={40} />
                       <div className="min-w-0">
-                        <p className="font-semibold text-sm truncate">
+                        <p className="font-semibold text-sm [overflow-wrap:anywhere]">
                           {userInfo.name || "Unknown user"}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="badge badge-xs badge-primary badge-soft line-clamp-1">
                             {getUserRoleLabel(userInfo)}
                           </span>
-                          <UserSignalBadge user={userInfo} />
                         </div>
                       </div>
+                      <ChevronDown aria-hidden="true" className={`ml-auto h-4 w-4 shrink-0 text-base-content/50 transition-transform ${isOpen ? "rotate-180" : ""}`} />
                     </div>
-                    <p className="text-xs text-base-content/55 truncate">
+                    <p className="audit-record-email text-xs text-base-content/65 truncate" title={userInfo.email}>
                       {userInfo.email}
                     </p>
                     <p className="text-xs text-base-content/55 flex items-center gap-1 min-w-0">

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BriefcaseBusiness, Shield, ShieldCheck } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
 import { isPlatformAdmin } from "../../utils/userSignals";
@@ -31,6 +32,7 @@ const UserAvatar = ({
   ringClass = "",
 }) => {
   const socketContext = useSocket();
+  const [failedImage, setFailedImage] = useState(null);
   const isOpen = showBadges && showIndicator && user?.openToOpportunities;
   const isAdmin = showAdminBadge && isPlatformAdmin(user);
   const adminLabel = user?.isSuperAdmin ? "Platform Owner" : "Admin";
@@ -69,7 +71,7 @@ const UserAvatar = ({
 
   return (
     <div
-      className={`relative flex-shrink-0 ${className}`}
+      className={`user-avatar relative flex-shrink-0 ${className}`}
       style={{ width: size, height: size }}
       title={titleParts.length ? `${name} · ${titleParts.join(" · ")}` : name}
     >
@@ -78,11 +80,11 @@ const UserAvatar = ({
           ringClass || baseRing
         }`}
       >
-        {imgUrl ? (
-          <img src={imgUrl} alt={name} className="w-full h-full object-cover" />
+        {imgUrl && failedImage !== imgUrl ? (
+          <img src={imgUrl} alt={name} width={size} height={size} decoding="async" onError={() => setFailedImage(imgUrl)} className="w-full h-full object-cover" />
         ) : (
           <div
-            className="w-full h-full flex items-center justify-center text-base-content/40 font-bold"
+            className="avatar-initial w-full h-full flex items-center justify-center font-semibold"
             style={{ fontSize: Math.max(size * 0.4, 10) }}
           >
             {initial}

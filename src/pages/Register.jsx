@@ -210,7 +210,7 @@ const Register = () => {
         )}
 
         {errors.form && (
-          <div className="alert alert-error alert-soft py-2 text-sm">
+          <div role="alert" className="alert alert-error alert-soft py-2 text-sm">
             <AlertCircle className="h-4 w-4" />
             <span>{errors.form}</span>
           </div>
@@ -246,12 +246,16 @@ const AuthInput = ({
   ...props
 }) => (
   <div className="form-control">
-    <label className="label pb-1">
+    <label htmlFor={`register-${props.autoComplete}`} className="label pb-1">
       <span className="label-text text-sm font-medium">{label}</span>
     </label>
     <div className="relative">
       <Icon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/35" />
       <input
+        id={`register-${props.autoComplete}`}
+        name={props.autoComplete}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error || hint ? `register-${props.autoComplete}-hint` : undefined}
         type={type}
         className={`input input-bordered h-11 w-full rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20 sm:h-12 ${
           action ? "pr-10" : ""
@@ -264,9 +268,9 @@ const AuthInput = ({
       {action}
     </div>
     {error ? (
-      <p className="mt-1 text-xs font-medium text-error">{error}</p>
+      <p id={`register-${props.autoComplete}-hint`} role="alert" className="mt-1 text-xs font-medium text-error">{error}</p>
     ) : hint ? (
-      <p className="mt-1 text-right text-xs text-base-content/40">{hint}</p>
+      <p id={`register-${props.autoComplete}-hint`} className="mt-1 text-right text-xs text-base-content/40">{hint}</p>
     ) : null}
   </div>
 );

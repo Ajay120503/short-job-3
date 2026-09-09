@@ -463,7 +463,7 @@ const EditJob = () => {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="btn btn-ghost btn-sm btn-circle"
+          className="btn btn-ghost btn-sm btn-circle shrink-0" aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -479,7 +479,7 @@ const EditJob = () => {
         {errors.server && <ErrorSummary message={errors.server} />}
         {validationErrors.length > 0 && <ValidationSummary errors={validationErrors} />}
         {/* Basic Info Card */}
-        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
+        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-4 sm:p-6">
           <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-primary" />
             Basic Information
@@ -571,7 +571,7 @@ const EditJob = () => {
               </select>
               {errors.shortJobType && <FieldError>{errors.shortJobType}</FieldError>}
             </div>
-            <div className="grid grid-cols-[1fr_auto] gap-3">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
               <div className="form-control">
                 <label className="label pb-1">
                   <span className="label-text text-sm font-medium">
@@ -667,7 +667,7 @@ const EditJob = () => {
         </div>
 
         {/* Details Card */}
-        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
+        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-4 sm:p-6">
           <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
             Job Details
@@ -931,7 +931,7 @@ const EditJob = () => {
         </div>
 
         {/* Schedule & Contact Card */}
-        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
+        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-4 sm:p-6">
           <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
             Schedule & Contact
@@ -1022,7 +1022,7 @@ const EditJob = () => {
         </div>
 
         {/* Image Upload Card */}
-        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
+        <div className="card bg-base-100 border border-base-300/50 shadow-sm p-4 sm:p-6">
           <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
             <Upload className="w-5 h-5 text-primary" />
             Job Image (Optional)

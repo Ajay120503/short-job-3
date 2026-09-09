@@ -76,7 +76,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   return (
     <aside
-      className={`z-app-sidebar hidden lg:flex flex-col bg-base-100 border-r border-base-300/80 sticky top-0 h-screen overflow-visible transition-[width,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] shadow-[1px_0_0_color-mix(in_srgb,var(--color-base-content)_4%,transparent)] ${
+      className={`z-app-sidebar hidden shrink-0 lg:flex flex-col bg-base-100 border-r border-base-300/80 sticky top-0 h-dvh overflow-visible transition-[width,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] shadow-[1px_0_0_color-mix(in_srgb,var(--color-base-content)_4%,transparent)] ${
         collapsed ? "w-[72px]" : "w-64"
       }`}
     >

@@ -141,7 +141,7 @@ const EditPost = () => {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="btn btn-ghost btn-sm btn-circle"
+          className="btn btn-ghost btn-sm btn-circle shrink-0" aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -154,7 +154,7 @@ const EditPost = () => {
       </div>
 
       {/* Post Form Card */}
-      <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
+      <div className="card bg-base-100 border border-base-300/50 shadow-sm p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Text Area */}
           <div className="form-control">
@@ -220,7 +220,7 @@ const EditPost = () => {
               <label className="text-xs font-medium text-base-content/50 mb-2 block">
                 Current Images
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {existingImages.map((img, i) => (
                   <div
                     key={img.publicId || i}
@@ -270,7 +270,7 @@ const EditPost = () => {
 
           {/* New Images Preview */}
           {newImages.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {Array.from(newImages).map((img, i) => (
                 <div key={i} className="relative aspect-square group">
                   <img

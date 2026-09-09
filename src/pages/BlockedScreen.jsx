@@ -79,7 +79,7 @@ const BlockedScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-dvh bg-base-100">
       <header className="z-app-navigation sticky top-0 bg-base-100/95 backdrop-blur-md border-b border-base-300/80 shadow-sm md:hidden safe-area-top">
         <div className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2 shrink-0">
@@ -109,8 +109,8 @@ const BlockedScreen = () => {
         </div>
       </header>
 
-      <div className="flex h-screen overflow-hidden">
-        <aside className="z-app-sidebar hidden md:flex flex-col bg-base-100 border-r border-base-300 sticky top-0 h-screen w-64">
+      <div className="flex h-dvh overflow-hidden">
+        <aside className="z-app-sidebar hidden md:flex flex-col bg-base-100 border-r border-base-300 sticky top-0 h-dvh w-64">
           <div className="flex items-center h-16 px-4 border-b border-base-300">
             <div className="flex items-center gap-2">
               <BrandMark size="sm" />

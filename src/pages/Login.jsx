@@ -44,9 +44,9 @@ const Login = () => {
       }
       toast.success("Welcome back!");
       navigate("/feed");
-    } catch {
-      setFormError("Invalid email or password.");
-      toast.error("Invalid email or password.");
+    } catch (error) {
+      const message = error.response?.data?.message || (error.response ? "Unable to sign in. Please try again." : "Cannot connect. Check your internet connection and try again.");
+      setFormError(message);
     }
   };
 
@@ -125,12 +125,17 @@ const Login = () => {
           </div>
 
           <div className="form-control">
-            <label className="label pb-1">
+            <label htmlFor="login-email" className="label pb-1">
               <span className="label-text font-medium text-sm">Email</span>
             </label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30" />
               <input
+                id="login-email"
+                name="email"
+                autoComplete="email"
+                aria-invalid={Boolean(formError)}
+                aria-describedby={formError ? "login-error" : undefined}
                 type="email"
                 className={`input input-bordered h-11 w-full rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20 sm:h-12 ${formError ? "input-error" : ""}`}
                 placeholder="your@email.com"
@@ -146,12 +151,17 @@ const Login = () => {
           </div>
 
           <div className="form-control">
-            <label className="label pb-1">
+            <label htmlFor="login-password" className="label pb-1">
               <span className="label-text font-medium text-sm">Password</span>
             </label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30" />
               <input
+                id="login-password"
+                name="password"
+                autoComplete="current-password"
+                aria-invalid={Boolean(formError)}
+                aria-describedby={formError ? "login-error" : undefined}
                 type={showPassword ? "text" : "password"}
                 className={`input input-bordered h-11 w-full rounded-xl pl-10 pr-10 text-sm focus:ring-2 focus:ring-primary/20 sm:h-12 ${formError ? "input-error" : ""}`}
                 placeholder="••••••••"
@@ -167,6 +177,7 @@ const Login = () => {
                 type="button"
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -187,7 +198,7 @@ const Login = () => {
           </div>
 
           {formError && (
-            <div className="alert alert-error alert-soft py-2 text-sm">
+            <div id="login-error" role="alert" className="alert alert-error alert-soft py-2 text-sm">
               <AlertCircle className="h-4 w-4" />
               <span>{formError}</span>
             </div>

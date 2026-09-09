@@ -189,7 +189,7 @@ const JobDetail = () => {
           </div>
 
           {/* Key Details Grid */}
-          <div className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div className="bg-base-200/50 rounded-xl p-3 text-center">
               <MapPin className="w-4 h-4 text-primary mx-auto mb-1" />
               <p className="text-xs font-medium capitalize">

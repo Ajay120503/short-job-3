@@ -123,6 +123,7 @@ const ProfileConnections = () => {
             <Link
               key={tab}
               to={`/profile/${id}/${tab}`}
+              aria-current={type === tab ? "page" : undefined}
               className={`relative py-3 text-center text-sm font-semibold capitalize transition-colors ${
                 type === tab ? "text-base-content" : "text-base-content/45 hover:text-base-content/70"
               }`}
@@ -174,11 +175,11 @@ const ProfileConnections = () => {
                 const isFollowing = followingIds.has(person._id);
                 const pending = pendingIds.has(person._id);
                 return (
-                  <div key={person._id} className="flex items-center gap-3 py-3">
+                  <div key={person._id} className="flex flex-wrap items-center gap-3 rounded-xl px-2 py-4 transition-colors hover:bg-base-200/50">
                     <Link to={`/profile/${person._id}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                       <UserAvatar user={person} size={48} showBadges showPresence={false} />
                       <div className="min-w-0 flex-1">
-                        <div className="flex min-w-0 items-center gap-1.5">
+                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                           <p className="truncate text-sm font-semibold">{person.name}</p>
                           <VerifiedBadge verifiedStatus={person.verifiedStatus} />
                           <UserSignalBadge user={person} />
@@ -193,7 +194,9 @@ const ProfileConnections = () => {
                         type="button"
                         onClick={() => handleFollow(person._id)}
                         disabled={pending}
-                        className={`btn btn-sm min-w-[92px] rounded-lg ${isFollowing ? "btn-outline" : "btn-primary"}`}
+                        aria-label={`${isFollowing ? "Unfollow" : "Follow"} ${person.name}`}
+                        aria-busy={pending}
+                        className={`btn btn-sm shrink-0 min-w-[92px] rounded-lg ${isFollowing ? "btn-outline" : "btn-primary"}`}
                       >
                         {pending ? <span className="loading loading-spinner loading-xs" /> : !isFollowing && <UserPlus className="h-3.5 w-3.5" />}
                         {pending ? "" : isFollowing ? "Following" : "Follow"}

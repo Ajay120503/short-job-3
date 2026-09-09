@@ -242,9 +242,9 @@ const PostDetail = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-4 md:py-6 space-y-4">
+      <div className="post-detail-page w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-4 md:py-6 space-y-4">
         <div className="h-8 w-32 skeleton rounded mb-6"></div>
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_430px]">
+        <div className="post-detail-grid">
           <div className="card border p-5 space-y-4">
             <div className="h-5 w-3/4 skeleton rounded"></div>
             <div className="h-4 w-full skeleton rounded"></div>
@@ -273,7 +273,7 @@ const PostDetail = () => {
     ?? countCommentThread(comments);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-3 md:py-6">
+    <div className="post-detail-page w-full max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-3 md:py-6">
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}
@@ -283,10 +283,10 @@ const PostDetail = () => {
         Back
       </button>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_430px] lg:items-start">
+      <div className="post-detail-grid">
         {/* Post Card */}
         <div
-          className={`card border shadow-sm p-4 sm:p-5 lg:sticky lg:top-4 ${
+          className={`card border shadow-sm p-4 sm:p-5 ${
             isSpecialPost
               ? specialStyle.shell
               : "bg-base-100 border-base-300/50"
@@ -440,7 +440,7 @@ const PostDetail = () => {
       </div>
 
       {/* Comments Section */}
-      <div className="flex max-h-[75dvh] min-h-0 flex-col overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm lg:sticky lg:top-4 lg:h-[calc(100dvh-7rem)] lg:max-h-[calc(100dvh-7rem)]">
+      <div className="post-detail-comments flex max-h-[75dvh] min-h-0 flex-col overflow-hidden rounded-2xl border border-base-300/70 bg-base-100 shadow-sm">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-base-200 px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">

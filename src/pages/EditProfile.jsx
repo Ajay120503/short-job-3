@@ -315,7 +315,7 @@ const EditProfile = () => {
               </span>
               {errors.bio && <FieldError>{errors.bio}</FieldError>}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="form-control">
                 <label className="label py-0 pb-1">
                   <span className="label-text text-xs font-medium">Age</span>
@@ -389,7 +389,7 @@ const EditProfile = () => {
               </label>
             </div>
             {form.isCurrentlyWorking && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="form-control">
                   <label className="label py-0 pb-1">
                     <span className="label-text text-xs font-medium">
@@ -455,7 +455,7 @@ const EditProfile = () => {
           <h3 className="font-semibold text-sm mb-3">
             Background & Organization
           </h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="form-control">
               <label className="label py-0 pb-1">
                 <span className="label-text text-xs font-medium">
@@ -528,7 +528,7 @@ const EditProfile = () => {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 mt-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-3">
             <div className="form-control">
               <label className="label py-0 pb-1">
                 <span className="label-text text-xs font-medium">
@@ -569,7 +569,7 @@ const EditProfile = () => {
         {/* Location & Links */}
         <div className="card bg-base-100 border border-base-300/50 p-4">
           <h3 className="font-semibold text-sm mb-3">Location & Links</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="form-control">
               <label className="label py-0 pb-1">
                 <span className="label-text text-xs font-medium">City</span>

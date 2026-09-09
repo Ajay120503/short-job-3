@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { Link, Navigate } from "react-router-dom";
 import {
   Ban,
   BarChart3,
@@ -51,23 +51,17 @@ const statTones = {
 };
 
 const StatTile = ({ icon: Icon, label, value, tone = "primary", note }) => (
-  <div className="rounded-xl bg-base-100 border border-base-300/70 shadow-sm p-3 sm:p-4 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md">
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <p className="text-[10px] sm:text-[11px] font-bold text-base-content/45 uppercase tracking-wide truncate">
-          {label}
-        </p>
-        <p className={`mt-1.5 text-2xl sm:text-3xl font-bold ${statTones[tone].value}`}>
-          {value}
-        </p>
-        {note && <p className="mt-1 text-[11px] sm:text-xs text-base-content/45 truncate">{note}</p>}
-      </div>
+  <div className="min-w-0 rounded-2xl bg-base-100 border border-base-300 shadow-sm p-4 sm:p-5">
+    <div className="flex items-center justify-between gap-2">
+      <p className="text-xs font-medium text-base-content/65">{label}</p>
       <div
-        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${statTones[tone].icon}`}
+        className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0 ${statTones[tone].icon}`}
       >
-        <Icon className="w-5 h-5" />
+        <Icon className="w-4 h-4" />
       </div>
     </div>
+    <p className={`mt-3 text-2xl sm:text-3xl font-bold ${statTones[tone].value}`}>{value}</p>
+    {note && <p className="mt-2 text-xs leading-5 text-base-content/60">{note}</p>}
   </div>
 );
 
@@ -77,7 +71,8 @@ const TabButton = ({ tab, activeTab, onSelect }) => {
     <button
       type="button"
       onClick={() => onSelect(tab.value)}
-      className={`inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors ${
+      aria-pressed={activeTab === tab.value}
+      className={`inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-xs sm:px-4 sm:text-sm font-semibold transition-colors ${
         activeTab === tab.value
           ? "bg-primary/10 text-primary ring-1 ring-primary/25 shadow-sm"
           : "text-base-content/60 hover:bg-base-200 hover:text-base-content"
@@ -90,7 +85,7 @@ const TabButton = ({ tab, activeTab, onSelect }) => {
 };
 
 const Panel = ({ title, action, children, icon: Icon }) => (
-  <section className="rounded-xl bg-base-100 border border-base-300/70 shadow-sm overflow-hidden">
+  <section className="min-w-0 self-start rounded-2xl bg-base-100 border border-base-300 shadow-sm overflow-hidden">
     <div className="px-3 sm:px-4 py-3 border-b border-base-300/60 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-base-200/40">
       <div className="flex items-center gap-2 min-w-0">
         {Icon && (
@@ -169,7 +164,6 @@ const AdminUserCard = ({ item }) => (
 
 const AdminDashboard = () => {
   const { user, isAuthenticated } = useAuthStore();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [users, setUsers] = useState([]);
   const [queueItems, setQueueItems] = useState([]);
@@ -177,38 +171,47 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingQueue, setLoadingQueue] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [queueError, setQueueError] = useState("");
+  const queueRequest = useRef(0);
 
   const fetchUsers = useCallback(async () => {
     setLoadingUsers(true);
+    setLoadError("");
     try {
       const { data } = await API.get("/admin/users");
       setUsers(data.users || []);
     } catch (err) {
+      setLoadError("User information could not be refreshed. Try again.");
       toast.error(err.response?.data?.message || "Failed to fetch users");
     } finally {
       setLoadingUsers(false);
     }
   }, []);
 
-  const fetchQueue = useCallback(async (type = queueType) => {
+  const fetchQueue = useCallback(async (type = "post") => {
+    const request = ++queueRequest.current;
+    setQueueError("");
     setLoadingQueue(true);
     try {
       const { data } = await API.get(`/admin/queue?type=${type}`);
-      setQueueItems(data.items || []);
+      if (request === queueRequest.current) setQueueItems(data.items || []);
     } catch (err) {
+      if (request === queueRequest.current) setQueueError("The moderation queue could not be refreshed. Try again.");
       toast.error(err.response?.data?.message || "Failed to fetch queue");
     } finally {
-      setLoadingQueue(false);
+      if (request === queueRequest.current) setLoadingQueue(false);
     }
-  }, [queueType]);
+  }, []);
 
   useEffect(() => {
-    fetchUsers();
-    fetchQueue("post");
-  }, [fetchUsers, fetchQueue]);
+    const load = async () => { await fetchUsers(); };
+    load();
+  }, [fetchUsers]);
 
   useEffect(() => {
-    fetchQueue(queueType);
+    const load = async () => { await fetchQueue(queueType); };
+    load();
   }, [queueType, fetchQueue]);
 
   const stats = useMemo(
@@ -245,8 +248,7 @@ const AdminDashboard = () => {
     : 0;
 
   if (!isAuthenticated || !isAdminUser(user)) {
-    navigate("/feed");
-    return null;
+    return <Navigate to="/feed" replace />;
   }
   const canManagePlatform = isSuperAdminUser(user);
 
@@ -263,8 +265,7 @@ const AdminDashboard = () => {
                 Admin Dashboard
               </h1>
               <p className="text-xs sm:text-sm text-base-content/50">
-                Platform health, user trust, moderation, and operational
-                controls
+                A clear view of your community and the content that needs attention.
               </p>
             </div>
           </div>
@@ -276,6 +277,7 @@ const AdminDashboard = () => {
                 fetchUsers();
                 fetchQueue(queueType);
               }}
+              disabled={loadingUsers || loadingQueue}
               className="btn btn-ghost btn-sm gap-2"
               title="Refresh"
             >
@@ -306,55 +308,57 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
+      {loadError && <div role="alert" className="alert alert-error alert-soft text-sm">{loadError}</div>}
+      {queueError && <div role="alert" className="alert alert-error alert-soft text-sm">{queueError}</div>}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 min-[1700px]:grid-cols-5 sm:gap-4 [&>div:last-child]:col-span-2 sm:[&>div:last-child]:col-span-1">
         <StatTile
           icon={Users}
           label="Total Users"
-          value={stats.totalUsers}
+          value={loadingUsers ? "—" : stats.totalUsers}
           note={`${stats.activeUsers} active`}
         />
         <StatTile
           icon={Ban}
           label="Blocked Users"
-          value={stats.blockedUsers}
+          value={loadingUsers ? "—" : stats.blockedUsers}
           tone="warning"
           note={`${blockedRate}% of users`}
         />
         <StatTile
           icon={UserCheck}
           label="Verified Users"
-          value={stats.verifiedUsers}
+          value={loadingUsers ? "—" : stats.verifiedUsers}
           tone="success"
           note={`${verifiedRate}% verified`}
         />
         <StatTile
           icon={ShieldCheck}
           label="Admins"
-          value={stats.admins}
+          value={loadingUsers ? "—" : stats.admins}
           tone="primary"
           note="Platform operators"
         />
         <StatTile
           icon={Clock}
           label={`Pending ${queueType}`}
-          value={stats.pendingQueue}
+          value={loadingQueue ? "—" : stats.pendingQueue}
           tone="info"
         />
       </div>
 
       {activeTab === "overview" && (
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-4 md:gap-6">
+        <div className="grid grid-cols-1 min-[1700px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-4 md:gap-6">
           <div className="space-y-4 md:space-y-6">
             <Panel
-              title="Platform Health"
+              title="Community overview"
               icon={Gauge}
               action={
                 <span className="badge badge-sm badge-success badge-soft">
-                  Live
+                  Current snapshot
                 </span>
               }
             >
-              <div className="grid gap-3 p-3 sm:p-4 md:grid-cols-3 md:gap-4">
+              <div className="grid gap-3 p-4 sm:p-5 md:grid-cols-3 md:gap-4">
                 <div className="rounded-xl bg-base-200/50 border border-base-300/60 p-4">
                   <div className="flex items-center gap-2 text-sm font-semibold mb-3">
                     <TrendingUp className="w-4 h-4 text-primary" />
@@ -456,6 +460,8 @@ const AdminDashboard = () => {
                           <span className="loading loading-spinner loading-md text-primary"></span>
                         </td>
                       </tr>
+                    ) : recentUsers.length === 0 ? (
+                      <tr><td colSpan={4} className="py-10 text-center text-sm text-base-content/60">No recent users to show.</td></tr>
                     ) : (
                       recentUsers.map((item) => (
                         <tr key={item._id}>
@@ -543,6 +549,7 @@ const AdminDashboard = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40" />
               <input
                 type="text"
+                aria-label="Search users by name, email, or role"
                 placeholder="Search users..."
                 className="input input-bordered input-sm w-full pl-9"
                 value={searchTerm}
@@ -646,7 +653,7 @@ const AdminDashboard = () => {
               No pending {queueType} items in the moderation queue.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid gap-4 md:grid-cols-2 min-[1700px]:grid-cols-3">
               {queueItems.map((item) => (
                 <QueueItem
                   key={item._id}

@@ -142,7 +142,7 @@ const Notifications = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-4 md:p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold font-heading">Notifications</h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-base-content/65">

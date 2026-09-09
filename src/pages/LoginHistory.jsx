@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Camera, Clock, Laptop, MapPin, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import API from "../utils/axios";
@@ -23,24 +23,27 @@ const LoginHistory = () => {
   const { user } = useAuthStore();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const auditEnabled = user?.loginAuditEnabled !== false;
 
-  useEffect(() => {
-    if (!auditEnabled) {
-      setLoading(false);
-      return;
-    }
-
-    const load = async () => {
+  const load = useCallback(async () => {
+      if (!auditEnabled) return;
+      setLoading(true);
+      setError("");
       try {
         const { data } = await API.get("/users/me/login-history");
         setRecords(data.records || []);
+      } catch (err) {
+        setError(err.response?.data?.message || "Could not load your login history. Please try again.");
       } finally {
         setLoading(false);
       }
-    };
-    load();
   }, [auditEnabled]);
+
+  useEffect(() => {
+    const task = window.setTimeout(() => { load(); }, 0);
+    return () => window.clearTimeout(task);
+  }, [load]);
 
   const handleDelete = async (recordId) => {
     try {
@@ -81,6 +84,11 @@ const LoginHistory = () => {
             <div key={item} className="h-24 skeleton rounded-2xl" />
           ))}
         </div>
+      ) : error ? (
+        <div role="alert" className="rounded-2xl border border-error/25 bg-base-100 p-6 text-center">
+          <p className="text-sm text-base-content/75">{error}</p>
+          <button type="button" onClick={load} className="btn btn-outline btn-sm mt-4">Try again</button>
+        </div>
       ) : records.length === 0 ? (
         <div className="rounded-2xl border border-base-300 bg-base-100 p-10 text-center">
           <Camera className="w-10 h-10 text-base-content/20 mx-auto mb-3" />
@@ -96,24 +104,24 @@ const LoginHistory = () => {
           {records.map((record) => (
             <div
               key={record._id}
-              className="rounded-2xl border border-base-300 bg-base-100 p-3 flex gap-3"
+              className="rounded-2xl border border-base-300 bg-base-100 p-3 sm:p-5 grid grid-cols-[48px_minmax(0,1fr)_auto] gap-3 shadow-sm sm:grid-cols-[80px_minmax(0,1fr)_auto]"
             >
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-base-200 shrink-0">
+              <div className="flex w-12 h-12 sm:w-20 sm:h-20 items-center justify-center rounded-xl overflow-hidden bg-base-200 shrink-0">
                 {record.photo?.url ? (
                   <img
                     src={record.photo.url}
                     alt="Login verification"
                     className="w-full h-full object-cover"
                   />
-                ) : null}
+                ) : <ShieldCheck className="h-7 w-7 text-primary/60" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-sm flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" />
+                <p className="font-semibold text-sm flex items-start gap-2">
+                  <Clock className="w-4 h-4 shrink-0 text-primary" />
                   {formatDate(record.loginAt)}
                 </p>
                 <p className="text-xs text-base-content/55 mt-2 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
+                  <MapPin className="w-3.5 h-3.5 shrink-0" />
                   {[record.location?.city, record.location?.state]
                     .filter(Boolean)
                     .join(", ") || "Approximate location unavailable"}
@@ -124,7 +132,7 @@ const LoginHistory = () => {
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="badge badge-success badge-soft badge-sm">
-                    Seen
+                    {record.userSeenAt ? "Viewed" : "New record"}
                   </span>
                   <span className="text-[11px] text-base-content/40">
                     {formatExpiry(record.userSeenAt)}

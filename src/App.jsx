@@ -219,14 +219,15 @@ function App() {
               path="/*"
               element={
                 <ProtectedRoute>
-                  <div className="flex flex-col h-screen overflow-hidden bg-base-200">
+                  <div className="app-shell flex h-dvh flex-col overflow-hidden bg-base-200">
+                    <a href="#app-content" className="skip-link">Skip to main content</a>
                     <MobileHeader />
                     <div className="flex flex-1 min-h-0">
                       <Sidebar
                         collapsed={sidebarCollapsed}
                         onToggle={toggleSidebar}
                       />
-                      <main className="app-main flex-1 overflow-y-auto scroll-smooth">
+                      <main id="app-content" tabIndex={-1} className="app-main min-w-0 flex-1 overflow-y-auto scroll-smooth">
                         <Routes>
                           <Route path="/feed" element={<Feed />} />
                           <Route

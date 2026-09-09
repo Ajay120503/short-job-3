@@ -91,7 +91,7 @@ const CreateStory = () => {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="btn btn-ghost btn-sm btn-circle"
+          className="btn btn-ghost btn-sm btn-circle shrink-0" aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -104,7 +104,7 @@ const CreateStory = () => {
       </div>
 
       {/* Story Form Card */}
-      <div className="card bg-base-100 border border-base-300/50 shadow-sm p-6">
+      <div className="card bg-base-100 border border-base-300/50 shadow-sm p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           {errors.server && <ErrorSummary message={errors.server} />}
           {/* Image Upload */}

@@ -151,7 +151,7 @@ const RightSidebar = () => {
   const displayedUsers = isSearching ? searchResults : suggestedUsers;
 
   return (
-    <aside className="z-app-sidebar hidden 2xl:flex flex-col w-[340px] bg-base-100 border-l border-base-300/70 sticky top-0 h-screen overflow-hidden">
+    <aside className="z-app-sidebar hidden shrink-0 2xl:flex flex-col w-[300px] min-[1800px]:w-[340px] bg-base-100 border-l border-base-300/70 sticky top-0 h-dvh overflow-hidden">
       <div className="border-b border-base-200/80 p-4">
         <div className="flex h-10 items-center justify-end gap-2">
           <GlobalSearch />

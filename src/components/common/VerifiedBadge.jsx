@@ -28,8 +28,9 @@ const VerifiedBadge = ({ verifiedStatus, size = 14, showLabel = false }) => {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 ${badge.color} badge badge-sm`}
+      className={`inline-flex shrink-0 items-center gap-1 ${badge.color} badge badge-soft badge-sm`}
       title={badge.label}
+      aria-label={badge.label}
     >
       <Icon size={size} />
       {showLabel && <span className="text-xs font-medium">{badge.label}</span>}

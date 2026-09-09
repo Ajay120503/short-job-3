@@ -18,7 +18,7 @@ const BadgeChip = ({ badgeType, size = "md", className = "" }) => {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full transition-colors ${sizeClasses} ${className}`}
+      className={`profile-badge inline-flex max-w-full items-center rounded-full font-medium leading-5 transition-colors ${sizeClasses} ${className}`}
       style={{
         backgroundColor: config.bg,
         color: config.text,
@@ -27,7 +27,7 @@ const BadgeChip = ({ badgeType, size = "md", className = "" }) => {
       title={config.label}
     >
       {Icon && <Icon className="w-3 h-3 mr-1 flex-shrink-0" />}
-      {config.label}
+      <span className="truncate">{config.label}</span>
     </span>
   );
 };

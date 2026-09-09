@@ -17,6 +17,7 @@ import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
 import { getUserRoleLabel } from "../utils/badgeUtils";
 import StoryBar from "../components/post/StoryBar";
+import MemberOverview from "../components/common/MemberOverview";
 import LinkedJobCard from "../components/job/LinkedJobCard";
 import ConfirmModal from "../components/common/ConfirmModal";
 import UserAvatar from "../components/common/UserAvatar";
@@ -132,6 +133,7 @@ const Feed = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedError, setFeedError] = useState("");
 
   // Comment modal state
   const [commentPost, setCommentPost] = useState(null);
@@ -146,10 +148,12 @@ const Feed = () => {
   const [postToDelete, setPostToDelete] = useState(null);
 
   const fetchPosts = useCallback(async () => {
+    setFeedError("");
     try {
       const { data } = await API.get("/posts");
       setPosts(data.posts || []);
     } catch {
+      setFeedError("Your feed couldn’t be loaded. Check your connection and try again.");
       toast.error("Failed to load posts");
     } finally {
       setLoading(false);
@@ -333,15 +337,19 @@ const Feed = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
+      <MemberOverview user={user} />
       {/* Story Bar */}
-      <StoryBar onAddStory={() => navigate("/stories/create")} />
+      <section aria-label="Stories" className="mb-6 rounded-2xl border border-base-300 bg-base-100 px-4 pb-1 pt-4">
+        <h2 className="mb-3 text-sm font-semibold">Around your network</h2>
+        <StoryBar onAddStory={() => navigate("/stories/create")} />
+      </section>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold font-heading">Feed</h1>
           <p className="text-sm text-base-content/40 mt-0.5">
-            Latest public updates
+            Updates, ideas, and opportunities from the community
           </p>
         </div>
         <button
@@ -352,8 +360,13 @@ const Feed = () => {
         </button>
       </div>
 
-      {posts.length === 0 ? (
-        <div className="text-center py-20 px-6">
+      {feedError ? (
+        <div role="alert" className="rounded-2xl border border-error/25 bg-base-100 p-6 text-center">
+          <p className="text-sm text-base-content/75">{feedError}</p>
+          <button onClick={fetchPosts} className="btn btn-outline btn-sm mt-4">Try again</button>
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 text-center py-14 px-6">
           <div className="w-20 h-20 bg-base-200 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <ImageIcon className="w-10 h-10 text-base-content/20" />
           </div>
