@@ -502,7 +502,7 @@ select.select:disabled {
   :where(input, select, textarea) { font-size: 16px !important; }
   :where(button, .btn, a[role="button"]) { min-height: 2.75rem; }
   .btn-xs { min-height: 1.75rem; }
-  .btn-sm { min-height: 2.5rem; }
+  .btn-sm { min-height: 2.125rem; }
   .app-main :where(.card) { border-radius: 1rem; }
   .app-main .grid > * { min-width: 0; }
   [data-filter-panel] .flex:not(.input) { flex-wrap: wrap; }
@@ -1487,9 +1487,12 @@ select.select:disabled {
   }
   .feed-page > .rounded-2xl { margin: 0; }
   .feed-page > section[aria-label="Stories"] { margin: 0; border: 0; border-radius: 0; }
-  .feed-page > .flex { margin: 0; padding: 0.75rem 1rem; }
-  .feed-page > .flex h1 { font-size: 1.125rem; }
-  .feed-page > .flex p { display: none; }
+  .feed-page > .feed-page-heading { margin: 0; padding: 0.75rem 1rem; }
+  .feed-page > .feed-page-heading h1 { font-size: 1.125rem; }
+  .feed-page > .feed-page-heading p { display: none; }
+  .feed-comments-dialog { height: 100dvh; border: 0; border-radius: 0; }
+  .feed-comments-dialog > .flex-1 { min-height: 0; }
+  .feed-comments-dialog p { overflow-wrap: anywhere; }
   .member-overview { margin: 0; padding: 0; }
   .member-overview > div:first-child { padding: 0.75rem 1rem; }
   .member-overview > div:first-child > p,
@@ -1689,4 +1692,59 @@ select.select:disabled {
   .notification-actions { opacity: 1; }
   .notification-actions > button { min-width: 2rem; min-height: 2rem; }
   .notification-unread-dot { left: 3rem; right: auto; top: 1rem; width: 0.5rem; height: 0.5rem; animation: none; }
+}
+
+/* One compact phone scale for actions across public, member and admin pages.
+   Reaction controls, navigation and menu rows retain their dedicated sizing. */
+@media (max-width: 767px) {
+  .btn {
+    --phone-button-size: 2.375rem;
+    --phone-button-font: 0.8125rem;
+  }
+  .btn:not(.message-reaction-add):not(.message-reaction-pill):not(.message-reaction-picker-button) {
+    min-height: var(--phone-button-size) !important;
+    height: auto !important;
+    padding: 0.45rem 0.75rem !important;
+    font-size: var(--phone-button-font) !important;
+    line-height: 1.35;
+    gap: 0.375rem;
+    white-space: normal;
+  }
+  .btn.btn-sm { --phone-button-size: 2.125rem; --phone-button-font: 0.75rem; }
+  .btn.btn-xs { --phone-button-size: 1.75rem; --phone-button-font: 0.6875rem; }
+  .btn.btn-lg, .btn.btn-xl { --phone-button-size: 2.625rem; --phone-button-font: 0.875rem; }
+  .btn:is(.btn-circle, .btn-square):not(.message-reaction-add):not(.message-reaction-pill):not(.message-reaction-picker-button) {
+    width: var(--phone-button-size) !important;
+    min-width: var(--phone-button-size) !important;
+    height: var(--phone-button-size) !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+    aspect-ratio: 1;
+  }
+  .btn > svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+  .btn.btn-xs > svg { width: 0.875rem; height: 0.875rem; }
+  .explore-filter-chip { min-height: 2rem; padding: 0.375rem 0.625rem; font-size: 0.6875rem; }
+}
+
+@media (max-width: 767px) {
+  .post-detail-page > .btn:first-child { margin: 0.5rem 1rem; }
+  .post-detail-grid { gap: 0; }
+  .post-detail-grid > .card,
+  .post-detail-comments { border: 0; border-radius: 0; box-shadow: none; }
+  .post-detail-comments { height: 75dvh; max-height: 75dvh; min-height: 280px; }
+  .post-comment-list { order: 1; padding: 1rem; scroll-padding-block: 1rem; }
+  .post-comment-composer { order: 2; padding: 0.75rem 1rem; border-bottom: 0; border-top: 1px solid var(--color-base-300); }
+  .post-comment-composer > div { padding: 0; border: 0; border-radius: 0; background: transparent; gap: 0.5rem; }
+  .post-comment-composer > div > .user-avatar { display: none; }
+  .post-comment-composer textarea { min-width: 0; width: 100%; max-height: 6rem; border-radius: 1.25rem; padding: 0.5rem 0.75rem; }
+  .post-comment-composer .flex.items-end { flex-wrap: wrap; }
+  .post-comment-composer textarea { flex-basis: calc(100% - 3rem); }
+  .post-comment-composer .flex.items-end > span { order: 3; width: 100%; padding: 0; text-align: right; }
+  .post-comment-bubble { padding: 0.625rem 0.75rem; border: 0; }
+  .post-comment-list p { overflow-wrap: anywhere; }
+  .post-comment-actions { flex-wrap: wrap; gap: 0.375rem 0.875rem; }
+  .post-comment-actions button { min-height: 2rem; }
+  .post-comment-replies { margin-left: 0; padding-left: 0.5rem; }
+  .post-comment-replies > div { gap: 0.375rem; }
+  .post-comment-replies .flex.items-center { flex-wrap: wrap; }
 }

@@ -42,6 +42,7 @@ const PostDetail = () => {
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [commentPagination, setCommentPagination] = useState({ page: 1, pages: 1, allTotal: null });
   const commentSubmitLock = useRef(false);
+  const commentInputRef = useRef(null);
   const loadingMoreCommentsRef = useRef(false);
   const highlightedCommentId = window.location.hash.startsWith("#comment-")
     ? window.location.hash.slice("#comment-".length)
@@ -457,7 +458,7 @@ const PostDetail = () => {
         </div>
 
         {/* Add comment */}
-        <div className="shrink-0 border-b border-base-200 bg-base-100 p-3 sm:p-4">
+        <div className="post-comment-composer shrink-0 border-b border-base-200 bg-base-100 p-3 sm:p-4">
           <div className="flex gap-3 rounded-2xl border border-base-300/60 bg-base-200/40 p-3">
             <UserAvatar user={user} size={36} />
             <div className="flex-1 min-w-0">
@@ -474,6 +475,8 @@ const PostDetail = () => {
               )}
               <div className="flex items-end gap-2">
                 <textarea
+                  ref={commentInputRef}
+                  aria-label="Write a comment"
                   rows={1}
                   className="textarea textarea-bordered min-h-10 flex-1 resize-none rounded-2xl text-sm leading-relaxed focus:outline-none focus:border-primary/50"
                   placeholder="Write a comment..."
@@ -482,7 +485,7 @@ const PostDetail = () => {
                   maxLength={500}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
+                    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                       e.preventDefault();
                       handleAddComment();
                     }
@@ -493,6 +496,7 @@ const PostDetail = () => {
                 )}
                 <button
                   onClick={handleAddComment}
+                  aria-label={addingComment ? "Sending comment" : "Send comment"}
                   className="btn btn-primary btn-sm btn-circle shrink-0"
                   disabled={commentText.trim().length < 1 || addingComment}
                 >
@@ -508,7 +512,7 @@ const PostDetail = () => {
         </div>
 
         {/* Comments List */}
-        <div onScroll={handleCommentsScroll} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-4">
+        <div onScroll={handleCommentsScroll} className="post-comment-list min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-4">
           {comments.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-14 h-14 rounded-2xl bg-base-300/50 flex items-center justify-center mx-auto mb-3">
@@ -530,7 +534,7 @@ const PostDetail = () => {
                     <div className="flex gap-3">
                       <UserAvatar user={commentAuthor} size={32} />
                       <div className="flex-1 min-w-0">
-                        <div className="rounded-2xl rounded-tl-sm border border-base-300/60 bg-base-200/50 px-4 py-3">
+                        <div className="post-comment-bubble rounded-2xl rounded-tl-sm border border-base-300/60 bg-base-200/50 px-4 py-3">
                           <p className="text-xs font-semibold text-base-content/80 mb-1">
                             {commentAuthor.name || "Unknown"}
                           </p>
@@ -538,7 +542,7 @@ const PostDetail = () => {
                             {comment.text}
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 mt-1.5 px-1">
+                        <div className="post-comment-actions flex items-center gap-4 mt-1.5 px-1">
                           <span className="text-[10px] text-base-content/40">
                             {new Date(comment.createdAt).toLocaleDateString(
                               "en-US",
@@ -552,6 +556,8 @@ const PostDetail = () => {
                             onClick={() => {
                               setReplyTo(comment._id);
                               setCommentText(`@${commentAuthor.name} `);
+                              commentInputRef.current?.focus();
+                              commentInputRef.current?.scrollIntoView({ block: "nearest" });
                             }}
                             className="text-[11px] text-base-content/40 hover:text-primary font-medium transition-colors"
                           >
@@ -571,7 +577,7 @@ const PostDetail = () => {
 
                         {/* Replies */}
                         {comment.replies?.length > 0 && (
-                          <div className="ml-2 sm:ml-6 mt-3 pl-4 border-l-2 border-primary/15 space-y-3">
+                          <div className="post-comment-replies ml-2 sm:ml-6 mt-3 pl-4 border-l-2 border-primary/15 space-y-3">
                             {comment.replies.map((reply) => {
                               const replyAuthor =
                                 reply.author || reply.user || {};

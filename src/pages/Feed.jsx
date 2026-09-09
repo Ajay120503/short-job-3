@@ -345,7 +345,7 @@ const Feed = () => {
       </section>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="feed-page-heading flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold font-heading">Feed</h1>
           <p className="text-sm text-base-content/40 mt-0.5">
@@ -699,7 +699,7 @@ const Feed = () => {
           role="presentation"
         >
           <div
-            className="flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-base-300/70 bg-base-100 shadow-2xl md:h-[min(76dvh,680px)] md:max-w-2xl md:rounded-3xl"
+            className="feed-comments-dialog flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-base-300/70 bg-base-100 shadow-2xl md:h-[min(76dvh,680px)] md:max-w-2xl md:rounded-3xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
