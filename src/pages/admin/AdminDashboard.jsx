@@ -85,7 +85,7 @@ const TabButton = ({ tab, activeTab, onSelect }) => {
 };
 
 const Panel = ({ title, action, children, icon: Icon }) => (
-  <section className="min-w-0 self-start rounded-2xl bg-base-100 border border-base-300 shadow-sm overflow-hidden">
+  <section className="admin-overview-panel min-w-0 self-start rounded-2xl bg-base-100 border border-base-300 shadow-sm overflow-hidden">
     <div className="px-3 sm:px-4 py-3 border-b border-base-300/60 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-base-200/40">
       <div className="flex items-center gap-2 min-w-0">
         {Icon && (
@@ -253,7 +253,7 @@ const AdminDashboard = () => {
   const canManagePlatform = isSuperAdminUser(user);
 
   return (
-    <div className="admin-page mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
+    <div className="admin-dashboard-page admin-page mx-auto max-w-7xl space-y-4 px-2 py-3 sm:px-4 md:space-y-6 md:p-6">
       <div data-page-header className="rounded-xl sm:rounded-2xl bg-base-100 border border-base-300/70 shadow-sm p-4 sm:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-3">

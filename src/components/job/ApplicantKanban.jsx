@@ -123,7 +123,7 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
   };
 
   return (
-    <div className="-mx-4 snap-x snap-mandatory overflow-x-auto px-4 pb-4 [scrollbar-gutter:stable] md:mx-0 md:px-0">
+    <div className="applicant-kanban -mx-4 snap-x snap-mandatory overflow-x-auto px-4 pb-4 [scrollbar-gutter:stable] md:mx-0 md:px-0">
       <div className="flex min-w-max items-start gap-3">
         {COLUMNS.map((col) => {
           const Icon = col.icon;
@@ -132,7 +132,7 @@ const ApplicantKanban = ({ applications: initialApps, onStatusChange }) => {
           return (
             <div
               key={col.key}
-              className={`flex h-[min(70vh,46rem)] w-[17.5rem] shrink-0 snap-start flex-col rounded-2xl border p-3 transition-all xl:w-[18rem] ${
+              className={`applicant-kanban-column flex h-[min(70vh,46rem)] w-[17.5rem] shrink-0 snap-start flex-col rounded-2xl border p-3 transition-all xl:w-[18rem] ${
                 isOver
                   ? "border-primary/45 bg-primary/8 shadow-sm"
                   : "border-base-300/70 bg-base-200/45"
@@ -210,7 +210,7 @@ const ApplicantCard = ({ app, isDragging, onDragStart, onDragEnd }) => {
 
   return (
     <div
-      className={`flex h-[14.5rem] flex-col overflow-hidden rounded-2xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+      className={`applicant-kanban-card flex h-[14.5rem] flex-col overflow-hidden rounded-2xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
         isSpecialApplicant
           ? `${specialStyle.shell} ${specialStyle.shellHover}`
           : "border-base-300/70 bg-base-100 hover:border-primary/25"
