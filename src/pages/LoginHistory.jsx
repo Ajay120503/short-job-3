@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Camera, Clock, Laptop, MapPin, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Clock, MapPin, MoreHorizontal, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import API from "../utils/axios";
 import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
@@ -56,13 +56,21 @@ const LoginHistory = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-6 pb-20">
-      <div className="mb-6">
+    <div className="login-history-page max-w-3xl mx-auto p-4 md:p-6 pb-20">
+      <header className="login-history-header mb-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <Link to="/settings" className="btn btn-ghost btn-sm gap-1.5"><ArrowLeft className="h-4 w-4" /> Settings</Link>
+          {auditEnabled && <button type="button" onClick={load} disabled={loading} aria-label="Refresh login history" className="btn btn-ghost btn-sm btn-circle"><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></button>}
+        </div>
         <h1 className="text-2xl font-bold font-heading">Login History</h1>
-        <p className="text-sm text-base-content/50 mt-1">
-          Your security verification records are visible only to you and platform admins.
+        <p className="text-sm leading-6 text-base-content/60 mt-1">
+          Review when and where you signed in.
         </p>
-      </div>
+        <div className="mt-4 flex items-start gap-2 text-xs leading-5 text-base-content/60">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p>These verification records are visible only to you and authorized platform admins.</p>
+        </div>
+      </header>
 
       {!auditEnabled ? (
         <div className="rounded-2xl border border-base-300 bg-base-100 p-10 text-center">
@@ -100,25 +108,28 @@ const LoginHistory = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {records.map((record) => (
-            <div
+        <div className="login-history-records space-y-3">
+          <p className="login-history-count text-xs font-semibold uppercase tracking-wide text-base-content/50">{records.length} {records.length === 1 ? "recent sign-in" : "recent sign-ins"}</p>
+          {[...records].sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt)).map((record) => (
+            <article
               key={record._id}
-              className="rounded-2xl border border-base-300 bg-base-100 p-3 sm:p-5 grid grid-cols-[48px_minmax(0,1fr)_auto] gap-3 shadow-sm sm:grid-cols-[80px_minmax(0,1fr)_auto]"
+              className="login-history-record rounded-2xl border border-base-300 bg-base-100 p-4 sm:p-5 grid grid-cols-[48px_minmax(0,1fr)_auto] gap-x-3 gap-y-4 shadow-sm sm:grid-cols-[64px_minmax(0,1fr)_auto]"
             >
-              <div className="flex w-12 h-12 sm:w-20 sm:h-20 items-center justify-center rounded-xl overflow-hidden bg-base-200 shrink-0">
+              <div className="flex w-12 h-12 sm:w-16 sm:h-16 items-center justify-center rounded-xl overflow-hidden bg-base-200 shrink-0">
                 {record.photo?.url ? (
                   <img
                     src={record.photo.url}
                     alt="Login verification"
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 ) : <ShieldCheck className="h-7 w-7 text-primary/60" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-sm flex items-start gap-2">
-                  <Clock className="w-4 h-4 shrink-0 text-primary" />
-                  {formatDate(record.loginAt)}
+                <h2 className="text-sm font-semibold leading-5 [overflow-wrap:anywhere]">{record.device?.browser || "Unknown device"}</h2>
+                <p className="mt-1.5 text-xs leading-5 text-base-content/65 flex items-start gap-1.5">
+                  <Clock className="mt-0.5 w-3.5 h-3.5 shrink-0" />
+                  <span>{formatDate(record.loginAt)}</span>
                 </p>
                 <p className="text-xs text-base-content/55 mt-2 flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 shrink-0" />
@@ -126,18 +137,6 @@ const LoginHistory = () => {
                     .filter(Boolean)
                     .join(", ") || "Approximate location unavailable"}
                 </p>
-                <p className="text-xs text-base-content/55 mt-1 flex items-center gap-1">
-                  <Laptop className="w-3.5 h-3.5" />
-                  {record.device?.browser || "Unknown device"}
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="badge badge-success badge-soft badge-sm">
-                    {record.userSeenAt ? "Viewed" : "New record"}
-                  </span>
-                  <span className="text-[11px] text-base-content/40">
-                    {formatExpiry(record.userSeenAt)}
-                  </span>
-                </div>
               </div>
               <div className="dropdown dropdown-end shrink-0">
                 <button
@@ -164,7 +163,11 @@ const LoginHistory = () => {
                   </li>
                 </ul>
               </div>
-            </div>
+              <div className="col-span-full flex flex-wrap items-start gap-2 border-t border-base-300/50 pt-3">
+                <span className={`badge badge-soft badge-sm shrink-0 ${record.userSeenAt ? "badge-success" : "badge-primary"}`}>{record.userSeenAt ? "Viewed" : "New record"}</span>
+                <p className="min-w-0 flex-1 text-xs leading-5 text-base-content/55">{formatExpiry(record.userSeenAt)}</p>
+              </div>
+            </article>
           ))}
         </div>
       )}
