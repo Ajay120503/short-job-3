@@ -919,7 +919,7 @@ select.select:disabled {
 }
 .signal-badge { border-radius: 9999px; letter-spacing: 0.01em; }
 .profile-cover {
-  background-image: radial-gradient(ellipse at 90% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 65%);
+  /* background-image: radial-gradient(ellipse at 90% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 65%); */
   border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 .login-record-detail { container-type: inline-size; container-name: audit-detail; }

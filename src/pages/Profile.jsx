@@ -221,9 +221,7 @@ const Profile = () => {
       {/* ============ PROFILE HEADER ============ */}
       <div
         className={`profile-header overflow-hidden rounded-2xl border shadow-sm mb-5 md:mb-6 ${
-          isSpecialProfile
-            ? specialStyle.shell
-            : "bg-base-100 border-base-300/50"
+          isSpecialProfile ? specialStyle.shell : "border-base-300/50"
         }`}
       >
         <div
@@ -257,7 +255,7 @@ const Profile = () => {
           {/* Info */}
           <div className="flex-1 text-center md:text-left min-w-0 md:pt-16">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4 mb-4">
-              <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center md:justify-start gap-2 flex-wrap min-w-0 [overflow-wrap:anywhere]">
+              <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center md:justify-start gap-2 flex-wrap min-w-0 wrap-anywhere">
                 {profile.name}
                 <VerifiedBadge verifiedStatus={profile.verifiedStatus} />
                 <UserSignalBadge user={profile} size="sm" />
@@ -791,9 +789,9 @@ const Profile = () => {
                           className="dropdown dropdown-end flex-shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
-                            <button
-                              tabIndex={0}
-                              aria-label={`Actions for ${job.title}`}
+                          <button
+                            tabIndex={0}
+                            aria-label={`Actions for ${job.title}`}
                             className="btn btn-ghost btn-xs btn-circle"
                           >
                             <MoreHorizontal className="w-4 h-4" />
@@ -877,7 +875,6 @@ const Profile = () => {
         cancelText="Cancel"
         variant="danger"
       />
-
     </div>
   );
 };
