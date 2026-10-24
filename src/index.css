@@ -268,6 +268,10 @@ select,
 .app-main :where(.alert) { overflow-wrap: anywhere; }
 .app-main :where(.modal-box) { max-height: calc(100dvh - 2rem); overflow-y: auto; }
 .app-main [data-filter-panel] { background: var(--color-base-100); box-shadow: none; }
+[data-filter-panel]:focus-within,
+[data-filter-panel]:has(.dropdown) {
+  z-index: 30;
+}
 
 .skip-link {
   position: fixed;

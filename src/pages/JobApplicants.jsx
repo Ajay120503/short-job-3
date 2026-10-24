@@ -885,15 +885,29 @@ const JobApplicants = () => {
         {[
           { label: "Total", value: applications.length, icon: Users },
           { label: "Reviewed", value: statusCounts.reviewed || 0, icon: Eye },
-          { label: "Shortlisted", value: statusCounts.shortlisted || 0, icon: Clock },
-          { label: "Selected", value: statusCounts.selected || 0, icon: CheckCircle },
-          { label: "Rejected", value: statusCounts.rejected || 0, icon: XCircle },
+          {
+            label: "Shortlisted",
+            value: statusCounts.shortlisted || 0,
+            icon: Clock,
+          },
+          {
+            label: "Selected",
+            value: statusCounts.selected || 0,
+            icon: CheckCircle,
+          },
+          {
+            label: "Rejected",
+            value: statusCounts.rejected || 0,
+            icon: XCircle,
+          },
         ].map((stat) => (
           <button
             key={stat.label}
             type="button"
             onClick={() =>
-              setFilterStatus(stat.label === "Total" ? "" : stat.label.toLowerCase())
+              setFilterStatus(
+                stat.label === "Total" ? "" : stat.label.toLowerCase(),
+              )
             }
             className={`rounded-xl border p-3 text-left transition-all hover:border-primary/40 hover:bg-primary/5 ${
               (stat.label === "Total" && !filterStatus) ||
@@ -911,7 +925,10 @@ const JobApplicants = () => {
         ))}
       </div>
 
-      <div data-filter-panel className="card bg-base-100 border border-base-300/60 p-4 mb-5">
+      <div
+        data-filter-panel
+        className="card bg-base-100 border border-base-300/60 p-4 mb-5 z-30"
+      >
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/35" />
@@ -934,10 +951,16 @@ const JobApplicants = () => {
               <option value="experience">Most experience</option>
               <option value="name">Name A-Z</option>
             </select>
-            <button onClick={handleCopyEmails} className="btn btn-outline btn-sm gap-1.5">
+            <button
+              onClick={handleCopyEmails}
+              className="btn btn-outline btn-sm gap-1.5"
+            >
               <Mail className="w-4 h-4" /> Copy emails
             </button>
-            <button onClick={handleEmailApplicants} className="btn btn-outline btn-sm gap-1.5">
+            <button
+              onClick={handleEmailApplicants}
+              className="btn btn-outline btn-sm gap-1.5"
+            >
               <Send className="w-4 h-4" /> Email list
             </button>
             <div className="dropdown dropdown-end">
@@ -979,7 +1002,10 @@ const JobApplicants = () => {
       </div>
 
       {/* View Toggle + Filter */}
-      <div data-filter-panel className="flex items-center justify-between gap-3 mb-4 flex-wrap rounded-xl border border-base-300/60 bg-base-100 p-3">
+      <div
+        data-filter-panel
+        className="flex items-center justify-between gap-3 mb-4 flex-wrap rounded-xl border border-base-300/60 bg-base-100 p-3"
+      >
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode("list")}
@@ -1017,8 +1043,8 @@ const JobApplicants = () => {
                 filterStatus === status
                   ? "badge-primary"
                   : status
-                  ? `${statusColors[status]} hover:opacity-70`
-                  : "badge-ghost hover:badge-primary"
+                    ? `${statusColors[status]} hover:opacity-70`
+                    : "badge-ghost hover:badge-primary"
               }`}
             >
               {status || "All"}
